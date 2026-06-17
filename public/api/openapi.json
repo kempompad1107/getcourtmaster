@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CourtMaster Pickleball SaaS API",
+    "version": "1.0.0",
+    "description": "REST API for tenants, customers, and kiosk integrations. All routes under /api/v1 require Sanctum bearer tokens unless marked public."
+  },
+  "servers": [
+    { "url": "/api/v1", "description": "Versioned base path" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sanctum": { "type": "http", "scheme": "bearer", "bearerFormat": "token" }
+    },
+    "schemas": {
+      "Booking": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "booking_number": { "type": "string" },
+          "status": { "type": "string", "enum": ["pending","confirmed","active","completed","cancelled"] },
+          "date": { "type": "string", "format": "date" },
+          "start_time": { "type": "string" },
+          "end_time": { "type": "string" },
+          "amounts": {
+            "type": "object",
+            "properties": {
+              "base": { "type": "number" }, "tax": { "type": "number" },
+              "total": { "type": "number" }, "paid": { "type": "number" }
+            }
+          }
+        }
+      },
+      "Court": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" }, "name": { "type": "string" },
+          "status": { "type": "string" }, "hourly_rate": { "type": "number" }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" }, "amount": { "type": "number" },
+          "status": { "type": "string" }, "gateway": { "type": "string" }
+        }
+      }
+    }
+  },
+  "security": [{ "sanctum": [] }],
+  "paths": {
+    "/auth/login":    { "post": { "summary": "Login + token", "security": [], "responses": { "200": { "description": "token" } } } },
+    "/auth/me":       { "get":  { "summary": "Current user", "responses": { "200": { "description": "user" } } } },
+    "/courts":        { "get":  { "summary": "List courts", "responses": { "200": { "description": "courts" } } } },
+    "/courts/{id}":   { "get":  { "summary": "Get court", "parameters": [{"in":"path","name":"id","required":true,"schema":{"type":"integer"}}], "responses": { "200": { "description": "court" } } } },
+    "/bookings":      {
+      "get":  { "summary": "List my bookings", "responses": { "200": { "description": "list" } } },
+      "post": { "summary": "Create booking", "responses": { "201": { "description": "created" } } }
+    },
+    "/bookings/{id}": { "get": { "summary": "Get booking", "parameters": [{"in":"path","name":"id","required":true,"schema":{"type":"integer"}}], "responses": { "200": { "description": "booking" } } } },
+    "/memberships":   { "get": { "summary": "My memberships", "responses": { "200": { "description": "memberships" } } } },
+    "/payments":      { "get": { "summary": "My payments",    "responses": { "200": { "description": "payments" } } } },
+    "/wallet":        { "get": { "summary": "Wallet balance + transactions", "responses": { "200": { "description": "wallet" } } } },
+    "/notifications": { "get": { "summary": "My notifications", "responses": { "200": { "description": "list" } } } }
+  }
+}

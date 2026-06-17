@@ -1,0 +1,48 @@
+# =============================================================================
+# Defense-in-depth (security audit C-1).
+#
+# The CORRECT deployment points Apache's DocumentRoot at the ./public folder,
+# in which case this file is never loaded and does nothing.
+#
+# But XAMPP's default layout serves the project root directly (e.g.
+# http://host/courtmaster/), which would expose .env, .git and the full source
+# tree. This file blocks the sensitive paths as a safety net. It is NOT a
+# substitute for fixing the DocumentRoot — do that first.
+# =============================================================================
+
+# --- Block all dotfiles (.env, .git, .htaccess, .gitignore, ...) -------------
+<IfModule mod_authz_core.c>
+    # Apache 2.4+
+    <FilesMatch "^\.">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    # Apache 2.2
+    <FilesMatch "^\.">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# --- Block sensitive files by extension --------------------------------------
+<IfModule mod_authz_core.c>
+    <FilesMatch "(?i)\.(env|log|sqlite|sql|bak|dist|example|lock|ya?ml|ini|sh)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+# --- Block framework directories if the project root is the docroot ----------
+RedirectMatch 404 (?i)^/?\.git
+RedirectMatch 404 (?i)^/?(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules)(/|$)
+
+# --- Send everything else to the front controller ----------------------------
+# If the root is being served, route requests through public/index.php so the
+# app still works while the sensitive paths above stay blocked.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
