@@ -16,9 +16,9 @@
         <div class="list-group list-group-flush">
             @forelse ($notifications as $n)
                 <a href="{{ $n->data['url'] ?? '#' }}" class="list-group-item list-group-item-action {{ $n->read_at ? '' : 'bg-light' }}">
-                    <div class="d-flex justify-content-between">
-                        <span class="small">{{ $n->data['message'] ?? ($n->data['type'] ?? 'Notification') }}</span>
-                        <span class="small text-muted">{{ $n->created_at?->diffForHumans() }}</span>
+                    <div class="d-flex justify-content-between gap-3">
+                        <span class="small" style="overflow-wrap:anywhere;">{{ $n->data['message'] ?? ($n->data['type'] ?? 'Notification') }}</span>
+                        <span class="small text-muted text-nowrap flex-shrink-0">{{ $n->created_at?->diffForHumans() }}</span>
                     </div>
                 </a>
             @empty

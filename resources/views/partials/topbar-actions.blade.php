@@ -96,8 +96,10 @@
                 <div class="px-3 py-4 text-center text-muted small">You're all caught up.</div>
             </template>
             <template x-for="item in items" :key="item.id">
-                <a class="dropdown-item d-flex flex-column py-2" :href="item.url || '#'">
-                    <span class="small fw-medium" x-text="item.message"></span>
+                <a class="dropdown-item d-flex flex-column py-2" :href="item.url || '#'"
+                   style="white-space:normal;">
+                    <span class="small fw-medium" x-text="item.message"
+                          style="overflow-wrap:anywhere;"></span>
                     <span class="small text-muted" x-text="item.created"></span>
                 </a>
             </template>
