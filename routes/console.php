@@ -53,7 +53,8 @@ Schedule::job(new CheckLowStock)->dailyAt('07:00');
 // Subscription billing — generate invoices, retry failures, suspend overdue
 Schedule::job(new ProcessBillingRetries)->dailyAt('02:00');
 
-// Notify customers ~1 min before start as redundancy to the auto-start cron.
+// Notify ~5 min before start: the customer (their reminder) AND the front desk
+// (owners/staff bell), as redundancy to the auto-start cron.
 // Guard: skip if a timer is already running/paused (cron already fired).
 Schedule::call(function () {
     $now = now();
@@ -62,11 +63,23 @@ Schedule::call(function () {
         ->where('booking_date', $now->toDateString())
         ->where('start_reminder_sent', false)
         ->where('start_time', '>',  $now->format('H:i:s'))
-        ->where('start_time', '<=', $now->copy()->addMinutes(2)->format('H:i:s'))
+        ->where('start_time', '<=', $now->copy()->addMinutes(5)->format('H:i:s'))
         ->whereDoesntHave('timer', fn ($q) => $q->whereIn('status', ['running', 'paused']))
         ->with(['customer', 'court'])
         ->each(function (\App\Models\Booking $b) {
+            // Customer reminder (honors their channel preferences).
             $b->customer?->notify(new \App\Notifications\BookingStartingSoonNotification($b));
+
+            // Front-desk heads-up for owners/staff (in-app bell only).
+            $recipients = \App\Models\User::where('tenant_id', $b->tenant_id)
+                ->whereIn('user_type', ['business_owner', 'staff'])
+                ->where('is_active', true)
+                ->get();
+            \Illuminate\Support\Facades\Notification::send(
+                $recipients,
+                new \App\Notifications\CourtStartingSoonNotification($b)
+            );
+
             $b->update(['start_reminder_sent' => true]);
         });
 })->name('booking-starting-soon-notify')->everyMinute()->withoutOverlapping();
