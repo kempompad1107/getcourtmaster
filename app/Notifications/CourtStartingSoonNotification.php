@@ -3,18 +3,18 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
 /**
  * Front-desk heads-up sent to owners/staff ~5 minutes before a booking's
  * scheduled start. In-app (bell) only — mirrors CourtTimeElapsedNotification.
+ *
+ * Intentionally NOT ShouldQueue: it's a database-only write, so sending it
+ * synchronously inside the scheduler delivers it instantly (no extra ~1-min
+ * queue lag), keeping the lead time close to the full 5 minutes.
  */
-class CourtStartingSoonNotification extends Notification implements ShouldQueue
+class CourtStartingSoonNotification extends Notification
 {
-    use Queueable;
-
     public function __construct(public Booking $booking) {}
 
     public function via(object $notifiable): array
