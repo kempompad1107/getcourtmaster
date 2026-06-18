@@ -422,8 +422,14 @@ class BookingController extends Controller
         $tenantId = $this->authTenant()->id;
         $request->validate(['start' => 'required|date', 'end' => 'required|date']);
 
+        // The calendar sends `courts` as a comma-separated list of checked court IDs.
+        // An empty string means every court is unchecked → no bookings to show.
+        $courtIds = array_filter(explode(',', (string) $request->query('courts', '')), 'strlen');
+        $courtsParamPresent = $request->query('courts') !== null;
+
         $bookings = Booking::where('tenant_id', $tenantId)
             ->whereBetween('booking_date', [$request->start, $request->end])
+            ->when($courtsParamPresent, fn ($q) => $q->whereIn('court_id', $courtIds))
             ->with('customer', 'court')
             ->get()
             ->map(fn (Booking $b) => [

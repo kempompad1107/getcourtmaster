@@ -115,6 +115,11 @@
             display: grid; gap: 1.25rem;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
+        /* On wide / full-screen computer displays, lock to a clean 4-up layout
+           so cards stay large instead of shrinking into 5–6 narrow columns. */
+        @media (min-width: 1200px) {
+            .court-grid { grid-template-columns: repeat(4, 1fr); }
+        }
 
         /* status accent tokens */
         .s-available   { --accent: #34d399; --accent-rgb: 52,211,153; }

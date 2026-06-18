@@ -216,7 +216,7 @@ sudo supervisorctl start all
 |---|---|---|
 | `AutoStartTimers` | every minute | Start timers when a confirmed booking's slot arrives |
 | `CheckOvertimeTimers` | every minute | Auto-charge / alert on overtime sessions |
-| `booking-starting-soon-notify` | every minute | Push notification ~1 min before start (skips if timer already running) |
+| `booking-starting-soon-notify` | every minute | Notifies customer + front-desk staff/owner ~5 min before start (skips if timer already running) |
 | Booking reminder sweep | every 5 minutes | Dispatches `SendBookingReminder` 2 h before slot |
 | `ProcessMembershipRenewals` | daily 01:00 | Renew / expire memberships |
 | `ProcessBillingRetries` | daily 02:00 | Generate SaaS invoices, retry failed charges, suspend overdue tenants |
