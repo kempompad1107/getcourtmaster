@@ -72,6 +72,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(MembershipService::class);
         $this->app->singleton(PosService::class);
+        $this->app->singleton(\App\Services\TenantMailManager::class);
 
         $this->app->singleton(GatewayManager::class, function () {
             // Platform-level credentials are used ONLY by BillingService to charge

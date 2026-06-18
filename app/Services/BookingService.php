@@ -432,7 +432,16 @@ class BookingService
             ->get();
 
         foreach ($recipients as $r) {
-            $r->notify($notification);
+            try {
+                $r->notify($notification);
+            } catch (\Throwable $e) {
+                // A broken SMTP server must never break the operation that
+                // triggered the alert (e.g. a cancellation). Log and move on.
+                Log::warning('owner/staff notification failed', [
+                    'user_id' => $r->id,
+                    'error'   => $e->getMessage(),
+                ]);
+            }
         }
 
         if ($email = $tenant?->notificationEmail()) {
@@ -612,11 +621,17 @@ class BookingService
             event(new BookingCancelled($booking));
 
             // Owner/staff alert (gated by the venue's "Booking cancelled" toggle).
-            $this->notifyOwnerStaff(
-                $booking->tenant_id,
-                new BookingCancelledNotification($booking->fresh()),
-                'notify_cancellation'
-            );
+            // Dispatched AFTER commit so a mail failure can never roll back the
+            // cancellation (the live 530-auth 500). notifyOwnerStaff also guards
+            // each send in try/catch as a second layer of defence.
+            $fresh = $booking->fresh();
+            DB::afterCommit(function () use ($fresh) {
+                $this->notifyOwnerStaff(
+                    $fresh->tenant_id,
+                    new BookingCancelledNotification($fresh),
+                    'notify_cancellation'
+                );
+            });
 
             return $booking;
         });

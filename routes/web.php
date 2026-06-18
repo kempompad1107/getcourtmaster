@@ -386,6 +386,8 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::put('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications');
         Route::put('/settings/gateways', [SettingsController::class, 'updateGateways'])->name('settings.gateways');
         Route::get('/settings/gateways/setup-guide', [SettingsController::class, 'gatewaySetupGuide'])->name('settings.gateways.guide');
+        Route::put('/settings/email',       [SettingsController::class, 'updateEmail'])->name('settings.email');
+        Route::post('/settings/email/test', [SettingsController::class, 'testMail'])->name('settings.email.test');
 
         // Roles & Permissions (owner only — enforced in controller)
         Route::get('/settings/roles',                [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index');

@@ -10,7 +10,7 @@
 
         {{-- Tabs --}}
         <div class="settings-tabs mb-4" role="tablist">
-            @foreach(['general' => 'General', 'booking' => 'Booking', 'gateways' => 'Payments', 'notifications' => 'Notifications', 'security' => 'Security'] as $key => $label)
+            @foreach(['general' => 'General', 'booking' => 'Booking', 'gateways' => 'Payments', 'notifications' => 'Notifications', 'email' => 'Email', 'security' => 'Security'] as $key => $label)
             <button @click="tab = '{{ $key }}'; history.replaceState(null, '', '?tab={{ $key }}')"
                     :class="tab === '{{ $key }}' ? 'active' : ''"
                     class="settings-tab-btn" role="tab" type="button">{{ $label }}</button>
@@ -508,6 +508,14 @@
                                class="form-control">
                         <div class="form-text">Alerts will be sent to this address.</div>
                     </div>
+                    <div class="form-check form-switch mb-4">
+                        <input type="hidden" name="email_enabled" value="0">
+                        <input type="checkbox" name="email_enabled" value="1" id="email_enabled"
+                               class="form-check-input" @checked($ns['email_enabled'] ?? true)>
+                        <label class="form-check-label" for="email_enabled">
+                            Send email notifications
+                        </label>
+                    </div>
                     <div class="set-subhead">Notify me when</div>
                     <div class="d-flex flex-column gap-2 mb-4">
                         @foreach(['notify_new_booking' => 'New booking created', 'notify_cancellation' => 'Booking cancelled', 'notify_low_stock' => 'Low stock alert', 'notify_membership_expiry' => 'Membership expiring'] as $key => $label)
@@ -528,6 +536,220 @@
             </div>
         </div>
 
+        {{-- Email / SMTP --}}
+        <div x-show="tab === 'email'" x-cloak>
+            @php
+                $mailCfg     = $tenant->mail_credentials ?? [];
+                $mailFlags   = $settings['mail'] ?? [];
+                $isOwner     = auth()->user()->isBusinessOwner() || auth()->user()->isSuperAdmin();
+                $hasOwnSmtp  = !empty($mailCfg['host']);
+                $requireSmtp = (bool) ($mailFlags['require_smtp'] ?? false);
+            @endphp
+
+            @if($requireSmtp && !$hasOwnSmtp)
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+                <i class="bi bi-exclamation-triangle"></i>
+                <div>You asked to require your own SMTP, but none is configured — email is
+                using the platform mailer (or not sending). Add your SMTP details below.</div>
+            </div>
+            @endif
+
+            {{-- Beginner-friendly setup guide (collapsible) --}}
+            <div class="card mb-4 smtp-guide" x-data="{ help: false }">
+                <button type="button" class="smtp-guide-toggle" @click="help = !help" :aria-expanded="help">
+                    <span class="set-head-icon" style="--sh:#0ea5e9"><i class="bi bi-info-circle"></i></span>
+                    <div class="flex-grow-1 text-start">
+                        <h6 class="mb-0 fw-semibold">New to this? How to set up email (SMTP)</h6>
+                        <small class="text-muted">A plain-English, step-by-step guide — no jargon.</small>
+                    </div>
+                    <i class="bi" :class="help ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                </button>
+
+                <div class="card-body border-top" x-show="help" x-cloak>
+                    <p class="text-muted">
+                        “SMTP” is just the way an app sends email through your email account.
+                        To use your own address (e.g. <em>no-reply@yourclub.com</em>), tell us how to
+                        log in to your email provider. Pick your provider below and copy the settings.
+                    </p>
+
+                    <div class="smtp-steps">
+                        <div class="smtp-step">
+                            <span class="smtp-step-num">1</span>
+                            <div>
+                                <div class="fw-semibold">Find your provider's settings</div>
+                                <small class="text-muted">Use the matching row below. The username is almost always your full email address.</small>
+                            </div>
+                        </div>
+                        <div class="smtp-step">
+                            <span class="smtp-step-num">2</span>
+                            <div>
+                                <div class="fw-semibold">Use an “App Password” (Gmail / Outlook / Yahoo)</div>
+                                <small class="text-muted">
+                                    These providers block your normal login password for apps. Turn on
+                                    2-step verification, then generate an <strong>App Password</strong> and paste
+                                    THAT into the Password field below — not your everyday password.
+                                </small>
+                            </div>
+                        </div>
+                        <div class="smtp-step">
+                            <span class="smtp-step-num">3</span>
+                            <div>
+                                <div class="fw-semibold">Fill in the form &amp; save</div>
+                                <small class="text-muted">Enter Host, Port, Encryption, Username (your email) and the App Password, set the From address, then click <strong>Save Email Settings</strong>.</small>
+                            </div>
+                        </div>
+                        <div class="smtp-step">
+                            <span class="smtp-step-num">4</span>
+                            <div>
+                                <div class="fw-semibold">Click “Send test”</div>
+                                <small class="text-muted">If the test email lands in your inbox, you're done. If it fails, the error message tells you what to fix (usually the password).</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm align-middle smtp-provider-table mb-2">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th><th>Host</th><th>Port</th><th>Encryption</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-semibold">Gmail / Google Workspace</td>
+                                    <td><code>smtp.gmail.com</code></td><td>587</td><td>TLS</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold">Outlook / Microsoft 365</td>
+                                    <td><code>smtp.office365.com</code></td><td>587</td><td>TLS</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold">Yahoo Mail</td>
+                                    <td><code>smtp.mail.yahoo.com</code></td><td>465</td><td>SSL</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold">Zoho Mail</td>
+                                    <td><code>smtp.zoho.com</code></td><td>587</td><td>TLS</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold">Other / web host</td>
+                                    <td colspan="3" class="text-muted">Ask your provider for “SMTP host, port, and encryption”.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-info d-flex gap-2 mb-0">
+                        <i class="bi bi-lightbulb"></i>
+                        <div>
+                            <strong>Where do I get a Gmail App Password?</strong>
+                            In your Google Account → <em>Security</em> → turn on <em>2-Step Verification</em> →
+                            then open <em>App passwords</em>, create one for “Mail”, and copy the 16-character code.
+                        </div>
+                    </div>
+
+                    <p class="text-muted small mt-3 mb-0">
+                        <i class="bi bi-shield-lock me-1"></i>
+                        Your password is encrypted and never shown again — leave the Password field blank
+                        when saving later to keep the one you already entered.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header set-head">
+                    <span class="set-head-icon" style="--sh:#6366f1"><i class="bi bi-envelope-at"></i></span>
+                    <div>
+                        <h6 class="mb-0 fw-semibold">Email Delivery (SMTP)</h6>
+                        <small class="text-muted">Send notifications through your own mail server.</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @unless($isOwner)
+                    <div class="alert alert-secondary mb-0">
+                        Only the business owner can change SMTP credentials.
+                    </div>
+                    @else
+                    <form method="POST" action="{{ route('admin.settings.email') }}">
+                        @csrf @method('PUT')
+
+                        <div class="form-check form-switch mb-4">
+                            <input type="hidden" name="require_smtp" value="0">
+                            <input type="checkbox" name="require_smtp" value="1" id="require_smtp"
+                                   class="form-check-input" @checked($requireSmtp)>
+                            <label class="form-check-label" for="require_smtp">
+                                Require my own SMTP (warn me if mail uses the platform mailer)
+                            </label>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label">SMTP host</label>
+                                <input type="text" name="smtp_host" class="form-control"
+                                       value="{{ $mailCfg['host'] ?? '' }}" placeholder="smtp.gmail.com">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Port</label>
+                                <input type="number" name="smtp_port" class="form-control"
+                                       value="{{ $mailCfg['port'] ?? '' }}" placeholder="587">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Encryption</label>
+                                <select name="smtp_encryption" class="form-select">
+                                    <option value="">None</option>
+                                    <option value="tls" @selected(($mailCfg['encryption'] ?? '') === 'tls')>TLS</option>
+                                    <option value="ssl" @selected(($mailCfg['encryption'] ?? '') === 'ssl')>SSL</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Username</label>
+                                <input type="text" name="smtp_username" autocomplete="off" class="form-control"
+                                       value="{{ $mailCfg['username'] ?? '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Password</label>
+                                <input type="password" name="smtp_password" autocomplete="new-password"
+                                       class="form-control" placeholder="{{ !empty($mailCfg['password']) ? '•••••••• (unchanged)' : '' }}">
+                                <div class="form-text">Leave blank to keep the current password.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">From name</label>
+                                <input type="text" name="smtp_from_name" class="form-control"
+                                       value="{{ $mailCfg['from_name'] ?? $tenant->name }}">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">From address</label>
+                                <input type="email" name="smtp_from_address" class="form-control"
+                                       value="{{ $mailCfg['from_address'] ?? '' }}" placeholder="no-reply@yourclub.com">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <small class="text-muted">Leave host blank to use the platform mailer.</small>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>Save Email Settings
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <form method="POST" action="{{ route('admin.settings.email.test') }}"
+                          class="d-flex align-items-center justify-content-between gap-3">
+                        @csrf
+                        <div>
+                            <div class="fw-semibold">Send a test email</div>
+                            <small class="text-muted">Sends to {{ auth()->user()->email }} using the settings above.</small>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary flex-shrink-0">
+                            <i class="bi bi-send me-1"></i>Send test
+                        </button>
+                    </form>
+                    @endunless
+                </div>
+            </div>
+        </div>
+
         {{-- Security --}}
         <div x-show="tab === 'security'" x-cloak>
             @include('partials.security-card')
@@ -538,6 +760,28 @@
 
 @push('styles')
 <style>
+    /* ── SMTP beginner guide ───────────────────────────────────────────── */
+    .smtp-guide-toggle {
+        display: flex; align-items: center; gap: .75rem; width: 100%;
+        padding: 1rem 1.25rem; background: transparent; border: 0;
+        color: inherit; text-align: left; cursor: pointer;
+    }
+    .smtp-guide-toggle:hover { background: color-mix(in srgb, var(--bs-body-color, #1e293b) 4%, transparent); }
+    .smtp-steps { display: flex; flex-direction: column; gap: .9rem; margin-top: .5rem; }
+    .smtp-step { display: flex; align-items: flex-start; gap: .75rem; }
+    .smtp-step-num {
+        flex-shrink: 0; width: 26px; height: 26px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; font-size: .8rem; font-weight: 700;
+        color: #0ea5e9; background: rgba(14,165,233,.12);
+        box-shadow: inset 0 0 0 1px rgba(14,165,233,.25);
+    }
+    .smtp-provider-table code { font-size: .82rem; }
+    .smtp-provider-table th {
+        font-size: .7rem; text-transform: uppercase; letter-spacing: .05em;
+        color: var(--bs-secondary-color, #9aa3b2); font-weight: 700;
+    }
+
     /* ── Shared settings section chrome ────────────────────────────────── */
     .set-head { display: flex; align-items: center; gap: .75rem; }
     .set-head-icon {

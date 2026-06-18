@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\TenantSetting;
 use App\Models\UserSession;
+use App\Notifications\TestMailNotification;
 use App\Services\FileStorageService;
+use App\Services\TenantMailManager;
 use App\Services\TwoFactor\TotpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Notification;
 
 class SettingsController extends Controller
 {
@@ -157,6 +160,7 @@ class SettingsController extends Controller
         $tenant = $this->authTenant();
 
         $data = $request->validate([
+            'email_enabled'            => 'boolean',
             'notify_new_booking'       => 'boolean',
             'notify_cancellation'      => 'boolean',
             'notify_low_stock'         => 'boolean',
@@ -165,7 +169,9 @@ class SettingsController extends Controller
         ]);
 
         $settings = $tenant->settings ?? [];
-        $tenant->update(['settings' => array_merge($settings, ['notifications' => $data])]);
+        // Preserve any keys already under notifications (e.g. future additions).
+        $notifications = array_merge($settings['notifications'] ?? [], $data);
+        $tenant->update(['settings' => array_merge($settings, ['notifications' => $notifications])]);
 
         return back()->with('success', 'Notification settings updated.');
     }
@@ -234,5 +240,75 @@ class SettingsController extends Controller
         $tenant->ensureWebhookToken();
 
         return back()->with('success', 'Payment gateway credentials updated.');
+    }
+
+    /**
+     * Save this tenant's own SMTP server + the "require my own SMTP" toggle.
+     * Owner-only (mirrors gateway credentials). An empty password preserves the
+     * stored one so the UI can mask the secret.
+     */
+    public function updateEmail(Request $request)
+    {
+        $tenant = $this->authTenant();
+
+        abort_unless($this->authUser()->isBusinessOwner() || $this->authUser()->isSuperAdmin(), 403,
+            'Only the business owner can change SMTP credentials.');
+
+        $data = $request->validate([
+            'require_smtp'      => 'boolean',
+            'smtp_host'         => 'nullable|string|max:255',
+            'smtp_port'         => 'nullable|integer|min:1|max:65535',
+            'smtp_encryption'   => 'nullable|in:tls,ssl',
+            'smtp_username'     => 'nullable|string|max:255',
+            'smtp_password'     => 'nullable|string|max:255',
+            'smtp_from_address' => 'nullable|email|max:255',
+            'smtp_from_name'    => 'nullable|string|max:255',
+        ]);
+
+        // Persist the strict toggle under settings.mail.
+        $settings = $tenant->settings ?? [];
+        $settings['mail'] = array_merge($settings['mail'] ?? [], [
+            'require_smtp' => (bool) ($data['require_smtp'] ?? false),
+        ]);
+        $tenant->settings = $settings;
+
+        // Merge credentials; empty password keeps the existing value.
+        $existing = $tenant->mail_credentials ?? [];
+        $creds = array_merge($existing, [
+            'host'         => $data['smtp_host'] ?? null,
+            'port'         => $data['smtp_port'] ?? null,
+            'encryption'   => $data['smtp_encryption'] ?? null,
+            'username'     => $data['smtp_username'] ?? null,
+            'from_address' => $data['smtp_from_address'] ?? null,
+            'from_name'    => $data['smtp_from_name'] ?? null,
+        ]);
+        if (!empty($data['smtp_password'])) {
+            $creds['password'] = $data['smtp_password'];
+        }
+        // If the host was cleared, treat the whole config as removed.
+        $tenant->mail_credentials = empty($creds['host']) ? null : $creds;
+
+        $tenant->save();
+
+        return back()->with('success', 'Email settings updated.');
+    }
+
+    /** Owner-only: send a test email through the tenant's resolved mailer. */
+    public function testMail(Request $request, TenantMailManager $mail)
+    {
+        $tenant = $this->authTenant();
+        $user   = $this->authUser();
+
+        abort_unless($user->isBusinessOwner() || $user->isSuperAdmin(), 403);
+
+        try {
+            $mail->apply($tenant);
+            Notification::route('mail', $user->email)
+                ->notify(new TestMailNotification($tenant->name));
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Test email failed: ' . $e->getMessage());
+        }
+
+        return back()->with('success', "Test email sent to {$user->email}. Check your inbox.");
     }
 }

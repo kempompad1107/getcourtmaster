@@ -17,7 +17,7 @@ class Tenant extends Model
         'city', 'state', 'country', 'timezone', 'currency', 'logo',
         'plan', 'status', 'trial_ends_at', 'plan_expires_at',
         'settings', 'features', 'stripe_customer_id', 'subscription_id', 'commission_rate',
-        'payment_credentials', 'webhook_token',
+        'payment_credentials', 'webhook_token', 'mail_credentials',
     ];
 
     protected $casts = [
@@ -28,9 +28,10 @@ class Tenant extends Model
         'commission_rate' => 'decimal:2',
         // Whole JSON blob is encrypted at rest. Sensitive secret keys live inside.
         'payment_credentials' => 'encrypted:array',
+        'mail_credentials' => 'encrypted:array',
     ];
 
-    protected $hidden = ['payment_credentials'];
+    protected $hidden = ['payment_credentials', 'mail_credentials'];
 
     public function users(): HasMany
     {
@@ -118,6 +119,42 @@ class Tenant extends Model
     {
         $email = data_get($this->settings, 'notifications.notification_email');
         return is_string($email) && $email !== '' ? $email : null;
+    }
+
+    /** Whether this tenant wants business email at all (default ON). */
+    public function mailEnabled(): bool
+    {
+        return (bool) data_get($this->settings, 'notifications.email_enabled', true);
+    }
+
+    /** Whether the tenant insists on their own SMTP (warn if falling back). */
+    public function requireSmtp(): bool
+    {
+        return (bool) data_get($this->settings, 'mail.require_smtp', false);
+    }
+
+    /**
+     * Decrypted SMTP credentials, but only when complete enough to connect.
+     * Returns null if any required field is missing (host/port/username/password).
+     */
+    public function smtpCredentials(): ?array
+    {
+        $c = $this->mail_credentials;
+        if (!is_array($c)) {
+            return null;
+        }
+        foreach (['host', 'port', 'username', 'password'] as $required) {
+            if (empty($c[$required])) {
+                return null;
+            }
+        }
+        return $c;
+    }
+
+    /** True when this tenant will send through its OWN SMTP this request. */
+    public function usesOwnSmtp(): bool
+    {
+        return $this->mailEnabled() && $this->smtpCredentials() !== null;
     }
 
     public function scopeActive($query)
