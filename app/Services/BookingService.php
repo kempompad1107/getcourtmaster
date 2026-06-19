@@ -1058,6 +1058,31 @@ class BookingService
         $nowStr = $start->format('H:i:s');
         $endStr = $requestedEnd->format('H:i:s');
 
+        // Operating hours check — walk-ins must also fall within the branch window.
+        [$open, $close, $isOpenDay] = $this->availability->operatingWindowPublic($court, $today, $tz);
+        $toMin = fn(string $hm) => (int) explode(':', $hm)[0] * 60 + (int) explode(':', $hm)[1];
+        $crossesMidnight = $requestedEnd->format('H:i:s') < $start->format('H:i:s');
+        $outsideHours = $toMin($start->format('H:i')) < $toMin($open)
+            || $toMin($start->format('H:i')) >= $toMin($close)
+            || $toMin($requestedEnd->format('H:i')) > $toMin($close)
+            || $crossesMidnight;
+        if (! $isOpenDay || $outsideHours) {
+            $fmt = fn(string $hm) => \Carbon\Carbon::createFromFormat('H:i', substr($hm, 0, 5))->format('g:i A');
+            $message = ! $isOpenDay
+                ? 'The venue is closed today.'
+                : 'Selected time is outside operating hours (' . $fmt($open) . ' – ' . $fmt($close) . ').';
+            return [
+                'start'           => $start->format('H:i'),
+                'requested_end'   => $requestedEnd->format('H:i'),
+                'duration_min'    => $durationMinutes,
+                'capped_end'      => $start->format('H:i'),
+                'capped_minutes'  => 0,
+                'conflicts'       => [],
+                'current_booking' => null,
+                'outside_hours'   => $message,
+            ];
+        }
+
         // All bookings on this court today whose [start, end] overlaps [now, requestedEnd].
         // Includes currently-active bookings (start ≤ now) so we don't silently miss
         // a session already in progress.

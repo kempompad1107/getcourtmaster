@@ -135,14 +135,17 @@ class AvailabilityService
             $errors['court_status'] = 'This court is currently ' . $court->status . ' and cannot be booked.';
         }
 
-        if ($type !== 'walk_in') {
-            [$open, $close, $isOpenDay] = $this->operatingWindow($court, $date, $tz);
-            if (! $isOpenDay) {
-                $errors['booking_date'] = 'The venue is closed on this day.';
-            } elseif ($startC->format('H:i') < $open || $endC->format('H:i') > $close) {
-                $errors['time_slot'] = 'Selected time is outside operating hours (' . $this->label($open) . ' – ' . $this->label($close) . ').';
-            }
+        [$open, $close, $isOpenDay] = $this->operatingWindow($court, $date, $tz);
+        if (! $isOpenDay) {
+            $errors['booking_date'] = 'The venue is closed on this day.';
+        } elseif ($this->toMinutes($startC->format('H:i')) < $this->toMinutes($open)
+               || $this->toMinutes($startC->format('H:i')) >= $this->toMinutes($close)
+               || $this->toMinutes($endC->format('H:i')) > $this->toMinutes($close)
+               || $endC->format('H:i:s') < $startC->format('H:i:s')) {
+            $errors['time_slot'] = 'Selected time is outside operating hours (' . $this->label($open) . ' – ' . $this->label($close) . ').';
+        }
 
+        if ($type !== 'walk_in') {
             $duration = $endC->gt($startC) ? (int) $startC->diffInMinutes($endC) : 0;
             $min = (int) ($court->min_booking_minutes ?: 0);
             $max = (int) ($court->max_booking_minutes ?: 0);
@@ -240,6 +243,11 @@ class AvailabilityService
     }
 
     /** Branch operating window for the weekday of $date: [open, close, isOpenDay]. */
+    public function operatingWindowPublic(Court $court, string $date, string $tz): array
+    {
+        return $this->operatingWindow($court, $date, $tz);
+    }
+
     private function operatingWindow(Court $court, string $date, string $tz): array
     {
         $dayOfWeek  = strtolower(Carbon::parse($date, $tz)->format('l'));

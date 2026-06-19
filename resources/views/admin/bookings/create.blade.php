@@ -186,8 +186,16 @@
                     </div>
                 </template>
 
+                {{-- Outside operating hours --}}
+                <template x-if="walkInPreview && walkInPreview.outside_hours">
+                    <div class="alert alert-danger py-2 small mb-0">
+                        <i class="bi bi-clock-history me-1"></i>
+                        <span x-text="walkInPreview.outside_hours"></span>
+                    </div>
+                </template>
+
                 {{-- Free — no conflicts --}}
-                <template x-if="walkInPreview && !walkInPreview.current_booking && walkInPreview.conflicts.length === 0">
+                <template x-if="walkInPreview && !walkInPreview.current_booking && !walkInPreview.outside_hours && walkInPreview.conflicts.length === 0">
                     <div class="alert alert-success py-2 small mb-0">
                         <i class="bi bi-check-circle me-1"></i>
                         No conflicts. Will run
@@ -529,6 +537,8 @@ function bookingForm() {
             if (this.submitting) return true;
             if (this.isWalkIn) {
                 if (!this.courtId) return true;
+                // Outside operating hours — can't create a walk-in.
+                if (this.walkInPreview?.outside_hours) return true;
                 // Court currently busy — can't start a walk-in at all.
                 if (this.walkInPreview?.current_booking) return true;
                 // Conflicts exist — staff must pick cap/bump.
