@@ -108,23 +108,86 @@
 
             {{-- Step 2: Payment --}}
             <div x-show="step === 2" x-cloak>
-                {{-- Payment method picker — required. Court Credit is gated to members
-                     with active credits; Wallet is gated to customers whose balance
-                     covers the slot. Cash drops the booking into "pending approval". --}}
+                {{-- Hidden fields for online gateway selection --}}
+                <input type="hidden" name="gateway" x-model="gatewayName">
+                <input type="hidden" name="gateway_method" x-model="gatewayMethod">
+
+                {{-- Payment method picker --}}
                 <div class="mb-3" x-show="selectedSlot" x-cloak>
                     <label class="form-label fw-medium">Payment method <span class="text-danger">*</span></label>
+
+                    @if($requirePayment && empty($availableGateways))
+                        <div class="alert alert-warning small mb-3">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            This venue requires payment before a booking is confirmed. Cash bookings will remain <strong>pending</strong> until you pay at the venue.
+                        </div>
+                    @endif
+
                     <div class="row g-2">
+                        {{-- Online payment via gateway (shown first when available) --}}
+                        @php
+                            $pmLabels = ['gcash' => 'GCash', 'paymaya' => 'Maya / PayMaya', 'card' => 'Credit / Debit Card', 'qrph' => 'QR Ph'];
+                        @endphp
+                        @if(!empty($availableGateways))
+                            @if(in_array('paymongo', $availableGateways))
+                                @foreach($paymongoMethods as $pm)
+                                <div class="col-md-4">
+                                    <label class="card border-2 p-3 h-100 mb-0"
+                                           :class="paymentMethod === 'online' && gatewayName === 'paymongo' && gatewayMethod === '{{ $pm }}' ? 'border-success' : 'border-light-subtle'"
+                                           style="cursor:pointer"
+                                           @click="paymentMethod = 'online'; gatewayName = 'paymongo'; gatewayMethod = '{{ $pm }}'">
+                                        <input type="radio" name="payment_method" value="online"
+                                               class="form-check-input mb-2"
+                                               :checked="paymentMethod === 'online' && gatewayName === 'paymongo' && gatewayMethod === '{{ $pm }}'">
+                                        <div class="fw-semibold small">
+                                            <i class="bi bi-phone me-1"></i>{{ $pmLabels[$pm] ?? $pm }}
+                                            @if($requirePayment)<span class="badge bg-success ms-1 fw-normal" style="font-size:10px">Recommended</span>@endif
+                                        </div>
+                                        <div class="small text-muted">Pay online — booking confirmed instantly.</div>
+                                        <div x-show="paymentMethod === 'online' && gatewayName === 'paymongo' && gatewayMethod === '{{ $pm }}'"
+                                             x-cloak class="small text-success mt-1">
+                                            You'll be redirected to complete payment.
+                                        </div>
+                                    </label>
+                                </div>
+                                @endforeach
+                            @endif
+                            @if(in_array('stripe', $availableGateways))
+                            <div class="col-md-4">
+                                <label class="card border-2 p-3 h-100 mb-0"
+                                       :class="paymentMethod === 'online' && gatewayName === 'stripe' ? 'border-success' : 'border-light-subtle'"
+                                       style="cursor:pointer"
+                                       @click="paymentMethod = 'online'; gatewayName = 'stripe'; gatewayMethod = ''">
+                                    <input type="radio" name="payment_method" value="online"
+                                           class="form-check-input mb-2"
+                                           :checked="paymentMethod === 'online' && gatewayName === 'stripe'">
+                                    <div class="fw-semibold small">
+                                        <i class="bi bi-credit-card me-1"></i>International Card (Stripe)
+                                        @if($requirePayment)<span class="badge bg-success ms-1 fw-normal" style="font-size:10px">Recommended</span>@endif
+                                    </div>
+                                    <div class="small text-muted">Pay online — booking confirmed instantly.</div>
+                                    <div x-show="paymentMethod === 'online' && gatewayName === 'stripe'"
+                                         x-cloak class="small text-success mt-1">
+                                        You'll be redirected to complete payment.
+                                    </div>
+                                </label>
+                            </div>
+                            @endif
+                        @endif
+
+                        {{-- Wallet --}}
                         <div class="col-md-4">
                             <label class="card border-2 p-3 h-100 mb-0"
                                    :class="paymentMethod === 'wallet' ? 'border-primary' : 'border-light-subtle'"
-                                   style="cursor:pointer">
+                                   style="cursor:pointer"
+                                   @click="paymentMethod = 'wallet'; gatewayName = ''; gatewayMethod = ''">
                                 <input type="radio" name="payment_method" value="wallet"
                                        x-model="paymentMethod" class="form-check-input mb-2" required>
                                 <div class="fw-semibold small"><i class="bi bi-wallet2 me-1"></i>Wallet Balance</div>
                                 <div class="small text-muted">Available: <strong>₱{{ number_format($walletBalance, 2) }}</strong></div>
                                 <div x-show="paymentMethod === 'wallet' && !walletCovers" x-cloak
                                      class="small text-danger mt-1">
-                                    Insufficient balance. Please contact venue staff to top up, or pick another method.
+                                    Insufficient balance. <a href="{{ route('customer.wallet.index') }}">Top up your wallet</a> or pick another method.
                                 </div>
                                 <div x-show="paymentMethod === 'wallet' && walletCovers" x-cloak
                                      class="small text-success mt-1">
@@ -132,6 +195,8 @@
                                 </div>
                             </label>
                         </div>
+
+                        {{-- Court Credit --}}
                         <div class="col-md-4">
                             <label class="card border-2 p-3 h-100 mb-0"
                                    :class="paymentMethod === 'court_credit' ? 'border-primary' : 'border-light-subtle'"
@@ -152,10 +217,14 @@
                                      x-text="creditFullyCovers ? 'Fully covered. Booking is confirmed instantly.' : 'Your credit does not fully cover this slot.'"></div>
                             </label>
                         </div>
+
+                        {{-- Cash (hidden when require_payment is on and gateways are available) --}}
+                        @if(!($requirePayment && !empty($availableGateways)))
                         <div class="col-md-4">
                             <label class="card border-2 p-3 h-100 mb-0"
                                    :class="paymentMethod === 'cash' ? 'border-primary' : 'border-light-subtle'"
-                                   style="cursor:pointer">
+                                   style="cursor:pointer"
+                                   @click="paymentMethod = 'cash'; gatewayName = ''; gatewayMethod = ''">
                                 <input type="radio" name="payment_method" value="cash"
                                        x-model="paymentMethod" class="form-check-input mb-2">
                                 <div class="fw-semibold small"><i class="bi bi-cash me-1"></i>Cash</div>
@@ -165,11 +234,15 @@
                                 </div>
                             </label>
                         </div>
+                        @endif
                     </div>
+
+                    @if(empty($availableGateways))
                     <div class="alert alert-info small mt-3 mb-0">
                         <i class="bi bi-info-circle me-1"></i>
                         Wallet top-up is handled by venue staff. Please contact staff or owner to add balance.
                     </div>
+                    @endif
                 </div>
 
                 {{-- Promo code (hidden when using credit) --}}
@@ -229,7 +302,9 @@
                 </button>
                 <button type="submit" class="btn btn-primary ms-auto" x-show="step === 3" :disabled="submitDisabled">
                     <span x-show="submitting" x-cloak class="spinner-border spinner-border-sm me-1"></span>
-                    <i class="bi bi-calendar-check me-1" x-show="!submitting"></i>Confirm Booking
+                    <i class="bi bi-calendar-check me-1" x-show="!submitting && paymentMethod !== 'online'"></i>
+                    <i class="bi bi-arrow-right-circle me-1" x-show="!submitting && paymentMethod === 'online'" x-cloak></i>
+                    <span x-text="paymentMethod === 'online' ? 'Continue to Payment' : 'Confirm Booking'"></span>
                 </button>
             </div>
         </form>
@@ -251,6 +326,8 @@ function bookingForm() {
         availableCredits: {{ $availableCredits }},
         walletBalance:    {{ $walletBalance }},
         paymentMethod:    '',
+        gatewayName:      '',
+        gatewayMethod:    '',
 
         promoCode: '', promoMessage: '', discount: 0,
         submitting: false,
@@ -260,6 +337,7 @@ function bookingForm() {
             if (!this.paymentMethod) return false;
             if (this.paymentMethod === 'wallet'       && !this.walletCovers)      return false;
             if (this.paymentMethod === 'court_credit' && !this.creditFullyCovers) return false;
+            if (this.paymentMethod === 'online'       && !this.gatewayName)       return false;
             return true;
         },
         next() {
@@ -316,6 +394,7 @@ function bookingForm() {
             if (this.submitting || !this.selectedSlot || !this.paymentMethod) return true;
             if (this.paymentMethod === 'wallet'       && !this.walletCovers)      return true;
             if (this.paymentMethod === 'court_credit' && !this.creditFullyCovers) return true;
+            if (this.paymentMethod === 'online'       && !this.gatewayName)       return true;
             return false;
         },
 

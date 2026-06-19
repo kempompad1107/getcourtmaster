@@ -74,8 +74,14 @@ class PaymentService
                 $payable->increment('paid_amount', $payment->amount);
 
                 if (method_exists($payable, 'getRemainingBalance') && $payable->getRemainingBalance() <= 0) {
-                    if (isset($payable->status)) {
+                    if (isset($payable->status) && $payable->status !== 'confirmed') {
                         $payable->update(['status' => 'confirmed']);
+                        // Fire BookingConfirmed so the customer gets their confirmation
+                        // notification regardless of whether the webhook or the return
+                        // redirect was the first to mark this payment paid.
+                        if ($payable instanceof \App\Models\Booking) {
+                            event(new \App\Events\BookingConfirmed($payable->fresh()));
+                        }
                     }
                 }
             }

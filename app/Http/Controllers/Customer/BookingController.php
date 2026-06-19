@@ -4,14 +4,18 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Court;
+use App\Models\Payment;
 use App\Models\Promotion;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\AvailabilityService;
 use App\Services\BookingService;
+use App\Services\PaymentService;
+use App\Services\Payments\GatewayManager;
 use App\Services\PricingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class BookingController extends Controller
@@ -29,26 +33,41 @@ class BookingController extends Controller
         return view('customer.bookings.index', ['bookings' => $list]);
     }
 
-    public function create(Request $request): View
+    public function create(Request $request, GatewayManager $gateways): View
     {
+        $user   = $request->user();
+        $tenant = $user->tenant;
+
         $courts = Court::query()
-            ->where('tenant_id', $request->user()->tenant_id)
+            ->where('tenant_id', $user->tenant_id)
             ->where('status', '!=', 'closed')
             ->where('is_active', true)
             ->orderBy('name')
             ->get(['id', 'name', 'type', 'status', 'base_hourly_rate', 'branch_id', 'min_booking_minutes', 'max_booking_minutes']);
 
-        return view('customer.bookings.create', compact('courts'));
+        $availableGateways = $tenant ? $gateways->availableForTenant($tenant) : [];
+        $paymongoMethods   = [];
+        if (in_array('paymongo', $availableGateways)) {
+            $paymongoMethods = $tenant->payment_credentials['paymongo']['methods']
+                ?? ['gcash', 'paymaya', 'card', 'qrph'];
+        }
+        $requirePayment = (bool) ($tenant?->getSetting('require_payment', false));
+
+        return view('customer.bookings.create', compact(
+            'courts', 'availableGateways', 'paymongoMethods', 'requirePayment'
+        ));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, PaymentService $payments, GatewayManager $gateways): RedirectResponse
     {
         $data = $request->validate([
             'court_id'       => ['required', 'exists:courts,id'],
             'booking_date'   => ['required', 'date', 'after_or_equal:today'],
             'start_time'     => ['required', 'date_format:H:i'],
             'end_time'       => ['required', 'date_format:H:i', 'after:start_time'],
-            'payment_method' => ['required', 'in:wallet,court_credit,cash'],
+            'payment_method' => ['required', 'in:wallet,court_credit,cash,online'],
+            'gateway'        => ['nullable', 'string', 'in:paymongo,stripe'],
+            'gateway_method' => ['nullable', 'string', 'in:gcash,paymaya,card,qrph'],
             'promo_code'     => ['nullable', 'string', 'max:50'],
             'notes'          => ['nullable', 'string', 'max:500'],
         ]);
@@ -58,10 +77,72 @@ class BookingController extends Controller
             ->where('tenant_id', $request->user()->tenant_id)
             ->firstOrFail();
 
+        // Validate the chosen gateway is actually configured for this tenant.
+        if ($data['payment_method'] === 'online') {
+            $gateway = $data['gateway'] ?? null;
+            if (!$gateway || !$request->user()->tenant->hasGatewayConfigured($gateway)) {
+                return back()->with('error', 'The selected payment gateway is not available. Please choose another payment method.');
+            }
+            if ($gateway === 'paymongo' && !empty($data['gateway_method'])) {
+                $enabledMethods = $request->user()->tenant->payment_credentials['paymongo']['methods'] ?? [];
+                if (!in_array($data['gateway_method'], $enabledMethods, true)) {
+                    return back()->with('error', 'That payment method is not available at this venue.');
+                }
+            }
+        }
+
         $booking = $this->service->create(
             $data + ['type' => 'online'],
             $request->user()
         );
+
+        // Online payment: create a pending Payment record and redirect to the gateway.
+        if ($data['payment_method'] === 'online') {
+            $gateway       = $data['gateway'];
+            $gatewayMethod = $data['gateway_method'] ?? null;
+            $tenant        = $request->user()->tenant;
+
+            $payment = Payment::create([
+                'tenant_id'    => $booking->tenant_id,
+                'customer_id'  => $booking->customer_id,
+                'payable_type' => \App\Models\Booking::class,
+                'payable_id'   => $booking->id,
+                'payment_number' => 'PAY-' . strtoupper((string) Str::ulid()),
+                'amount'       => $booking->total_amount,
+                'currency'     => $tenant->currency ?: 'PHP',
+                'method'       => 'online',
+                'status'       => 'pending',
+            ]);
+
+            $options = [
+                'description' => "Booking #{$booking->booking_number} — {$tenant->name}",
+                'line_name'   => "Court booking #{$booking->booking_number}",
+                'success_url' => route('customer.bookings.payment.return', ['booking' => $booking->id, 'status' => 'success']),
+                'cancel_url'  => route('customer.bookings.payment.return', ['booking' => $booking->id, 'status' => 'cancel']),
+                'reference'   => (string) $payment->id,
+            ];
+
+            if ($gateway === 'paymongo') {
+                $options['methods'] = $gatewayMethod
+                    ? [$gatewayMethod]
+                    : ($tenant->payment_credentials['paymongo']['methods'] ?? null);
+            }
+
+            try {
+                $result = $payments->processOnline($payment, $gateway, $options);
+            } catch (\Throwable $e) {
+                $payment->update(['status' => 'failed', 'notes' => $e->getMessage()]);
+                $this->service->cancel($booking, 'Payment could not be initiated.');
+                return back()->with('error', 'Could not start checkout: ' . $e->getMessage());
+            }
+
+            if (empty($result['checkout_url'])) {
+                $this->service->cancel($booking, 'Gateway did not return a checkout URL.');
+                return back()->with('error', 'Gateway did not return a checkout URL. Please try again.');
+            }
+
+            return redirect()->away($result['checkout_url']);
+        }
 
         $flash = match ($booking->payment_method) {
             'wallet'       => 'Paid from wallet. Booking #' . $booking->booking_number . ' is confirmed.',
@@ -71,6 +152,39 @@ class BookingController extends Controller
         };
 
         return redirect()->route('customer.bookings.show', $booking)->with('success', $flash);
+    }
+
+    public function paymentReturn(Request $request, $booking, PaymentService $payments): RedirectResponse
+    {
+        $booking = $this->bookings->findOrFail($booking, ['payments']);
+        abort_unless($booking->customer_id === $request->user()->id, 403);
+
+        $status  = $request->string('status')->toString();
+        $payment = $booking->payments()->where('status', 'pending')->latest()->first();
+
+        // On success redirect, ask the gateway directly so the booking confirms
+        // instantly — independent of whether the webhook has already fired.
+        if ($status === 'success' && $payment && !$payment->isPaid() && !$payment->isFailed()) {
+            $payment = $payments->reconcile($payment);
+        }
+
+        if ($payment?->isPaid()) {
+            $this->service->confirm($booking);
+            return redirect()->route('customer.bookings.show', $booking)
+                ->with('success', 'Payment successful! Booking #' . $booking->booking_number . ' is confirmed.');
+        }
+
+        if ($status === 'cancel') {
+            if ($payment) {
+                $payment->update(['status' => 'failed']);
+            }
+            $this->service->cancel($booking, 'Payment cancelled by customer.');
+            return redirect()->route('customer.bookings.index')
+                ->with('warning', 'Booking cancelled — payment was not completed.');
+        }
+
+        return redirect()->route('customer.bookings.show', $booking)
+            ->with('info', 'Payment is being processed. Your booking will be confirmed shortly.');
     }
 
     public function show(Request $request, $booking): View

@@ -47,7 +47,7 @@ class Booking extends Model
         'denied_at' => 'datetime',
     ];
 
-    public const PAYMENT_METHODS = ['wallet', 'court_credit', 'cash'];
+    public const PAYMENT_METHODS = ['wallet', 'court_credit', 'cash', 'online'];
 
     public function getActivitylogOptions(): LogOptions
     {

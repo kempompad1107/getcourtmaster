@@ -306,6 +306,9 @@ class BookingService
             //
             // Cash (non-walk-in) bookings: customer-initiated → pending owner/staff approval.
             //                              staff-initiated    → no approval needed (admin flow handles confirm).
+            //
+            // Online (gateway) bookings: controller redirects to gateway checkout after
+            // create(); payment and confirmation happen via the return/webhook path.
             $shouldAutoSettle = $paymentMethod === 'wallet'
                 || ($paymentMethod === 'court_credit' && $totalAmount <= 0)
                 || ($paymentMethod === 'cash' && $isWalkIn && $totalAmount > 0);
@@ -679,7 +682,7 @@ class BookingService
             return;
         }
 
-        // For wallet/cash refunds, the policy gives a peso amount unless
+        // For wallet/cash/online refunds, the policy gives a peso amount unless
         // an admin override is in play (in which case refund the whole thing).
         if ($booking->paid_amount <= 0) {
             return;
@@ -688,6 +691,20 @@ class BookingService
             ? (float) $booking->paid_amount
             : $this->computeRefundAmount($booking);
         if ($amount <= 0) {
+            return;
+        }
+
+        // Online (gateway) payments refund to the customer's wallet — we don't
+        // trigger a reverse charge through the gateway, so the money lands
+        // immediately and the customer can use it for their next booking.
+        if ($method === 'online') {
+            $this->walletService->credit(
+                $booking->customer,
+                $amount,
+                'Refund for booking #' . $booking->booking_number,
+                $booking
+            );
+            $this->markPaymentsRefunded($booking, $amount);
             return;
         }
 

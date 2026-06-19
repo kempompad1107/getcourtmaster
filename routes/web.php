@@ -447,6 +447,7 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::get('/bookings/create',                  [\App\Http\Controllers\Customer\BookingController::class, 'create'])->name('bookings.create');
         Route::post('/bookings',                        [\App\Http\Controllers\Customer\BookingController::class, 'store'])->middleware('throttle:booking-create')->name('bookings.store');
         Route::get('/bookings/{booking}',               [\App\Http\Controllers\Customer\BookingController::class, 'show'])->name('bookings.show');
+        Route::get('/bookings/{booking}/payment/return', [\App\Http\Controllers\Customer\BookingController::class, 'paymentReturn'])->name('bookings.payment.return');
         Route::post('/bookings/{booking}/cancel',       [\App\Http\Controllers\Customer\BookingController::class, 'cancel'])->middleware('throttle:booking-create')->name('bookings.cancel');
         Route::get('/courts/{court}/availability',      [\App\Http\Controllers\Customer\BookingController::class, 'availability'])->name('courts.availability');
         Route::get('/courts/{court}/timeline',          [\App\Http\Controllers\Customer\BookingController::class, 'timeline'])->name('courts.timeline');
