@@ -11,10 +11,10 @@ class HandleBookingCancellation implements ShouldQueue
 
     public function handle(BookingCancelled $event): void
     {
-        // Free up the court if still marked occupied by this booking
         $booking = $event->booking;
-        $court = $booking->court;
 
+        // Free up the court if still marked occupied by this booking
+        $court = $booking->court;
         if ($court->status === 'reserved' || $court->status === 'occupied') {
             $hasOtherActive = $court->bookings()
                 ->where('id', '!=', $booking->id)
@@ -26,5 +26,6 @@ class HandleBookingCancellation implements ShouldQueue
                 $court->update(['status' => 'available']);
             }
         }
+
     }
 }
