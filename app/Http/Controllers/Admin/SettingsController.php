@@ -36,7 +36,12 @@ class SettingsController extends Controller
                 $secret = $totp->generateSecret();
                 $user->forceFill(['two_factor_secret' => Crypt::encryptString($secret)])->save();
             } else {
-                $secret = Crypt::decryptString($user->two_factor_secret);
+                try {
+                    $secret = Crypt::decryptString($user->two_factor_secret);
+                } catch (\Illuminate\Contracts\Encryption\DecryptException) {
+                    $secret = $totp->generateSecret();
+                    $user->forceFill(['two_factor_secret' => Crypt::encryptString($secret)])->save();
+                }
             }
             $qrUri = $totp->provisioningUri($secret, $user->email, config('app.name', 'CourtMaster'));
         }
