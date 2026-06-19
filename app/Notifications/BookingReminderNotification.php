@@ -31,15 +31,18 @@ class BookingReminderNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        $startTime = \Carbon\Carbon::parse($this->booking->start_time)->format('g:i A');
+        $endTime   = \Carbon\Carbon::parse($this->booking->end_time)->format('g:i A');
+
         return (new MailMessage)
-            ->subject("Reminder: Your court booking is tomorrow")
+            ->subject("Reminder: Your court booking")
             ->greeting("Hi {$notifiable->name}!")
             ->line("This is a reminder that you have an upcoming court booking.")
             ->line("**Court:** {$this->booking->court->name}")
             ->line("**Date:** {$this->booking->booking_date->format('l, F j, Y')}")
-            ->line("**Time:** {$this->booking->start_time} – {$this->booking->end_time}")
+            ->line("**Time:** {$startTime} – {$endTime}")
             ->line("**Booking #:** {$this->booking->booking_number}")
-            ->action('View Booking', url("/admin/bookings/{$this->booking->id}"))
+            ->action('View Booking', url("/app/bookings/{$this->booking->id}"))
             ->line('Please arrive at least 5 minutes before your session starts. See you on the court!');
     }
 
