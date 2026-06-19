@@ -426,24 +426,6 @@ class BookingService
             return;
         }
 
-        $recipients = User::where('tenant_id', $tenantId)
-            ->whereIn('user_type', ['business_owner', 'staff'])
-            ->where('is_active', true)
-            ->get();
-
-        foreach ($recipients as $r) {
-            try {
-                $r->notify($notification);
-            } catch (\Throwable $e) {
-                // A broken SMTP server must never break the operation that
-                // triggered the alert (e.g. a cancellation). Log and move on.
-                Log::warning('owner/staff notification failed', [
-                    'user_id' => $r->id,
-                    'error'   => $e->getMessage(),
-                ]);
-            }
-        }
-
         if ($email = $tenant?->notificationEmail()) {
             try {
                 // AnonymousNotifiable has no notifications() relationship, so channelsForUser()
