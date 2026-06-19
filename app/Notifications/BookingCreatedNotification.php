@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Booking;
 use App\Notifications\Concerns\HonorsUserChannelPreferences;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -32,7 +33,7 @@ class BookingCreatedNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Booking Received - ' . $this->booking->booking_number)
-            ->greeting('Hello ' . $notifiable->name . '!')
+            ->greeting('Hello ' . ($notifiable instanceof AnonymousNotifiable ? 'there' : $notifiable->name) . '!')
             ->line('Your booking has been received and is pending confirmation.')
             ->line('Booking: **' . $this->booking->booking_number . '**')
             ->line('Court: **' . $this->booking->court->name . '**')
