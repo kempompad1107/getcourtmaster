@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\Tenant;
-use App\Models\User;
 use App\Notifications\LowStockNotification;
 use App\Services\InventoryService;
 use Illuminate\Bus\Queueable;
@@ -26,15 +25,6 @@ class CheckLowStock implements ShouldQueue
 
             $products = $inventory->lowStockForTenant($tenant->id);
             if ($products->isEmpty()) return;
-
-            $owners = User::where('tenant_id', $tenant->id)
-                ->whereIn('user_type', ['business_owner', 'staff'])
-                ->where('is_active', true)
-                ->get();
-
-            foreach ($owners as $owner) {
-                $owner->notify(new LowStockNotification($products));
-            }
 
             if ($email = $tenant->notificationEmail()) {
                 try {

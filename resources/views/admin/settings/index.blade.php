@@ -69,8 +69,9 @@
                             <input type="text" name="name" value="{{ $tenant->name }}" required class="form-control">
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Contact email</label>
+                            <label class="form-label">Contact email <span class="badge bg-secondary fw-normal ms-1" style="font-size:.7em">Display only</span></label>
                             <input type="email" name="email" value="{{ $tenant->email }}" required class="form-control">
+                            <div class="form-text"><i class="bi bi-info-circle me-1"></i>Shown on your public profile. To receive notification emails, set your address under the <a href="?tab=notifications">Notifications tab</a>.</div>
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label">Phone number</label>
