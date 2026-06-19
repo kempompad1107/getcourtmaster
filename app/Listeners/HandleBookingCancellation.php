@@ -11,21 +11,8 @@ class HandleBookingCancellation implements ShouldQueue
 
     public function handle(BookingCancelled $event): void
     {
-        $booking = $event->booking;
-
-        // Free up the court if still marked occupied by this booking
-        $court = $booking->court;
-        if ($court->status === 'reserved' || $court->status === 'occupied') {
-            $hasOtherActive = $court->bookings()
-                ->where('id', '!=', $booking->id)
-                ->whereIn('status', ['active', 'confirmed'])
-                ->where('booking_date', today())
-                ->exists();
-
-            if (!$hasOtherActive) {
-                $court->update(['status' => 'available']);
-            }
-        }
-
+        // Court status is reset synchronously in BookingService::cancel().
+        // This queued listener is reserved for future async side-effects
+        // (e.g. push notifications, analytics events).
     }
 }

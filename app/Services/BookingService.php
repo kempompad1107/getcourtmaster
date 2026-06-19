@@ -610,6 +610,20 @@ class BookingService
                 $this->issueRefund($booking, $bypassWindow);
             }
 
+            // Reset court status synchronously so the board never shows
+            // "Occupied" after cancellation, even if the queue worker is down.
+            $court = $booking->court;
+            if (in_array($court->status, ['occupied', 'reserved'], true)) {
+                $hasOther = $court->bookings()
+                    ->where('id', '!=', $booking->id)
+                    ->whereIn('status', ['active', 'confirmed'])
+                    ->where('booking_date', today())
+                    ->exists();
+                if (!$hasOther) {
+                    $court->update(['status' => 'available']);
+                }
+            }
+
             event(new BookingCancelled($booking));
 
             // Owner/staff alert (gated by the venue's "Booking cancelled" toggle).
