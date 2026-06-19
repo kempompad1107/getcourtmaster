@@ -24,7 +24,7 @@
 
 @section('content')
 
-<x-page-header title="Promotions &amp; Discounts">
+<x-page-header title="Promotions & Discounts">
     <x-slot name="actions">
         <a href="{{ route('admin.promotions.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg me-1"></i>Create Promotion
