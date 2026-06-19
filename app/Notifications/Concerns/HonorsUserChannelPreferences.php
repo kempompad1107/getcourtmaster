@@ -23,7 +23,7 @@ trait HonorsUserChannelPreferences
         if (in_array('in_app', $allowed, true) && ($prefs['in_app'] ?? true)) {
             $channels[] = 'database';
         }
-        if (in_array('email', $allowed, true) && ($prefs['email'] ?? true)) {
+        if (in_array('email', $allowed, true) && ($prefs['email'] ?? true) && $this->hasDeliverableEmail($notifiable)) {
             $channels[] = 'mail';
         }
         if (in_array('sms', $allowed, true) && ($prefs['sms'] ?? false) && !empty($notifiable->phone ?? null)) {
@@ -34,5 +34,24 @@ trait HonorsUserChannelPreferences
         }
 
         return $channels;
+    }
+
+    /**
+     * Whether the notifiable has an address worth emailing.
+     *
+     * Walk-in guests (and similar placeholders) are stored with a synthetic,
+     * non-routable address like `walkin@tenant3.local`. The `.local` TLD is
+     * reserved (RFC 6762) and will always bounce, so never queue mail for it —
+     * otherwise every booking email to a walk-in fails delivery.
+     */
+    protected function hasDeliverableEmail(object $notifiable): bool
+    {
+        $email = $notifiable->email ?? null;
+
+        if (empty($email)) {
+            return false;
+        }
+
+        return ! str_ends_with(strtolower($email), '.local');
     }
 }

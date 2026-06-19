@@ -579,86 +579,65 @@
 
                 <div class="card-body border-top" x-show="help" x-cloak>
                     <p class="text-muted">
-                        “SMTP” is just the way an app sends email through your email account.
-                        To use your own address (e.g. <em>no-reply@yourclub.com</em>), tell us how to
-                        log in to your email provider. Pick your provider below and copy the settings.
+                        Using <strong>Gmail</strong>? Just follow these 3 steps. Google no longer allows
+                        your normal password for apps — you'll create a special <strong>App Password</strong> instead.
                     </p>
 
                     <div class="smtp-steps">
                         <div class="smtp-step">
                             <span class="smtp-step-num">1</span>
                             <div>
-                                <div class="fw-semibold">Find your provider's settings</div>
-                                <small class="text-muted">Use the matching row below. The username is almost always your full email address.</small>
+                                <div class="fw-semibold">Turn on 2-Step Verification</div>
+                                <small class="text-muted">
+                                    Open <a href="https://myaccount.google.com/security" target="_blank" rel="noopener">Google Account → Security</a>
+                                    and switch on <strong>2-Step Verification</strong>. (Required before step 2.)
+                                </small>
                             </div>
                         </div>
                         <div class="smtp-step">
                             <span class="smtp-step-num">2</span>
                             <div>
-                                <div class="fw-semibold">Use an “App Password” (Gmail / Outlook / Yahoo)</div>
+                                <div class="fw-semibold">Generate an App Password</div>
                                 <small class="text-muted">
-                                    These providers block your normal login password for apps. Turn on
-                                    2-step verification, then generate an <strong>App Password</strong> and paste
-                                    THAT into the Password field below — not your everyday password.
+                                    Open <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">App passwords</a>,
+                                    name it (e.g. “CourtMaster”), click <strong>Generate</strong>, and copy the
+                                    16-character password. Use this — not your Gmail password.
                                 </small>
                             </div>
                         </div>
                         <div class="smtp-step">
                             <span class="smtp-step-num">3</span>
                             <div>
-                                <div class="fw-semibold">Fill in the form &amp; save</div>
-                                <small class="text-muted">Enter Host, Port, Encryption, Username (your email) and the App Password, set the From address, then click <strong>Save Email Settings</strong>.</small>
-                            </div>
-                        </div>
-                        <div class="smtp-step">
-                            <span class="smtp-step-num">4</span>
-                            <div>
-                                <div class="fw-semibold">Click “Send test”</div>
-                                <small class="text-muted">If the test email lands in your inbox, you're done. If it fails, the error message tells you what to fix (usually the password).</small>
+                                <div class="fw-semibold">Fill in the form below &amp; save</div>
+                                <small class="text-muted">Use the settings in the table, paste the App Password into the Password field, then click <strong>Save Email Settings</strong> and <strong>Send test</strong>.</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="table-responsive mt-3">
                         <table class="table table-sm align-middle smtp-provider-table mb-2">
-                            <thead>
-                                <tr>
-                                    <th>Provider</th><th>Host</th><th>Port</th><th>Encryption</th>
-                                </tr>
-                            </thead>
                             <tbody>
-                                <tr>
-                                    <td class="fw-semibold">Gmail / Google Workspace</td>
-                                    <td><code>smtp.gmail.com</code></td><td>587</td><td>TLS</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-semibold">Outlook / Microsoft 365</td>
-                                    <td><code>smtp.office365.com</code></td><td>587</td><td>TLS</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-semibold">Yahoo Mail</td>
-                                    <td><code>smtp.mail.yahoo.com</code></td><td>465</td><td>SSL</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-semibold">Zoho Mail</td>
-                                    <td><code>smtp.zoho.com</code></td><td>587</td><td>TLS</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-semibold">Other / web host</td>
-                                    <td colspan="3" class="text-muted">Ask your provider for “SMTP host, port, and encryption”.</td>
-                                </tr>
+                                <tr><th class="fw-semibold" style="width:9rem">Host</th><td><code>smtp.gmail.com</code></td></tr>
+                                <tr><th class="fw-semibold">Port</th><td><code>587</code> (TLS) <span class="text-muted">— or <code>465</code> (SSL)</span></td></tr>
+                                <tr><th class="fw-semibold">Encryption</th><td>TLS</td></tr>
+                                <tr><th class="fw-semibold">Username</th><td>your full Gmail address</td></tr>
+                                <tr><th class="fw-semibold">Password</th><td>the 16-character App Password from step 2</td></tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="alert alert-info d-flex gap-2 mb-0">
-                        <i class="bi bi-lightbulb"></i>
-                        <div>
-                            <strong>Where do I get a Gmail App Password?</strong>
-                            In your Google Account → <em>Security</em> → turn on <em>2-Step Verification</em> →
-                            then open <em>App passwords</em>, create one for “Mail”, and copy the 16-character code.
-                        </div>
-                    </div>
+                    <details class="smtp-other text-muted small">
+                        <summary class="fw-semibold">Not using Gmail?</summary>
+                        <table class="table table-sm align-middle smtp-provider-table mt-2 mb-0">
+                            <thead><tr><th>Provider</th><th>Host</th><th>Port</th><th>Encryption</th></tr></thead>
+                            <tbody>
+                                <tr><td class="fw-semibold">Outlook / Microsoft 365</td><td><code>smtp.office365.com</code></td><td>587</td><td>TLS</td></tr>
+                                <tr><td class="fw-semibold">Yahoo Mail</td><td><code>smtp.mail.yahoo.com</code></td><td>465</td><td>SSL</td></tr>
+                                <tr><td class="fw-semibold">Zoho Mail</td><td><code>smtp.zoho.com</code></td><td>587</td><td>TLS</td></tr>
+                                <tr><td class="fw-semibold">Other / web host</td><td colspan="3" class="text-muted">Ask your provider for “SMTP host, port, and encryption”.</td></tr>
+                            </tbody>
+                        </table>
+                    </details>
 
                     <p class="text-muted small mt-3 mb-0">
                         <i class="bi bi-shield-lock me-1"></i>
