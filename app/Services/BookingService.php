@@ -446,7 +446,14 @@ class BookingService
 
         if ($email = $tenant?->notificationEmail()) {
             try {
-                Notification::route('mail', $email)->notify($notification);
+                // AnonymousNotifiable has no notifications() relationship, so channelsForUser()
+                // returning 'database'/'webpush' would throw and swallow the email. Force mail only.
+                Notification::route('mail', $email)->notify(new class($notification) extends \Illuminate\Notifications\Notification {
+                    use \Illuminate\Bus\Queueable;
+                    public function __construct(private readonly \Illuminate\Notifications\Notification $inner) {}
+                    public function via(object $n): array { return ['mail']; }
+                    public function toMail(object $n): mixed { return $this->inner->toMail($n); }
+                });
             } catch (\Throwable $e) {
                 Log::warning('notification_email CC failed', ['email' => $email, 'error' => $e->getMessage()]);
             }
