@@ -24,10 +24,16 @@
                 <span class="cal-filter-label">
                     <i class="bi bi-funnel-fill"></i> Courts
                 </span>
+                @php
+                    // When arriving from a court's "Availability" button, pre-select only
+                    // that court; otherwise default to showing every court.
+                    $focusCourtId = request('court');
+                @endphp
                 <div class="d-flex flex-wrap gap-2">
                     @foreach($courts as $court)
                     <input type="checkbox" class="btn-check court-filter" autocomplete="off"
-                           id="court_{{ $court->id }}" value="{{ $court->id }}" checked>
+                           id="court_{{ $court->id }}" value="{{ $court->id }}"
+                           @checked(! $focusCourtId || (int) $focusCourtId === $court->id)>
                     <label class="court-chip" for="court_{{ $court->id }}">{{ $court->name }}</label>
                     @endforeach
                 </div>

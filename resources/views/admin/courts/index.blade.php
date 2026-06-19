@@ -147,14 +147,15 @@
             <div class="card-footer d-flex gap-2">
                 <a href="{{ route('admin.courts.edit', $court) }}"
                    class="btn btn-outline-secondary btn-sm flex-fill"><i class="bi bi-pencil me-1"></i>Edit</a>
-                <a href="{{ route('admin.courts.availability', $court) }}"
+                <a href="{{ route('admin.bookings.calendar', ['court' => $court->id]) }}"
                    class="btn btn-outline-primary btn-sm flex-fill"><i class="bi bi-calendar-check me-1"></i>Availability</a>
-                @can('update', $court)
+                @canany(['update', 'delete'], $court)
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown" title="Set status">
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown" title="More actions">
                         <i class="bi bi-three-dots-vertical"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
+                        @can('update', $court)
                         @foreach(['available','maintenance','closed'] as $s)
                         <li>
                             <form method="POST" action="{{ route('admin.courts.status', $court) }}">
@@ -164,9 +165,20 @@
                             </form>
                         </li>
                         @endforeach
+                        @endcan
+                        @can('delete', $court)
+                        @can('update', $court)<li><hr class="dropdown-divider"></li>@endcan
+                        <li>
+                            <form method="POST" action="{{ route('admin.courts.destroy', $court) }}"
+                                  onsubmit="return confirm('Delete {{ addslashes($court->name) }}? Existing bookings are kept, but the court is removed from listings.');">
+                                @csrf @method('DELETE')
+                                <button class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Delete court</button>
+                            </form>
+                        </li>
+                        @endcan
                     </ul>
                 </div>
-                @endcan
+                @endcanany
             </div>
         </div>
     </div>

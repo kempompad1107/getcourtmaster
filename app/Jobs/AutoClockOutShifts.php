@@ -18,12 +18,27 @@ class AutoClockOutShifts implements ShouldQueue
         Shift::where('status', 'active')
             ->whereNotNull('clocked_in_at')
             ->whereNull('clocked_out_at')
-            ->where('clocked_in_at', '<=', now()->subHours(8))
+            ->with('tenant')
             ->each(function (Shift $shift) {
+                // Owners can disable auto-clock-out tenant-wide (Settings → Booking).
+                if (! $shift->tenant?->getSetting('shift_auto_clockout', true)) {
+                    return;
+                }
+
+                // Cap at the shift's scheduled end — NOT now(). The sweep may run
+                // late (schedule:run isn't guaranteed every minute) and stamping
+                // now() would record the lateness as worked time (e.g. 8.2h). A
+                // standard 8h shift ends at exactly 8h; an owner who schedules a
+                // longer shift gets that length honoured (the per-shift bypass).
+                $end = $shift->scheduledEndAt();
+                if (! $end || $end->isFuture()) {
+                    return;
+                }
+
                 $shift->update([
-                    'clocked_out_at' => now(),
+                    'clocked_out_at' => $end,
                     'status'         => 'completed',
-                    'notes'          => trim(($shift->notes ? $shift->notes . "\n" : '') . 'Auto clocked out after 8 hours.'),
+                    'notes'          => trim(($shift->notes ? $shift->notes . "\n" : '') . 'Auto clocked out at scheduled end.'),
                 ]);
             });
     }

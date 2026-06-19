@@ -150,6 +150,7 @@ class SettingsController extends Controller
             'require_payment'        => 'boolean',
             'auto_confirm'           => 'boolean',
             'auto_stop_after_grace'  => 'boolean',
+            'shift_auto_clockout'    => 'boolean',
             'evening_start'          => 'required|date_format:H:i',
             'evening_end'            => 'required|date_format:H:i',
         ]);

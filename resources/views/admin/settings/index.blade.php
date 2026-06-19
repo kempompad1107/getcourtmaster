@@ -307,6 +307,18 @@
                                     When <strong>OFF</strong> (default): the timer keeps running past grace and accumulates overtime at the court's live rate until staff clicks Stop.
                                 </div>
                             </div>
+                            <div class="form-check mt-2">
+                                <input type="hidden" name="shift_auto_clockout" value="0">
+                                <input type="checkbox" name="shift_auto_clockout" value="1" id="shift_auto_clockout"
+                                       class="form-check-input" @checked($bs['shift_auto_clockout'] ?? true)>
+                                <label class="form-check-label" for="shift_auto_clockout">
+                                    Auto clock-out staff at end of shift
+                                </label>
+                                <div class="form-text">
+                                    When <strong>ON</strong> (default): staff still clocked in are automatically clocked out at their shift's scheduled end time. Schedule a longer shift to extend it past the usual 8 hours.
+                                    When <strong>OFF</strong>: staff stay on the clock until they (or an owner) clock out manually.
+                                </div>
+                            </div>
                         </div>
                         <div class="col-12 d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">
