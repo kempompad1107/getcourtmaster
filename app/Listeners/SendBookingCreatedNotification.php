@@ -8,6 +8,7 @@ use App\Notifications\BookingCreatedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 
 class SendBookingCreatedNotification implements ShouldQueue
 {
@@ -28,7 +29,7 @@ class SendBookingCreatedNotification implements ShouldQueue
         if ($email = $tenant->notificationEmail()) {
             try {
                 $notification = new BookingCreatedNotification($booking);
-                Notification::route('mail', $email)->notify(new class($notification) extends Notification {
+                NotificationFacade::route('mail', $email)->notify(new class($notification) extends Notification {
                     use \Illuminate\Bus\Queueable;
                     public function __construct(private readonly Notification $inner) {}
                     public function via(object $n): array { return ['mail']; }
