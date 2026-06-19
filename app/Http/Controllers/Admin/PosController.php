@@ -31,12 +31,13 @@ class PosController extends Controller
         $product = $this->posService->lookupByBarcode($this->authTenant()->id, $data['code']);
         return response()->json([
             'product' => $product ? [
-                'id'    => $product->id,
-                'name'  => $product->name,
-                'sku'   => $product->sku,
-                'price' => (float) $product->selling_price,
-                'tax'   => (float) $product->tax_rate,
-                'stock' => (int) $product->stock_quantity,
+                'id'              => $product->id,
+                'name'            => $product->name,
+                'sku'             => $product->sku,
+                'price'           => (float) $product->selling_price,
+                'tax'             => (float) $product->tax_rate,
+                'stock'           => (int) $product->stock_quantity,
+                'track_inventory' => (bool) $product->track_inventory,
             ] : null,
         ]);
     }

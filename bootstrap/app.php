@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant.active'      => EnsureTenantIsActive::class,
             'staff.only'         => EnsureStaffOrOwner::class,
+            'perm'               => \App\Http\Middleware\EnsurePermission::class,
             'tenant.context'     => SetTenantContext::class,
             'branch.context'     => ResolveBranchContext::class,
             'branch.required'    => EnsureBranchSelected::class,

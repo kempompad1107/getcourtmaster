@@ -59,7 +59,7 @@
             <span class="sb-legend-item"><span class="sb-legend-dot" style="background:#fbbf24"></span>Reserved</span>
             <span class="sb-legend-item"><span class="sb-legend-dot" style="background:#94a3b8"></span>Maintenance</span>
         </div>
-        <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('admin.bookings.create', ['type' => 'walk_in']) }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg me-1"></i>Walk-in Booking
         </a>
     </div>
@@ -80,7 +80,7 @@
                 "scheduledEndMs": {{ $ctScheduledEnd }},
                 "hasTimer": {{ $ct ? 'true' : 'false' }},
                 "customerName": @json($customerName),
-                "bookNewUrl": @json(route('admin.bookings.create') . '?court_id=' . $court->id)
+                "bookNewUrl": @json(route('admin.bookings.create', ['type' => 'walk_in', 'court_id' => $court->id]))
              })'
              class="card sb-card h-100 d-flex flex-column"
              :class="{

@@ -395,9 +395,12 @@
 
 @push('scripts')
 <script>
+@php
+    $bookingTypeDefault = in_array(request('type'), ['walk_in', 'online', 'phone'], true) ? request('type') : 'online';
+@endphp
 function bookingForm() {
     return {
-        bookingType: 'online',
+        bookingType: @json($bookingTypeDefault),
         courtId:    @json((string) (request('court_id') ?? '')),
         bookingDate: '{{ now()->toDateString() }}',
         duration:   '60',

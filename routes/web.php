@@ -177,9 +177,12 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::post('/branch-context', [BranchContextController::class, 'update'])->name('branch-context.update');
 
         // Branches
-        Route::resource('branches', BranchController::class)->except(['show']);
+        Route::middleware('perm:branches.view')->group(function () {
+            Route::resource('branches', BranchController::class)->except(['show']);
+        });
 
         // Courts
+        Route::middleware('perm:courts.view')->group(function () {
         Route::get('/courts/status-board',  [CourtController::class, 'statusBoard'])->name('courts.status-board');
         Route::get('/courts/timer-state',   [CourtController::class, 'timerState'])->name('courts.timer-state');
         Route::get('/courts/{court}/availability', [CourtController::class, 'availability'])->name('courts.availability');
@@ -188,8 +191,10 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::patch('/courts/{court}/status', [CourtController::class, 'updateStatus'])->name('courts.status')->middleware('branch.required');
         Route::delete('/courts/{court}/media/{mediaId}', [CourtController::class, 'destroyMedia'])->name('courts.media.destroy')->middleware('branch.required');
         Route::resource('courts', CourtController::class)->middleware('branch.required');
+        });
 
         // Bookings
+        Route::middleware('perm:bookings.view')->group(function () {
         Route::get('/bookings/calendar', [BookingController::class, 'calendar'])->name('bookings.calendar');
         Route::get('/bookings/calendar-data', [BookingController::class, 'calendarData'])->name('bookings.calendar-data');
         Route::patch('/bookings/{booking}/confirm', [BookingController::class, 'confirm'])->name('bookings.confirm')->middleware('branch.required');
@@ -215,9 +220,10 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::post('/timers/{timer}/stop', [BookingController::class, 'stopTimer'])->name('timers.stop')->middleware('branch.required');
 
         Route::resource('bookings', BookingController::class)->except(['edit', 'update', 'destroy'])->middleware('branch.required');
+        });
 
         // POS
-        Route::prefix('pos')->name('pos.')->middleware('branch.required')->group(function () {
+        Route::prefix('pos')->name('pos.')->middleware(['branch.required', 'perm:pos.access'])->group(function () {
             Route::get('/', [PosController::class, 'index'])->name('index');
             Route::post('/orders', [PosController::class, 'store'])->name('store');
             Route::get('/orders/{order}/receipt', [PosController::class, 'receipt'])->name('receipt');
@@ -231,6 +237,7 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         });
 
         // Memberships
+        Route::middleware('perm:memberships.view')->group(function () {
         Route::get('/memberships/plans', [MembershipController::class, 'plans'])->name('memberships.plans');
         Route::post('/memberships/plans', [MembershipController::class, 'storePlan'])->name('memberships.plans.store')->middleware('branch.required');
         Route::put('/memberships/plans/{plan}', [MembershipController::class, 'updatePlan'])->name('memberships.plans.update')->middleware('branch.required');
@@ -239,9 +246,10 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::post('/memberships/{membership}/cancel', [MembershipController::class, 'cancel'])->name('memberships.cancel')->middleware('branch.required');
         Route::post('/memberships/{membership}/renew', [MembershipController::class, 'renew'])->name('memberships.renew')->middleware('branch.required');
         Route::resource('memberships', MembershipController::class)->only(['index', 'store', 'show'])->middleware('branch.required');
+        });
 
         // Reports
-        Route::prefix('reports')->name('reports.')->group(function () {
+        Route::prefix('reports')->name('reports.')->middleware('perm:reports.view')->group(function () {
             Route::get('/', [ReportController::class, 'index'])->name('index');
 
             // Core JSON endpoints (legacy names kept for backward compat)
@@ -274,20 +282,23 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
             Route::delete('/presets/{preset}',       [ReportController::class, 'presetsDestroy'])->name('presets.destroy');
         });
 
-        // Staff & Shifts
-        Route::resource('staff', StaffController::class)->middleware('branch.required');
+        // Staff & Shifts — staff management requires staff.view; personal
+        // shift/clock routes stay open to every staff member.
+        Route::resource('staff', StaffController::class)->middleware(['branch.required', 'perm:staff.view']);
         Route::get('/my-shift', [StaffController::class, 'myShift'])->name('staff.my-shift');
-        Route::get('/shifts', [StaffController::class, 'shifts'])->name('staff.shifts');
-        Route::post('/shifts', [StaffController::class, 'storeShift'])->name('shifts.store')->middleware('branch.required');
-        Route::put('/shifts/{shift}', [StaffController::class, 'updateShift'])->name('shifts.update')->middleware('branch.required');
+        Route::get('/shifts', [StaffController::class, 'shifts'])->name('staff.shifts')->middleware('perm:staff.view');
+        Route::post('/shifts', [StaffController::class, 'storeShift'])->name('shifts.store')->middleware(['branch.required', 'perm:staff.view']);
+        Route::put('/shifts/{shift}', [StaffController::class, 'updateShift'])->name('shifts.update')->middleware(['branch.required', 'perm:staff.view']);
         Route::post('/staff/clock-in', [StaffController::class, 'clockIn'])->name('staff.clock-in')->middleware('branch.required');
         Route::post('/staff/clock-out', [StaffController::class, 'clockOut'])->name('staff.clock-out')->middleware('branch.required');
 
         // Inventory
+        Route::middleware('perm:inventory.view')->group(function () {
         Route::get('/products/{product}/movements', [ProductController::class, 'movements'])->name('products.movements');
         Route::post('/products/{product}/adjust', [ProductController::class, 'adjustStock'])->name('products.adjust')->middleware('branch.required');
         Route::resource('products', ProductController::class)->middleware('branch.required');
         Route::resource('categories', ProductCategoryController::class)->except(['show'])->middleware('branch.required');
+        });
 
         // Invoices + Receipts (PDF)
         Route::get('/subscription-invoices',               [\App\Http\Controllers\Admin\InvoiceController::class, 'index'])->name('subscription-invoices.index');
@@ -297,36 +308,44 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::post('/payments/{payment}/verify',          [\App\Http\Controllers\Admin\InvoiceController::class, 'verifyProof'])->name('payments.verify');
 
         // Suppliers + Purchase Orders
+        Route::middleware('perm:inventory.view')->group(function () {
         Route::resource('suppliers', \App\Http\Controllers\Admin\SupplierController::class)->except(['show', 'create', 'edit'])->middleware('branch.required');
         Route::get('/purchase-orders',                       [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'index'])->name('purchase-orders.index');
         Route::get('/purchase-orders/create',                [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'create'])->name('purchase-orders.create');
         Route::post('/purchase-orders',                      [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'store'])->name('purchase-orders.store')->middleware('branch.required');
         Route::get('/purchase-orders/{purchase_order}',      [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'show'])->name('purchase-orders.show');
         Route::post('/purchase-orders/{purchase_order}/receive', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive')->middleware('branch.required');
+        });
 
         // Promotions
         Route::post('/promotions/validate', [PromotionController::class, 'validate'])->name('promotions.validate');
-        Route::resource('promotions', PromotionController::class)->middleware('branch.required');
+        Route::resource('promotions', PromotionController::class)->middleware(['branch.required', 'perm:promotions.view']);
 
         // Customers
+        Route::middleware('perm:customers.view')->group(function () {
         Route::get('/customers/search', [CustomerController::class, 'search'])->name('customers.search');
         Route::post('/customers/{user}/credit', [CustomerController::class, 'addWalletCredit'])->name('customers.credit')->middleware('branch.required');
         Route::post('/customers/{user}/debit',  [CustomerController::class, 'debitWallet'])->name('customers.debit')->middleware('branch.required');
         Route::post('/customers/{user}/note', [CustomerController::class, 'addNote'])->name('customers.note')->middleware('branch.required');
         Route::resource('customers', CustomerController::class)->only(['index', 'show', 'create', 'store', 'edit', 'update']);
+        });
 
         // Wallet management (owner/staff only) — manual top-ups, deductions, audit
-        Route::get('/wallet',                [\App\Http\Controllers\Admin\WalletController::class, 'index'])->name('wallet.index');
-        Route::get('/wallet/{customer}',     [\App\Http\Controllers\Admin\WalletController::class, 'show'])->name('wallet.show');
+        Route::middleware('perm:customers.view')->group(function () {
+            Route::get('/wallet',                [\App\Http\Controllers\Admin\WalletController::class, 'index'])->name('wallet.index');
+            Route::get('/wallet/{customer}',     [\App\Http\Controllers\Admin\WalletController::class, 'show'])->name('wallet.show');
+        });
 
         // Cash refund requests — created automatically when a cash booking is
         // cancelled with refund enabled. Staff settle these at the desk.
-        Route::get('/refund-requests',                              [\App\Http\Controllers\Admin\RefundRequestController::class, 'index'])->name('refund-requests.index');
-        Route::post('/refund-requests/{refundRequest}/process',     [\App\Http\Controllers\Admin\RefundRequestController::class, 'process'])->name('refund-requests.process');
-        Route::post('/refund-requests/{refundRequest}/deny',        [\App\Http\Controllers\Admin\RefundRequestController::class, 'deny'])->name('refund-requests.deny');
+        Route::middleware('perm:customers.view')->group(function () {
+            Route::get('/refund-requests',                              [\App\Http\Controllers\Admin\RefundRequestController::class, 'index'])->name('refund-requests.index');
+            Route::post('/refund-requests/{refundRequest}/process',     [\App\Http\Controllers\Admin\RefundRequestController::class, 'process'])->name('refund-requests.process');
+            Route::post('/refund-requests/{refundRequest}/deny',        [\App\Http\Controllers\Admin\RefundRequestController::class, 'deny'])->name('refund-requests.deny');
+        });
 
         // Tournaments
-        Route::prefix('tournaments')->name('tournaments.')->group(function () {
+        Route::prefix('tournaments')->name('tournaments.')->middleware('perm:tournaments.view')->group(function () {
             Route::get('/dashboard', [\App\Http\Controllers\Admin\TournamentDashboardController::class, 'index'])->name('dashboard');
 
             // Global module pages (fixed paths must precede the {tournament} wildcard)
@@ -395,11 +414,15 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::put('/settings/roles/{role}',         [\App\Http\Controllers\Admin\RoleController::class, 'update'])->name('roles.update');
 
         // Smart Display / TV Mode
-        Route::get('/display', [DisplayController::class, 'index'])->name('display.index');
-        Route::get('/display/data', [DisplayController::class, 'data'])->name('display.data');
+        Route::middleware('perm:courts.view,bookings.view')->group(function () {
+            Route::get('/display', [DisplayController::class, 'index'])->name('display.index');
+            Route::get('/display/data', [DisplayController::class, 'data'])->name('display.data');
+        });
 
         // Audit log
-        Route::get('/audit', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('audit.index');
+        Route::middleware('perm:reports.view')->group(function () {
+            Route::get('/audit', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('audit.index');
+        });
 
         // Analytics JSON for dashboard charts
         Route::get('/analytics/overview', [\App\Http\Controllers\Admin\AnalyticsController::class, 'overview'])->name('analytics.overview');

@@ -179,4 +179,74 @@ class PosTest extends TestCase
         $response = $this->postJson('/api/v1/bookings');
         $response->assertStatus(401);
     }
+
+    public function test_pos_blocks_overselling_a_tracked_product(): void
+    {
+        $lowStockProduct = Product::factory()->create([
+            'tenant_id'       => $this->tenant->id,
+            'branch_id'       => $this->branch->id,
+            'category_id'     => $this->product->category_id,
+            'stock_quantity'  => 2,
+            'selling_price'   => 100.00,
+            'track_inventory' => true,
+        ]);
+
+        try {
+            $this->posService->createOrder([
+                'branch_id' => $this->branch->id,
+                'items' => [[
+                    'product_id' => $lowStockProduct->id,
+                    'name'       => $lowStockProduct->name,
+                    'quantity'   => 3,
+                    'unit_price' => 100.00,
+                ]],
+            ], $this->cashier);
+            $this->fail('Expected ValidationException was not thrown.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('items', $e->errors());
+        }
+
+        $lowStockProduct->refresh();
+        $this->assertEquals(2, $lowStockProduct->stock_quantity);
+    }
+
+    public function test_pos_blocks_overselling_across_duplicate_lines(): void
+    {
+        // Two cart lines for the SAME product must be summed before the stock
+        // check — neither line exceeds stock alone, but together they do.
+        $product = Product::factory()->create([
+            'tenant_id'       => $this->tenant->id,
+            'branch_id'       => $this->branch->id,
+            'category_id'     => $this->product->category_id,
+            'stock_quantity'  => 2,
+            'selling_price'   => 100.00,
+            'track_inventory' => true,
+        ]);
+
+        try {
+            $this->posService->createOrder([
+                'branch_id' => $this->branch->id,
+                'items' => [
+                    [
+                        'product_id' => $product->id,
+                        'name'       => $product->name,
+                        'quantity'   => 1,
+                        'unit_price' => 100.00,
+                    ],
+                    [
+                        'product_id' => $product->id,
+                        'name'       => $product->name,
+                        'quantity'   => 2,
+                        'unit_price' => 100.00,
+                    ],
+                ],
+            ], $this->cashier);
+            $this->fail('Expected ValidationException was not thrown.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('items', $e->errors());
+        }
+
+        $product->refresh();
+        $this->assertEquals(2, $product->stock_quantity);
+    }
 }

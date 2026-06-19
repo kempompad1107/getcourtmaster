@@ -20,19 +20,42 @@ class PosService
             $items = $data['items'];
             $subtotal = 0;
             $taxTotal = 0;
+            $lockedProducts = [];
+            $reservedQty    = [];
 
-            foreach ($items as &$item) {
-                $product = Product::find($item['product_id']);
+            foreach ($items as $idx => &$item) {
+                $product = ! empty($item['product_id'])
+                    ? Product::where('id', $item['product_id'])->lockForUpdate()->first()
+                    : null;
+
+                // Block overselling of inventory-tracked products (defense in depth —
+                // the POS UI also guards this, but two cashiers racing the last unit, or
+                // any client bypass, must still fail cleanly here).
+                // Accumulate reserved qty per product so duplicate cart lines can't
+                // collectively exceed stock.
+                if ($product && $product->track_inventory) {
+                    $reserved = ($reservedQty[$product->id] ?? 0) + $item['quantity'];
+                    if ($reserved > $product->stock_quantity) {
+                        throw ValidationException::withMessages([
+                            'items' => "Only {$product->stock_quantity} of {$product->name} in stock.",
+                        ]);
+                    }
+                    $reservedQty[$product->id] = $reserved;
+                }
+
+                $lockedProducts[$idx] = $product;
+
                 $unitPrice = $item['unit_price'] ?? ($product?->selling_price ?? 0);
-                $quantity = $item['quantity'];
-                $taxRate = $product?->tax_rate ?? 0;
-                $itemTax = $unitPrice * $quantity * ($taxRate / 100);
+                $quantity  = $item['quantity'];
+                $taxRate   = $product?->tax_rate ?? 0;
+                $itemTax   = $unitPrice * $quantity * ($taxRate / 100);
                 $item['unit_price'] = $unitPrice;
-                $item['tax'] = $itemTax;
-                $item['subtotal'] = ($unitPrice * $quantity) + $itemTax;
+                $item['tax']        = $itemTax;
+                $item['subtotal']   = ($unitPrice * $quantity) + $itemTax;
                 $subtotal += $unitPrice * $quantity;
                 $taxTotal += $itemTax;
             }
+            unset($item);
 
             $discountAmount = (float) ($data['discount_amount'] ?? 0);
             $total = $subtotal + $taxTotal - $discountAmount;
@@ -51,33 +74,31 @@ class PosService
                 'notes' => $data['notes'] ?? null,
             ]);
 
-            foreach ($items as $item) {
+            foreach ($items as $idx => $item) {
                 PosOrderItem::create([
-                    'order_id' => $order->id,
+                    'order_id'   => $order->id,
                     'product_id' => $item['product_id'] ?? null,
-                    'name' => $item['name'],
-                    'sku' => $item['sku'] ?? null,
-                    'quantity' => $item['quantity'],
+                    'name'       => $item['name'],
+                    'sku'        => $item['sku'] ?? null,
+                    'quantity'   => $item['quantity'],
                     'unit_price' => $item['unit_price'],
-                    'discount' => 0,
-                    'tax' => $item['tax'],
-                    'subtotal' => $item['subtotal'],
+                    'discount'   => 0,
+                    'tax'        => $item['tax'],
+                    'subtotal'   => $item['subtotal'],
                 ]);
 
-                // Deduct inventory.
+                // Deduct inventory using the already-locked product from the pricing loop.
                 // Product::adjustStock signature is (quantity, type, notes, reference, userId)
                 // — pass cashier id as userId, not as notes.
-                if (!empty($item['product_id'])) {
-                    $product = Product::find($item['product_id']);
-                    if ($product && $product->track_inventory) {
-                        $product->adjustStock(
-                            -$item['quantity'],
-                            'sale',
-                            null,
-                            $order->order_number,
-                            $cashier->id
-                        );
-                    }
+                $product = $lockedProducts[$idx] ?? null;
+                if ($product && $product->track_inventory) {
+                    $product->adjustStock(
+                        -$item['quantity'],
+                        'sale',
+                        null,
+                        $order->order_number,
+                        $cashier->id
+                    );
                 }
             }
 

@@ -10,6 +10,7 @@
     }
     .pos-product:hover { transform: translateY(-3px); border-color: rgba(16,185,129,.4); box-shadow: 0 14px 28px -20px rgba(0,0,0,.7); }
     .pos-product:active { transform: translateY(-1px) scale(.99); }
+    .pos-product.is-oos { opacity: .5; pointer-events: none; filter: grayscale(.3); }
     .pos-product-media {
         height: 96px; display: flex; align-items: center; justify-content: center; overflow: hidden;
         background: rgba(148,163,184,.1);
@@ -22,6 +23,15 @@
     .pos-qty-btn { width: 26px; height: 26px; display: grid; place-items: center; padding: 0; line-height: 1; }
     .pos-cat-tabs::-webkit-scrollbar { height: 4px; }
     .pos-cat-tabs::-webkit-scrollbar-thumb { background: var(--bs-border-color); border-radius: 4px; }
+
+    /* Barcode scanner bar — standard size, light emerald accent to match the POS theme */
+    .pos-scan-bar .input-group-text {
+        background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.35); color: #10b981;
+    }
+    .pos-scan-bar .form-control { border-color: rgba(16,185,129,.35); }
+    .pos-scan-bar .form-control:focus {
+        border-color: rgba(16,185,129,.6); box-shadow: 0 0 0 .2rem rgba(16,185,129,.15);
+    }
 
 @media (max-width: 991.98px) {
     /* Cart column becomes a bottom sheet on mobile */
@@ -65,18 +75,38 @@
 
 @section('content')
 
+<div x-data="posSystem()">
+
 <x-page-header title="Point of Sale" subtitle="Ring up walk-in sales · cash, card, GCash, wallet">
     <x-slot name="actions">
+        <button type="button" @click="toggleScan()"
+                :class="scanning ? 'btn-primary' : 'btn-outline-secondary'"
+                class="btn btn-sm me-2">
+            <i class="bi bi-upc-scan me-1"></i><span x-text="scanning ? 'Done' : 'Scan'"></span>
+        </button>
         <a href="{{ route('admin.pos.history') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-receipt me-1"></i>Sales History
         </a>
     </x-slot>
 </x-page-header>
 
-<div x-data="posSystem()" class="row g-4">
+<div class="row g-4">
 
     {{-- Product Grid --}}
     <div class="col-12 col-lg-8">
+
+        <div x-show="scanning" x-cloak class="input-group input-group-sm pos-scan-bar mb-3">
+            <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+            <input x-ref="scanInput" x-model="scanCode" type="text"
+                   placeholder="Scan a barcode / SKU — adds automatically"
+                   @input="onScanInput()"
+                   @keydown.enter.prevent="submitScan()"
+                   class="form-control">
+            <button type="button" @click="submitScan()" class="btn btn-success">
+                <i class="bi bi-plus-lg me-1"></i>Add
+            </button>
+        </div>
+        <p x-show="scanMessage" x-text="scanMessage" class="small text-danger mb-2"></p>
 
         {{-- Category Tabs --}}
         <div class="pos-cat-tabs d-flex gap-2 overflow-auto pb-2 mb-3 flex-nowrap no-scrollbar">
@@ -96,13 +126,17 @@
             @foreach($category->products as $product)
             <div class="col-6 col-sm-4 col-xl-3"
                  x-show="activeCategory === null || activeCategory === {{ $category->id }}">
-                <div class="card pos-product h-100"
+                <div class="card pos-product h-100 @if($product->isOutOfStock()) is-oos @endif"
+                     @if(! $product->isOutOfStock())
                      @click="addItem({{ json_encode([
-                         'product_id' => $product->id,
-                         'name'       => $product->name,
-                         'unit_price' => (float) $product->selling_price,
-                         'tax_rate'   => (float) $product->tax_rate,
-                     ]) }})">
+                         'product_id'      => $product->id,
+                         'name'            => $product->name,
+                         'unit_price'      => (float) $product->selling_price,
+                         'tax_rate'        => (float) $product->tax_rate,
+                         'stock'           => (int) $product->stock_quantity,
+                         'track_inventory' => (bool) $product->track_inventory,
+                     ]) }})"
+                     @endif>
                     <div class="pos-product-media">
                         @if($product->image)
                         <img src="{{ file_url($product->image) }}" alt="{{ $product->name }}">
@@ -113,10 +147,20 @@
                     <div class="card-body p-2 d-flex flex-column">
                         <p class="mb-1 small fw-semibold text-truncate">{{ $product->name }}</p>
                         <p class="mb-0 fw-bold text-success">₱{{ number_format($product->selling_price, 2) }}</p>
-                        @if($product->isLowStock())
-                        <span class="badge rounded-pill bg-warning-subtle text-warning mt-2 align-self-start">
-                            <i class="bi bi-exclamation-triangle me-1"></i>Low: {{ $product->stock_quantity }}
-                        </span>
+                        @if($product->track_inventory)
+                            @if($product->isOutOfStock())
+                            <span class="badge rounded-pill bg-danger-subtle text-danger mt-2 align-self-start">
+                                <i class="bi bi-x-circle me-1"></i>Out of stock
+                            </span>
+                            @elseif($product->isLowStock())
+                            <span class="badge rounded-pill bg-warning-subtle text-warning mt-2 align-self-start">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Low: {{ $product->stock_quantity }}
+                            </span>
+                            @else
+                            <span class="badge rounded-pill bg-secondary-subtle text-secondary mt-2 align-self-start">
+                                <i class="bi bi-box-seam me-1"></i>Stock: {{ $product->stock_quantity }}
+                            </span>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -168,6 +212,7 @@
 
             <div class="card-body border-top">
                 {{-- Totals --}}
+                <p x-show="stockMessage" x-text="stockMessage" class="small text-danger mb-2"></p>
                 <div class="d-flex justify-content-between small text-muted mb-1">
                     <span>Subtotal</span><span x-text="'₱' + subtotal.toFixed(2)"></span>
                 </div>
@@ -246,6 +291,7 @@
         <span class="btn btn-light btn-sm fw-bold px-3">Pay <i class="bi bi-arrow-right ms-1"></i></span>
     </div>
 </div>
+</div>
 
 @endsection
 
@@ -264,6 +310,12 @@ function posSystem() {
         paymentMethod: 'cash',
         amountTendered: 0,
         processing: false,
+        stockMessage: '',
+        scanning: false,
+        scanCode: '',
+        scanMessage: '',
+        scanTimer: null,
+        scanBusy: false,
         cartOpen: false,
         get cartCount() { return this.cart.reduce((n, i) => n + i.quantity, 0); },
         get subtotal() { return this.cart.reduce((s, i) => s + i.unit_price * i.quantity, 0); },
@@ -277,15 +329,96 @@ function posSystem() {
         },
         get discount() { return this.discountAmount; },
         get total() { return Math.max(0, this.subtotal + this.tax - this.discount); },
+        atStockCeiling(line, nextQty) {
+            return line.track_inventory && typeof line.stock === 'number' && nextQty > line.stock;
+        },
         addItem(product) {
             const existing = this.cart.find(i => i.product_id === product.product_id);
+            const nextQty = existing ? existing.quantity + 1 : 1;
+            if (this.atStockCeiling(product, nextQty)) {
+                this.stockMessage = `Only ${product.stock} of ${product.name} in stock.`;
+                return;
+            }
+            this.stockMessage = '';
             if (existing) { existing.quantity++; } else { this.cart.push({ ...product, quantity: 1 }); }
             this.clearPromo();
             // On mobile, adding a product just builds the cart (the bottom bar shows
             // the running total). The order/payment sheet only opens when the user
             // taps the bar's "Pay".
         },
-        incrementItem(index) { this.cart[index].quantity++; this.clearPromo(); },
+        toggleScan() {
+            this.scanning = !this.scanning;
+            this.scanMessage = '';
+            clearTimeout(this.scanTimer);
+            if (this.scanning) { this.$nextTick(() => this.$refs.scanInput?.focus()); }
+        },
+        onScanInput() {
+            // Hardware scanners type the whole code in a burst with <20ms between
+            // keystrokes, then stop. A short 50ms settle window feels instant to a
+            // person but still lets the burst finish so we look up the complete code
+            // once — not each partial. Works even when the scanner sends no Enter;
+            // Enter and the Add button still submit immediately.
+            clearTimeout(this.scanTimer);
+            if (!this.scanCode.trim()) return;
+            this.scanTimer = setTimeout(() => this.submitScan(), 50);
+        },
+        async submitScan() {
+            clearTimeout(this.scanTimer);
+            const code = this.scanCode.trim();
+            // scanBusy guards against the debounce timer and an Enter/Add click
+            // racing into two lookups for the same scan.
+            if (!code || this.scanBusy) return;
+            this.scanBusy = true;
+            try {
+                const res = await fetch(`${window.APP_BASE}/admin/pos/barcode`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':     'application/json',
+                        'Accept':           'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN':     '{{ csrf_token() }}',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ code }),
+                });
+                const data = await res.json();
+                const p = data?.product;
+                if (!p) {
+                    this.scanMessage = `No product found for "${code}".`;
+                } else if (p.track_inventory && p.stock <= 0) {
+                    this.scanMessage = `${p.name} is out of stock.`;
+                } else {
+                    // Map the barcode response into the shape addItem expects.
+                    this.addItem({
+                        product_id:      p.id,
+                        name:            p.name,
+                        unit_price:      p.price,
+                        tax_rate:        p.tax,
+                        stock:           p.stock,
+                        track_inventory: p.track_inventory,
+                    });
+                    // addItem sets stockMessage if the ceiling was hit; clear any
+                    // stale scan message either way (the add was attempted).
+                    this.scanMessage = '';
+                }
+            } catch (err) {
+                this.scanMessage = 'Scan lookup failed. Please try again.';
+            } finally {
+                this.scanCode = '';
+                this.scanBusy = false;
+                this.$refs.scanInput?.focus();
+            }
+        },
+        incrementItem(index) {
+            const line = this.cart[index];
+            if (this.atStockCeiling(line, line.quantity + 1)) {
+                this.stockMessage = `Only ${line.stock} of ${line.name} in stock.`;
+                return;
+            }
+            this.stockMessage = '';
+            line.quantity++;
+            this.clearPromo();
+        },
         decrementItem(index) {
             if (this.cart[index].quantity > 1) this.cart[index].quantity--;
             else this.removeItem(index);
@@ -405,6 +538,7 @@ function posSystem() {
                     this.discountAmount = 0;
                     this.promoValid = false;
                     this.promoMessage = '';
+                    this.stockMessage = '';
                 }
             } catch (err) {
                 // Surface the *actual* error in both the console and the alert
