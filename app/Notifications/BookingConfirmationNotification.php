@@ -51,7 +51,7 @@ class BookingConfirmationNotification extends Notification
             ->line('Booking: **' . $this->booking->booking_number . '**')
             ->line('Court: **' . $this->booking->court->name . '**')
             ->line('Date: **' . $this->booking->booking_date->format('F j, Y') . '**')
-            ->line('Time: **' . $this->booking->start_time . ' - ' . $this->booking->end_time . '**')
+            ->line('Time: **' . \Illuminate\Support\Carbon::parse($this->booking->start_time)->format('g:i A') . ' - ' . \Illuminate\Support\Carbon::parse($this->booking->end_time)->format('g:i A') . '**')
             ->action('View Booking & QR Code', url('/bookings/' . $this->booking->id));
 
         if ($graceMinutes > 0) {
