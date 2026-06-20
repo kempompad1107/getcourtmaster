@@ -276,7 +276,7 @@
             <i class="bi bi-calendar-week text-success"></i>
         </div>
         <div>
-            <div class="shift-kpi-val">{{ number_format($hoursThisWeek, 1) }}<span class="fs-6 fw-normal text-muted">h</span></div>
+            <div class="shift-kpi-val">{{ number_format($hoursThisWeek, 1) }}<span class="fs-6 fw-normal text-muted ms-1">h</span></div>
             <div class="shift-kpi-lbl">This week</div>
         </div>
     </div>
@@ -285,7 +285,7 @@
             <i class="bi bi-calendar-check text-primary"></i>
         </div>
         <div>
-            <div class="shift-kpi-val">{{ number_format($hoursThisMonth, 1) }}<span class="fs-6 fw-normal text-muted">h</span></div>
+            <div class="shift-kpi-val">{{ number_format($hoursThisMonth, 1) }}<span class="fs-6 fw-normal text-muted ms-1">h</span></div>
             <div class="shift-kpi-lbl">This month</div>
         </div>
     </div>
