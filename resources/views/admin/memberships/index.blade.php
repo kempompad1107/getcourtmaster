@@ -236,7 +236,7 @@
             <div class="col-12">
                 <div class="form-check">
                     <input type="checkbox" name="auto_renew" value="1" id="auto_renew"
-                           class="form-check-input" checked>
+                           class="form-check-input">
                     <label class="form-check-label" for="auto_renew">Auto-renew membership</label>
                 </div>
             </div>

@@ -87,7 +87,20 @@
         </div>
 
         {{-- Actions --}}
-        <div class="d-flex gap-2">
+        <div class="d-flex align-items-center gap-3">
+            @if($membership->status === 'active')
+            <form method="POST" action="{{ route('admin.memberships.toggle-auto-renew', $membership) }}">
+                @csrf
+                <input type="hidden" name="auto_renew" value="0">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" name="auto_renew" value="1"
+                           id="autoRenewToggle" role="switch"
+                           {{ $membership->auto_renew ? 'checked' : '' }}
+                           onchange="this.form.submit()">
+                    <label class="form-check-label small" for="autoRenewToggle">Auto-renew</label>
+                </div>
+            </form>
+            @endif
             @if($membership->status === 'active')
             <form method="POST" action="{{ route('admin.memberships.cancel', $membership) }}"
                   onsubmit="return confirm('Cancel this membership? The member will lose access at the end of the billing period.')">

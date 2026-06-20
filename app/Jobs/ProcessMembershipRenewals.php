@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Membership;
+use App\Notifications\MembershipAutoRenewFailedNotification;
 use App\Notifications\MembershipExpiryNotification;
 use App\Services\MembershipService;
 use Illuminate\Bus\Queueable;
@@ -10,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
 class ProcessMembershipRenewals implements ShouldQueue
@@ -44,10 +46,31 @@ class ProcessMembershipRenewals implements ShouldQueue
             ->with('plan')
             ->each(function (Membership $membership) use ($membershipService) {
                 try {
-                    $membershipService->renew($membership);
+                    $membershipService->renew($membership, 'wallet');
                     Log::info("Auto-renewed membership #{$membership->id}");
                 } catch (\Exception $e) {
                     Log::error("Failed to auto-renew membership #{$membership->id}: " . $e->getMessage());
+
+                    $membership->update(['status' => 'failed']);
+
+                    // Notify customer
+                    $membership->customer?->notify(new MembershipAutoRenewFailedNotification($membership));
+
+                    // Notify staff/owner via tenant notification email
+                    $tenant = $membership->customer?->tenant;
+                    if ($tenant && ($email = $tenant->notificationEmail())) {
+                        $notification = new MembershipAutoRenewFailedNotification($membership);
+                        try {
+                            Notification::route('mail', $email)->notify(new class($notification) extends \Illuminate\Notifications\Notification {
+                                use \Illuminate\Bus\Queueable;
+                                public function __construct(private readonly \Illuminate\Notifications\Notification $inner) {}
+                                public function via(object $n): array { return ['mail']; }
+                                public function toMail(object $n): mixed { return $this->inner->toStaffMail($n); }
+                            });
+                        } catch (\Throwable $ex) {
+                            Log::warning("Staff notification failed for membership #{$membership->id}: " . $ex->getMessage());
+                        }
+                    }
                 }
             });
     }

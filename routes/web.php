@@ -245,6 +245,7 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::post('/memberships/{membership}/freeze', [MembershipController::class, 'freeze'])->name('memberships.freeze')->middleware('branch.required');
         Route::post('/memberships/{membership}/cancel', [MembershipController::class, 'cancel'])->name('memberships.cancel')->middleware('branch.required');
         Route::post('/memberships/{membership}/renew', [MembershipController::class, 'renew'])->name('memberships.renew')->middleware('branch.required');
+        Route::post('/memberships/{membership}/toggle-auto-renew', [MembershipController::class, 'toggleAutoRenew'])->name('memberships.toggle-auto-renew');
         Route::resource('memberships', MembershipController::class)->only(['index', 'store', 'show'])->middleware('branch.required');
         });
 

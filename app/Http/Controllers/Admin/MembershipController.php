@@ -217,6 +217,14 @@ class MembershipController extends Controller
         return redirect()->back()->with('success', 'Membership cancelled.');
     }
 
+    public function toggleAutoRenew(Membership $membership)
+    {
+        $this->authorize('update', $membership);
+        $membership->update(['auto_renew' => ! $membership->auto_renew]);
+        $label = $membership->auto_renew ? 'enabled' : 'disabled';
+        return redirect()->back()->with('success', "Auto-renew {$label}.");
+    }
+
     public function renew(Request $request, Membership $membership)
     {
         $this->authorize('update', $membership);
