@@ -128,10 +128,10 @@
             </p>
         </div>
         <div class="hero-actions">
-            <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary fw-semibold">
+            <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-lg me-1"></i>New Booking
             </a>
-            <a href="{{ route('admin.courts.status-board') }}" class="btn btn-hero fw-semibold">
+            <a href="{{ route('admin.courts.status-board') }}" class="btn btn-hero btn-sm">
                 <i class="bi bi-grid-3x3-gap me-1"></i>Status Board
             </a>
         </div>

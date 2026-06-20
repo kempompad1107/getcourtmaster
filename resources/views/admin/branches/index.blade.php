@@ -3,7 +3,7 @@
 
 @push('styles')
 <style>
-    /* ── Branches — responsive card grid over the admin theme ── */
+    /* ── Branches ── */
     .branch-card {
         position: relative; height: 100%; overflow: hidden;
         border: 1px solid var(--bs-border-color);
@@ -12,47 +12,59 @@
     .branch-card:hover {
         transform: translateY(-3px);
         border-color: rgba(16,185,129,.35);
-        box-shadow: 0 16px 32px -22px rgba(0,0,0,.55);
+        box-shadow: 0 16px 32px -22px rgba(0,0,0,.45);
     }
     .branch-card.is-main { border-color: rgba(16,185,129,.4); }
-    .branch-card.is-main::before {
-        content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
-        background: linear-gradient(90deg, #34d399, rgba(16,185,129,.15));
+
+    /* Coloured header band */
+    .branch-card-header {
+        padding: 1.1rem 1.25rem .9rem;
+        background: var(--bs-body-bg-alt, rgba(148,163,184,.04));
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+    .branch-card.is-main .branch-card-header {
+        background: linear-gradient(135deg, rgba(16,185,129,.12) 0%, rgba(5,150,105,.04) 100%);
+        border-bottom-color: rgba(16,185,129,.2);
     }
 
-    /* Monogram avatar — visual anchor per branch */
+    /* Monogram */
     .branch-monogram {
-        width: 46px; height: 46px; flex-shrink: 0;
-        border-radius: .85rem;
+        width: 44px; height: 44px; flex-shrink: 0;
+        border-radius: .75rem;
         display: flex; align-items: center; justify-content: center;
-        font-weight: 800; font-size: 1.05rem; letter-spacing: -.02em;
+        font-weight: 800; font-size: 1rem; letter-spacing: -.02em;
         color: var(--bs-secondary-color);
-        background: var(--bs-body-bg-alt, rgba(148,163,184,.08));
+        background: var(--bs-card-bg);
         border: 1px solid var(--bs-border-color);
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
     }
     .branch-card.is-main .branch-monogram {
         color: #fff;
         background: linear-gradient(135deg, #10b981, #047857);
         border-color: rgba(16,185,129,.5);
-        box-shadow: 0 6px 16px -8px rgba(16,185,129,.6);
+        box-shadow: 0 4px 12px -4px rgba(16,185,129,.5);
     }
 
-    .branch-name { font-size: 1.1rem; font-weight: 700; letter-spacing: -.01em; margin: 0; line-height: 1.2; }
-    .branch-slug { font-family: ui-monospace, monospace; font-size: .72rem; color: var(--bs-secondary-color); }
-    .branch-meta { font-size: .85rem; color: var(--bs-secondary-color); }
-    .branch-meta i { width: 1rem; color: var(--bs-secondary-color); opacity: .8; }
-    .branch-stats { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .branch-name { font-size: 1rem; font-weight: 700; letter-spacing: -.01em; margin: 0; line-height: 1.25; }
+    .branch-slug { font-family: ui-monospace, monospace; font-size: .7rem; color: var(--bs-secondary-color); }
+
+    /* Body */
+    .branch-card-body { padding: 1rem 1.25rem; }
+    .branch-meta { font-size: .82rem; color: var(--bs-secondary-color); }
+    .branch-meta i { width: 1rem; opacity: .75; }
+
+    /* Stats row */
+    .branch-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: 1rem; }
     .branch-stat {
-        flex: 1 1 0; min-width: 0;
-        display: flex; flex-direction: column; gap: .1rem;
-        padding: .55rem .7rem; border-radius: .7rem;
+        display: flex; flex-direction: column; gap: .15rem;
+        padding: .65rem .85rem; border-radius: .65rem;
         background: var(--bs-body-bg-alt, rgba(148,163,184,.06));
         border: 1px solid var(--bs-border-color);
     }
-    .branch-stat .n { font-weight: 800; font-size: 1.15rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--bs-heading-color); }
-    .branch-stat .l { font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bs-secondary-color); }
-    .branch-card .card-footer { background: transparent; border-top: 1px solid var(--bs-border-color); }
+    .branch-stat .n { font-weight: 800; font-size: 1.35rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--bs-heading-color); }
+    .branch-stat .l { font-size: .62rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--bs-secondary-color); }
+
+    /* Footer actions */
+    .branch-card .card-footer { background: transparent; border-top: 1px solid var(--bs-border-color); padding: .65rem 1.25rem; }
 
     /* Compact summary strip */
     .branch-summary .stat-card .card-body { padding: 1rem 1.1rem; }
@@ -72,7 +84,7 @@
             </a>
         @else
             <button class="btn btn-primary btn-sm" disabled title="Plan limit reached ({{ $branchLimit['used'] }}/{{ $branchLimit['max'] }} on {{ $branchLimit['plan'] }})">
-                <i class="bi bi-lock-fill me-1"></i>Add Branch
+                <i class="bi bi-lock-fill me-1"></i>Add Branch (limit reached)
             </button>
         @endif
         @endcan
@@ -138,48 +150,60 @@
         @endphp
         <div class="col">
             <div class="card branch-card {{ $branch->is_main ? 'is-main' : '' }}">
-                <div class="card-body">
-                    <div class="d-flex align-items-start gap-3 mb-1">
-                        <div class="branch-monogram">{{ $initials ?: '–' }}</div>
-                        <div class="min-w-0 flex-grow-1">
-                            <div class="d-flex align-items-start justify-content-between gap-2">
-                                <h6 class="branch-name text-truncate">{{ $branch->name }}</h6>
-                                <x-badge :status="$branch->is_active ? 'active' : 'expired'" class="flex-shrink-0">{{ $branch->is_active ? 'Active' : 'Inactive' }}</x-badge>
-                            </div>
-                            <div class="d-flex align-items-center gap-2 mt-1">
-                                <span class="branch-slug text-truncate">{{ $branch->slug }}</span>
-                                @if($branch->is_main)
-                                    <span class="badge bg-primary-subtle text-primary rounded-pill flex-shrink-0">Main</span>
-                                @endif
-                            </div>
+
+                {{-- Header band --}}
+                <div class="branch-card-header d-flex align-items-center gap-3">
+                    <div class="branch-monogram flex-shrink-0">{{ $initials ?: '–' }}</div>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                            <h6 class="branch-name text-truncate mb-0">{{ $branch->name }}</h6>
+                            <x-badge :status="$branch->is_active ? 'active' : 'expired'" class="flex-shrink-0">
+                                {{ $branch->is_active ? 'Active' : 'Inactive' }}
+                            </x-badge>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="branch-slug">{{ $branch->slug }}</span>
+                            @if($branch->is_main)
+                                <span class="badge bg-success-subtle text-success rounded-pill" style="font-size:.6rem">Main</span>
+                            @endif
                         </div>
                     </div>
+                </div>
 
-                    <div class="branch-meta mt-3">
+                {{-- Body --}}
+                <div class="branch-card-body">
+                    <div class="branch-meta d-flex flex-column gap-1">
                         <div class="d-flex gap-2">
                             <i class="bi bi-geo-alt mt-1"></i>
                             <span>
                                 @if($branch->address || $branch->city)
                                     {{ $branch->address }}@if($branch->address && $branch->city), @endif{{ $branch->city }}
                                 @else
-                                    <span class="text-muted">No address set</span>
+                                    <span class="text-muted fst-italic">No address set</span>
                                 @endif
                             </span>
                         </div>
                         @if($branch->phone)
-                            <div class="d-flex gap-2 mt-1"><i class="bi bi-telephone"></i><span>{{ $branch->phone }}</span></div>
+                            <div class="d-flex gap-2"><i class="bi bi-telephone"></i><span>{{ $branch->phone }}</span></div>
                         @endif
                         @if($branch->email)
-                            <div class="d-flex gap-2 mt-1"><i class="bi bi-envelope"></i><span class="text-truncate">{{ $branch->email }}</span></div>
+                            <div class="d-flex gap-2"><i class="bi bi-envelope"></i><span class="text-truncate">{{ $branch->email }}</span></div>
                         @endif
                     </div>
 
-                    <div class="branch-stats mt-3">
-                        <span class="branch-stat"><span class="n">{{ $branch->courts_count }}</span><span class="l">Courts</span></span>
-                        <span class="branch-stat"><span class="n">{{ $branch->staff_count }}</span><span class="l">Staff</span></span>
+                    <div class="branch-stats">
+                        <div class="branch-stat">
+                            <span class="n">{{ $branch->courts_count }}</span>
+                            <span class="l">Courts</span>
+                        </div>
+                        <div class="branch-stat">
+                            <span class="n">{{ $branch->staff_count }}</span>
+                            <span class="l">Staff</span>
+                        </div>
                     </div>
                 </div>
 
+                {{-- Footer actions --}}
                 <div class="card-footer d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-outline-success btn-sm"
                             data-bs-toggle="modal" data-bs-target="#branchQrModal"
