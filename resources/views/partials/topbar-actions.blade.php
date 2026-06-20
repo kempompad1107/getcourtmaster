@@ -18,7 +18,7 @@
     @isset($availableBranches)
         @php $isAllBranches = ($canSeeAllBranches ?? false) && $activeBranchId === null; @endphp
         @if($availableBranches->count() > 1 || ($canSeeAllBranches ?? false))
-        <div class="dropdown me-2">
+        <div class="dropdown">
             <button class="topbar-btn d-flex align-items-center gap-2"
                     data-bs-toggle="dropdown" aria-label="Switch branch"
                     @if($isAllBranches) title="Read-only — select a branch to make changes" @endif>
