@@ -403,6 +403,7 @@ class TenantController extends Controller
             DB::table('suppliers')->where('tenant_id', $tid)->delete();
             DB::table('courts')->where('tenant_id', $tid)->delete();
             DB::table('branches')->where('tenant_id', $tid)->delete();
+            DB::table('audit_logs')->where('tenant_id', $tid)->delete();
 
             // Remove staff and customer users, keep the business owner
             DB::table('users')
