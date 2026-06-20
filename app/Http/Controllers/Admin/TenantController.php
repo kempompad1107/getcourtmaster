@@ -8,6 +8,7 @@ use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
 use App\Models\TenantSubscription;
 use App\Models\User;
+use Database\Seeders\DemoTenantSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -345,6 +346,83 @@ class TenantController extends Controller
         $tenant->update(['status' => 'cancelled']);
         activity()->on($tenant)->log('Tenant cancelled by super admin');
         return back()->with('success', "Tenant {$tenant->name} cancelled.");
+    }
+
+    public function toggleDemo(Tenant $tenant)
+    {
+        $tenant->update(['is_demo' => ! $tenant->is_demo]);
+        $label = $tenant->is_demo ? 'marked as demo' : 'removed from demo mode';
+        activity()->on($tenant)->log("Tenant {$label} by super admin");
+        return back()->with('success', "{$tenant->name} has been {$label}.");
+    }
+
+    public function resetDemoData(Tenant $tenant)
+    {
+        abort_unless($tenant->is_demo, 403, 'This tenant is not flagged as a demo account.');
+
+        DB::transaction(function () use ($tenant) {
+            $tid = $tenant->id;
+
+            // Delete in FK-safe order (children first)
+            DB::table('wallet_transactions')->where('tenant_id', $tid)->delete();
+            DB::table('refund_requests')->where('tenant_id', $tid)->delete();
+            DB::table('payments')->where('tenant_id', $tid)->delete();
+            DB::table('pos_payments')->whereIn('order_id', function ($q) use ($tid) {
+                $q->select('id')->from('pos_orders')->where('tenant_id', $tid);
+            })->delete();
+            DB::table('pos_order_items')->whereIn('order_id', function ($q) use ($tid) {
+                $q->select('id')->from('pos_orders')->where('tenant_id', $tid);
+            })->delete();
+            DB::table('pos_orders')->where('tenant_id', $tid)->delete();
+            DB::table('inventory_movements')->where('tenant_id', $tid)->delete();
+            DB::table('cash_drawer_logs')->where('tenant_id', $tid)->delete();
+            DB::table('purchase_order_items')->whereIn('purchase_order_id', function ($q) use ($tid) {
+                $q->select('id')->from('purchase_orders')->where('tenant_id', $tid);
+            })->delete();
+            DB::table('purchase_orders')->where('tenant_id', $tid)->delete();
+            DB::table('booking_timers')->whereIn('booking_id', function ($q) use ($tid) {
+                $q->select('id')->from('bookings')->where('tenant_id', $tid);
+            })->delete();
+            DB::table('bookings')->where('tenant_id', $tid)->delete();
+            DB::table('membership_transactions')->whereIn('membership_id', function ($q) use ($tid) {
+                $q->select('id')->from('memberships')->where('tenant_id', $tid);
+            })->delete();
+            DB::table('memberships')->where('tenant_id', $tid)->delete();
+            DB::table('membership_plans')->where('tenant_id', $tid)->delete();
+            DB::table('tournament_team_members')->where('tenant_id', $tid)->delete();
+            DB::table('tournament_matches')->where('tenant_id', $tid)->delete();
+            DB::table('tournament_teams')->where('tenant_id', $tid)->delete();
+            DB::table('tournament_groups')->where('tenant_id', $tid)->delete();
+            DB::table('tournament_divisions')->where('tenant_id', $tid)->delete();
+            DB::table('tournaments')->where('tenant_id', $tid)->delete();
+            DB::table('shifts')->where('tenant_id', $tid)->delete();
+            DB::table('customer_notes')->where('tenant_id', $tid)->delete();
+            DB::table('promotions')->where('tenant_id', $tid)->delete();
+            DB::table('products')->where('tenant_id', $tid)->delete();
+            DB::table('product_categories')->where('tenant_id', $tid)->delete();
+            DB::table('suppliers')->where('tenant_id', $tid)->delete();
+            DB::table('courts')->where('tenant_id', $tid)->delete();
+            DB::table('branches')->where('tenant_id', $tid)->delete();
+
+            // Remove staff and customer users, keep the business owner
+            DB::table('users')
+                ->where('tenant_id', $tid)
+                ->whereIn('user_type', ['staff', 'customer'])
+                ->delete();
+
+            // Reset owner wallet
+            DB::table('users')
+                ->where('tenant_id', $tid)
+                ->where('user_type', 'business_owner')
+                ->update(['wallet_balance' => 0]);
+        });
+
+        // Restore sample data
+        app(DemoTenantSeeder::class)->runForTenant($tenant);
+
+        activity()->on($tenant)->log('Demo data reset by super admin');
+
+        return back()->with('success', "Demo data for \"{$tenant->name}\" has been reset successfully.");
     }
 
     public function destroy(Tenant $tenant)

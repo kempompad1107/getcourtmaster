@@ -18,6 +18,27 @@
             </button>
         </form>
 
+        {{-- Demo toggle --}}
+        <form method="POST" action="{{ route('super.tenants.toggle-demo', $tenant) }}" class="d-inline">
+            @csrf
+            @if($tenant->is_demo)
+                <button class="btn btn-warning btn-sm">
+                    <i class="bi bi-star-fill me-1"></i>Demo: ON
+                </button>
+            @else
+                <button class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-star me-1"></i>Mark as Demo
+                </button>
+            @endif
+        </form>
+
+        {{-- Reset Demo Data (only when is_demo) --}}
+        @if($tenant->is_demo)
+            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetDemoModal">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Demo Data
+            </button>
+        @endif
+
         {{-- Status menu --}}
         <div class="dropdown d-inline-block">
             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
@@ -99,8 +120,11 @@
                     </p>
                 @endif
             </div>
-            <div>
+            <div class="d-flex flex-column gap-1 align-items-end">
                 <x-badge :status="match($tenant->status) { 'active' => 'active', 'suspended' => 'cancelled', 'trial' => 'pending', 'cancelled' => 'cancelled', default => 'neutral' }">{{ ucfirst($tenant->status) }}</x-badge>
+                @if($tenant->is_demo)
+                    <span class="badge text-bg-warning"><i class="bi bi-star-fill me-1"></i>Demo</span>
+                @endif
             </div>
         </div>
     </div>
@@ -293,5 +317,39 @@
         </form>
     </div>
 </div>
+
+{{-- Reset Demo Data modal --}}
+@if($tenant->is_demo)
+<div class="modal fade" id="resetDemoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ route('super.tenants.reset-demo', $tenant) }}" class="modal-content text-start">
+            @csrf
+            <div class="modal-header">
+                <h6 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Reset Demo Data</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">This will <strong>permanently delete all transactional data</strong> for <strong>{{ $tenant->name }}</strong>:</p>
+                <ul class="small text-muted mb-3">
+                    <li>All bookings, payments, and timers</li>
+                    <li>All POS orders and inventory movements</li>
+                    <li>All memberships and wallet transactions</li>
+                    <li>All tournaments, shifts, and purchase orders</li>
+                    <li>All courts, branches, products, and categories</li>
+                    <li>All staff and customer user accounts</li>
+                </ul>
+                <p class="mb-0">Fresh sample data will be restored automatically. The business owner account is preserved.</p>
+                <div class="alert alert-danger mt-3 mb-0 small">
+                    <strong>This action cannot be undone.</strong> Only this demo tenant is affected — no other tenant data will be touched.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-danger btn-sm"><i class="bi bi-arrow-counterclockwise me-1"></i>Yes, Reset All Demo Data</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
 
 @endpush

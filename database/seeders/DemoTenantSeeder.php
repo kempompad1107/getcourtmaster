@@ -19,7 +19,6 @@ class DemoTenantSeeder extends Seeder
     {
         $plan = SubscriptionPlan::where('slug', 'pro')->first();
 
-        // Create demo tenant
         $tenant = Tenant::firstOrCreate(
             ['slug' => 'demo-pickleball'],
             [
@@ -33,12 +32,28 @@ class DemoTenantSeeder extends Seeder
                 'currency' => 'PHP',
                 'plan' => 'pro',
                 'status' => 'active',
+                'is_demo' => true,
                 'settings' => ['tax_rate' => 12, 'grace_period_minutes' => 5],
                 'features' => ['bookings', 'pos', 'memberships', 'inventory', 'promotions', 'api_access'],
             ]
         );
 
-        // Business Owner
+        $this->seedUsers($tenant);
+        $this->seedSampleData($tenant);
+    }
+
+    /**
+     * Re-seed sample data for an existing demo tenant (called after a data reset).
+     * Users are preserved; only venue data is recreated.
+     */
+    public function runForTenant(Tenant $tenant): void
+    {
+        $this->seedUsers($tenant);
+        $this->seedSampleData($tenant);
+    }
+
+    private function seedUsers(Tenant $tenant): void
+    {
         $owner = User::firstOrCreate(
             ['email' => 'owner@demo.courtmaster.app'],
             [
@@ -51,9 +66,8 @@ class DemoTenantSeeder extends Seeder
                 'referral_code' => 'DEMO001',
             ]
         );
-        $owner->assignRole('business_owner');
+        try { $owner->assignRole('business_owner'); } catch (\Throwable) {}
 
-        // Staff Member
         $staff = User::firstOrCreate(
             ['email' => 'staff@demo.courtmaster.app'],
             [
@@ -66,9 +80,8 @@ class DemoTenantSeeder extends Seeder
                 'referral_code' => 'STAFF01',
             ]
         );
-        $staff->assignRole('front_desk');
+        try { $staff->assignRole('front_desk'); } catch (\Throwable) {}
 
-        // Sample Customer
         $customer = User::firstOrCreate(
             ['email' => 'player@demo.courtmaster.app'],
             [
@@ -82,13 +95,13 @@ class DemoTenantSeeder extends Seeder
             ]
         );
 
-        // wallet_balance is no longer mass-assignable (security: only WalletService
-        // moves it). Set the demo seed balance explicitly via forceFill.
         if ((float) $customer->wallet_balance < 500) {
             $customer->forceFill(['wallet_balance' => 500])->save();
         }
+    }
 
-        // Branch
+    private function seedSampleData(Tenant $tenant): void
+    {
         $branch = Branch::firstOrCreate(
             ['tenant_id' => $tenant->id, 'slug' => 'main'],
             [
@@ -98,18 +111,17 @@ class DemoTenantSeeder extends Seeder
                 'is_main' => true,
                 'is_active' => true,
                 'operating_hours' => [
-                    'monday' => ['is_open' => true, 'open' => '07:00', 'close' => '22:00'],
-                    'tuesday' => ['is_open' => true, 'open' => '07:00', 'close' => '22:00'],
+                    'monday'    => ['is_open' => true, 'open' => '07:00', 'close' => '22:00'],
+                    'tuesday'   => ['is_open' => true, 'open' => '07:00', 'close' => '22:00'],
                     'wednesday' => ['is_open' => true, 'open' => '07:00', 'close' => '22:00'],
-                    'thursday' => ['is_open' => true, 'open' => '07:00', 'close' => '22:00'],
-                    'friday' => ['is_open' => true, 'open' => '07:00', 'close' => '23:00'],
-                    'saturday' => ['is_open' => true, 'open' => '06:00', 'close' => '23:00'],
-                    'sunday' => ['is_open' => true, 'open' => '06:00', 'close' => '22:00'],
+                    'thursday'  => ['is_open' => true, 'open' => '07:00', 'close' => '22:00'],
+                    'friday'    => ['is_open' => true, 'open' => '07:00', 'close' => '23:00'],
+                    'saturday'  => ['is_open' => true, 'open' => '06:00', 'close' => '23:00'],
+                    'sunday'    => ['is_open' => true, 'open' => '06:00', 'close' => '22:00'],
                 ],
             ]
         );
 
-        // Courts
         $courtNames = ['Court A', 'Court B', 'Court C', 'Court D'];
         foreach ($courtNames as $i => $name) {
             Court::firstOrCreate(
@@ -130,11 +142,10 @@ class DemoTenantSeeder extends Seeder
             );
         }
 
-        // Membership Plans
         $memPlans = [
-            ['name' => 'Monthly Pass', 'billing_cycle' => 'monthly', 'price' => 2500, 'court_credits' => 10, 'discount_percent' => 10],
-            ['name' => 'Quarterly Pass', 'billing_cycle' => 'quarterly', 'price' => 6500, 'court_credits' => 35, 'discount_percent' => 15],
-            ['name' => 'Annual VIP', 'billing_cycle' => 'yearly', 'price' => 24000, 'court_credits' => 150, 'discount_percent' => 25, 'is_vip' => true],
+            ['name' => 'Monthly Pass',   'billing_cycle' => 'monthly',   'price' => 2500,  'court_credits' => 10,  'discount_percent' => 10],
+            ['name' => 'Quarterly Pass', 'billing_cycle' => 'quarterly', 'price' => 6500,  'court_credits' => 35,  'discount_percent' => 15],
+            ['name' => 'Annual VIP',     'billing_cycle' => 'yearly',    'price' => 24000, 'court_credits' => 150, 'discount_percent' => 25, 'is_vip' => true],
         ];
 
         foreach ($memPlans as $mp) {
@@ -144,20 +155,19 @@ class DemoTenantSeeder extends Seeder
             );
         }
 
-        // Product Categories & Products
         $categories = [
             ['name' => 'Beverages', 'products' => [
-                ['name' => 'Water (500ml)', 'selling_price' => 30, 'stock_quantity' => 100],
-                ['name' => 'Sports Drink', 'selling_price' => 80, 'stock_quantity' => 50],
-                ['name' => 'Energy Drink', 'selling_price' => 120, 'stock_quantity' => 30],
+                ['name' => 'Water (500ml)', 'selling_price' => 30,  'stock_quantity' => 100],
+                ['name' => 'Sports Drink',  'selling_price' => 80,  'stock_quantity' => 50],
+                ['name' => 'Energy Drink',  'selling_price' => 120, 'stock_quantity' => 30],
             ]],
             ['name' => 'Equipment', 'products' => [
-                ['name' => 'Paddle Rental', 'selling_price' => 100, 'track_inventory' => false],
+                ['name' => 'Paddle Rental',  'selling_price' => 100, 'track_inventory' => false],
                 ['name' => 'Ball (per game)', 'selling_price' => 50, 'stock_quantity' => 200],
-                ['name' => 'Grip Tape', 'selling_price' => 80, 'stock_quantity' => 30],
+                ['name' => 'Grip Tape',      'selling_price' => 80,  'stock_quantity' => 30],
             ]],
             ['name' => 'Snacks', 'products' => [
-                ['name' => 'Banana', 'selling_price' => 25, 'stock_quantity' => 50],
+                ['name' => 'Banana',      'selling_price' => 25,  'stock_quantity' => 50],
                 ['name' => 'Protein Bar', 'selling_price' => 150, 'stock_quantity' => 20],
             ]],
         ];

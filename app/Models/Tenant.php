@@ -18,6 +18,7 @@ class Tenant extends Model
         'plan', 'status', 'trial_ends_at', 'plan_expires_at',
         'settings', 'features', 'stripe_customer_id', 'subscription_id', 'commission_rate',
         'payment_credentials', 'webhook_token', 'mail_credentials',
+        'is_demo',
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class Tenant extends Model
         // Whole JSON blob is encrypted at rest. Sensitive secret keys live inside.
         'payment_credentials' => 'encrypted:array',
         'mail_credentials' => 'encrypted:array',
+        'is_demo' => 'boolean',
     ];
 
     protected $hidden = ['payment_credentials', 'mail_credentials'];

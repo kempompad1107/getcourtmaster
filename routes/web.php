@@ -107,6 +107,8 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::post('/tenants/{tenant}/cancel',       [TenantController::class, 'cancel'])->name('tenants.cancel');
         Route::delete('/tenants/{tenant}',            [TenantController::class, 'destroy'])->name('tenants.destroy');
         Route::post('/tenants/{tenant}/impersonate',  [TenantController::class, 'impersonate'])->name('tenants.impersonate');
+        Route::post('/tenants/{tenant}/toggle-demo',  [TenantController::class, 'toggleDemo'])->name('tenants.toggle-demo');
+        Route::post('/tenants/{tenant}/reset-demo',   [TenantController::class, 'resetDemoData'])->name('tenants.reset-demo');
 
         // Tenant users (per-tenant)
         Route::get('/tenants/{tenant}/users',                              [TenantController::class, 'users'])->name('tenants.users');
