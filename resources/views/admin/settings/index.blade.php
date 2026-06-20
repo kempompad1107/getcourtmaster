@@ -343,7 +343,7 @@
                 $sp    = $creds['stripe']   ?? [];
                 $mask  = fn ($v) => $v ? str_repeat('•', 6) . substr($v, -4) : '';
                 $webhookToken = $tenant->webhook_token;
-                $pmMethods = $pm['methods'] ?? ['gcash', 'paymaya', 'card', 'qrph'];
+                $pmMethods = $pm['methods'] ?? [];
             @endphp
 
             {{-- Intro banner --}}
