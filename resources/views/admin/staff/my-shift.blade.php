@@ -70,6 +70,25 @@
     .shift-hours-value { font-weight: 800; font-size: 1.5rem; line-height: 1; margin: 0; }
     .shift-hours-label { font-size: .66rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--bs-secondary-color); margin: .25rem 0 0; }
 
+    /* KPI summary row */
+    .shift-kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+    @media (min-width: 768px) { .shift-kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+    .shift-kpi {
+        display: flex; align-items: center; gap: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: .9rem;
+        background: var(--bs-card-bg);
+        border: 1px solid var(--bs-border-color);
+        transition: border-color .15s, box-shadow .15s;
+    }
+    .shift-kpi:hover { border-color: rgba(16,185,129,.3); box-shadow: 0 4px 12px -4px rgba(0,0,0,.08); }
+    .shift-kpi-icon {
+        width: 42px; height: 42px; border-radius: .75rem; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    }
+    .shift-kpi-val { font-size: 1.4rem; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+    .shift-kpi-lbl { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--bs-secondary-color); margin-top: .2rem; }
+
     .shift-datechip {
         width: 50px; flex-shrink: 0; text-align: center; border-radius: .7rem; overflow: hidden;
         border: 1px solid var(--bs-border-color); line-height: 1;
@@ -166,13 +185,48 @@
                         @endif
                     </div>
 
-                    {{-- Hours this month --}}
-                    <div class="shift-hours-tile d-flex flex-column justify-content-center">
-                        <p class="shift-hours-value">{{ number_format($hoursThisMonth, 1) }}<span class="fs-6">h</span></p>
-                        <p class="shift-hours-label">This month</p>
-                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+{{-- KPI summary row --}}
+<div class="shift-kpi-grid mb-4">
+    <div class="shift-kpi">
+        <div class="shift-kpi-icon bg-success bg-opacity-10">
+            <i class="bi bi-calendar-week text-success"></i>
+        </div>
+        <div>
+            <div class="shift-kpi-val">{{ number_format($hoursThisWeek, 1) }}<span class="fs-6 fw-normal text-muted">h</span></div>
+            <div class="shift-kpi-lbl">This week</div>
+        </div>
+    </div>
+    <div class="shift-kpi">
+        <div class="shift-kpi-icon bg-primary bg-opacity-10">
+            <i class="bi bi-calendar-check text-primary"></i>
+        </div>
+        <div>
+            <div class="shift-kpi-val">{{ number_format($hoursThisMonth, 1) }}<span class="fs-6 fw-normal text-muted">h</span></div>
+            <div class="shift-kpi-lbl">This month</div>
+        </div>
+    </div>
+    <div class="shift-kpi">
+        <div class="shift-kpi-icon bg-info bg-opacity-10">
+            <i class="bi bi-person-check text-info"></i>
+        </div>
+        <div>
+            <div class="shift-kpi-val">{{ $daysWorked }}</div>
+            <div class="shift-kpi-lbl">Days worked</div>
+        </div>
+    </div>
+    <div class="shift-kpi">
+        <div class="shift-kpi-icon {{ $onTimeRate === null ? 'bg-secondary bg-opacity-10' : ($onTimeRate >= 80 ? 'bg-success bg-opacity-10' : 'bg-warning bg-opacity-10') }}">
+            <i class="bi bi-clock-history {{ $onTimeRate === null ? 'text-secondary' : ($onTimeRate >= 80 ? 'text-success' : 'text-warning') }}"></i>
+        </div>
+        <div>
+            <div class="shift-kpi-val">{{ $onTimeRate !== null ? $onTimeRate . '%' : '—' }}</div>
+            <div class="shift-kpi-lbl">On-time rate</div>
         </div>
     </div>
 </div>
@@ -184,17 +238,20 @@
             <div class="card-header"><h6 class="mb-0 fw-semibold"><i class="bi bi-calendar-week me-1 text-muted"></i>Upcoming Shifts</h6></div>
             <div class="list-group list-group-flush">
                 @forelse($upcoming as $shift)
-                <div class="list-group-item shift-upcoming-item d-flex align-items-center gap-3 py-3">
+                <div class="list-group-item shift-upcoming-item d-flex align-items-center gap-3 px-4 py-3">
                     <div class="shift-datechip">
                         <span class="m">{{ $shift->shift_date->format('M') }}</span>
                         <span class="d">{{ $shift->shift_date->format('j') }}</span>
                     </div>
                     <div class="flex-grow-1 min-w-0">
-                        <p class="mb-0 fw-semibold">{{ $shift->shift_date->format('l') }}</p>
-                        <small class="text-muted font-monospace">
-                            {{ \Carbon\Carbon::parse($shift->scheduled_start)->format('g:i A') }}
-                            – {{ \Carbon\Carbon::parse($shift->scheduled_end)->format('g:i A') }}
-                        </small>
+                        <p class="mb-0 fw-semibold small">{{ $shift->shift_date->format('l') }}</p>
+                        <div class="d-flex align-items-center gap-1 mt-1">
+                            <i class="bi bi-clock text-muted" style="font-size:.7rem"></i>
+                            <small class="text-muted font-monospace">
+                                {{ \Carbon\Carbon::parse($shift->scheduled_start)->format('g:i A') }}
+                                – {{ \Carbon\Carbon::parse($shift->scheduled_end)->format('g:i A') }}
+                            </small>
+                        </div>
                     </div>
                     <x-badge :status="match($shift->status) { 'scheduled' => 'pending', 'active' => 'active', 'completed' => 'completed', 'absent' => 'cancelled', 'late' => 'pending', 'cancelled' => 'cancelled', default => 'neutral' }">{{ ucfirst($shift->status) }}</x-badge>
                 </div>

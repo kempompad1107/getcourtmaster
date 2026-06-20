@@ -231,8 +231,26 @@ class StaffController extends Controller
             ->get()
             ->sum(fn ($s) => $s->duration_minutes / 60);
 
+        $hoursThisWeek = Shift::where('staff_id', $user->id)
+            ->whereBetween('shift_date', [now()->startOfWeek(), now()->endOfWeek()])
+            ->whereNotNull('clocked_out_at')
+            ->get()
+            ->sum(fn ($s) => $s->duration_minutes / 60);
+
+        $monthShifts = Shift::where('staff_id', $user->id)
+            ->whereMonth('shift_date', now()->month)
+            ->whereYear('shift_date', now()->year)
+            ->whereIn('status', ['completed', 'late', 'absent'])
+            ->get();
+
+        $daysWorked   = $monthShifts->whereIn('status', ['completed', 'late'])->count();
+        $onTimeShifts = $monthShifts->whereIn('status', ['completed', 'late'])
+            ->filter(fn ($s) => $s->clocked_in_at && $s->clocked_in_at->lte(\Carbon\Carbon::parse($s->shift_date->format('Y-m-d') . ' ' . $s->scheduled_start)));
+        $onTimeRate   = $daysWorked > 0 ? round($onTimeShifts->count() / $daysWorked * 100) : null;
+
         return view('admin.staff.my-shift', compact(
-            'activeShift', 'todayShift', 'upcoming', 'recent', 'hoursThisMonth'
+            'activeShift', 'todayShift', 'upcoming', 'recent',
+            'hoursThisMonth', 'hoursThisWeek', 'daysWorked', 'onTimeRate'
         ));
     }
 
