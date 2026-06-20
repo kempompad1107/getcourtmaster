@@ -105,17 +105,23 @@
         .shift-attendance thead { display: none; }
         .shift-attendance, .shift-attendance tbody { display: block; width: 100%; }
 
-        /* Each row becomes a card */
+        /* Each row becomes a flat card with a colored left accent */
         .shift-attendance tr:not(.shift-attendance-empty) {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto auto auto;
             border: 1px solid var(--bs-border-color);
-            border-radius: .9rem;
+            border-left: 3px solid var(--bs-border-color);
+            border-radius: 0;
             overflow: hidden;
-            margin-bottom: .75rem;
+            margin-bottom: .6rem;
             background: var(--bs-card-bg);
         }
+        /* Status-based left accent color */
+        .shift-attendance tr[data-status="completed"] { border-left-color: #22c55e; }
+        .shift-attendance tr[data-status="active"]    { border-left-color: #3b82f6; }
+        .shift-attendance tr[data-status="late"]      { border-left-color: #f59e0b; }
+        .shift-attendance tr[data-status="absent"]    { border-left-color: #ef4444; }
+        .shift-attendance tr[data-status="scheduled"] { border-left-color: #94a3b8; }
 
         /* Date — full width header */
         .shift-attendance td[data-label="Date"] {
@@ -360,7 +366,7 @@
                     </thead>
                     <tbody>
                         @forelse($recent as $shift)
-                        <tr>
+                        <tr data-status="{{ $shift->status }}">
                             <td data-label="Date" class="small fw-medium text-nowrap">{{ $shift->shift_date->format('M j, Y') }}</td>
                             <td data-label="Scheduled" class="small font-monospace text-muted text-nowrap">
                                 {{ \Carbon\Carbon::parse($shift->scheduled_start)->format('H:i') }}
