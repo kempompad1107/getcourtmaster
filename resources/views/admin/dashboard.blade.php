@@ -35,9 +35,15 @@
     .dash-sub .sep { opacity: .4; margin: 0 .5rem; }
 
     .dash-hero .btn-hero {
-        --bs-btn-color:#fff; --bs-btn-border-color:rgba(255,255,255,.22);
-        --bs-btn-hover-bg:rgba(255,255,255,.12); --bs-btn-hover-border-color:rgba(255,255,255,.4); --bs-btn-hover-color:#fff;
-        backdrop-filter: blur(4px); background: rgba(255,255,255,.06);
+        --bs-btn-color: #fff;
+        --bs-btn-border-color: rgba(255,255,255,.45);
+        --bs-btn-hover-bg: rgba(255,255,255,.15);
+        --bs-btn-hover-border-color: rgba(255,255,255,.7);
+        --bs-btn-hover-color: #fff;
+        --bs-btn-active-bg: rgba(255,255,255,.2);
+        background: rgba(255,255,255,.08);
+        backdrop-filter: blur(6px);
+        font-weight: 600;
     }
 
     /* Hero top row: greeting left, buttons right */
@@ -122,10 +128,10 @@
             </p>
         </div>
         <div class="hero-actions">
-            <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary fw-semibold">
                 <i class="bi bi-plus-lg me-1"></i>New Booking
             </a>
-            <a href="{{ route('admin.courts.status-board') }}" class="btn btn-hero btn-sm">
+            <a href="{{ route('admin.courts.status-board') }}" class="btn btn-hero fw-semibold">
                 <i class="bi bi-grid-3x3-gap me-1"></i>Status Board
             </a>
         </div>
