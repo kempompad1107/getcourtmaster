@@ -5,12 +5,15 @@
     'backLabel'=> 'Back',
 ])
 
-<div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pb-3 mb-4 border-bottom">
-    <div class="d-flex align-items-start gap-2 min-w-0">
+<div class="d-flex align-items-center justify-content-between gap-3 pb-3 mb-4 border-bottom">
+    <div class="d-flex align-items-center gap-3 min-w-0">
         @if($back)
-        <a href="{{ $back }}" class="btn btn-link btn-sm p-1 mt-1 text-muted flex-shrink-0">
-            <i class="bi bi-arrow-left"></i>
+        <a href="{{ $back }}" class="d-inline-flex align-items-center gap-1 text-muted text-decoration-none flex-shrink-0"
+           style="font-size:.8rem">
+            <i class="bi bi-arrow-left" style="font-size:.75rem"></i>
+            {{ $backLabel }}
         </a>
+        <span class="text-muted" style="opacity:.35">|</span>
         @endif
         <div class="min-w-0">
             <h4 class="fw-bold mb-0 text-truncate">{{ $title }}</h4>

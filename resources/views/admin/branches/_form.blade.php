@@ -4,6 +4,30 @@
     $hours = old('operating_hours', $branch?->operating_hours ?? []);
 @endphp
 
+@push('styles')
+<style>
+.hours-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .75rem 1.25rem;
+}
+.hours-times {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-shrink: 0;
+}
+.hours-times .form-control { width: 118px; }
+@media (max-width: 420px) {
+    .hours-row { flex-direction: column; align-items: flex-start; gap: .35rem; }
+    .hours-times { width: 100%; }
+    .hours-times .form-control { flex: 1; width: auto; }
+}
+</style>
+@endpush
+
 {{-- Basic info --}}
 <div class="card mb-4">
     <div class="card-header">
@@ -107,33 +131,28 @@
             $row    = $hours[$day] ?? ['is_open' => false, 'open' => '08:00', 'close' => '22:00'];
             $isOpen = (bool) ($row['is_open'] ?? false);
         @endphp
-        <div class="d-flex align-items-center gap-3 px-4 py-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-            {{-- Day toggle --}}
-            <div style="width:110px;flex-shrink:0">
-                <input type="hidden" name="operating_hours[{{ $day }}][is_open]" value="0">
-                <div class="form-check mb-0">
-                    <input class="form-check-input" type="checkbox"
-                           name="operating_hours[{{ $day }}][is_open]" value="1"
-                           id="hours_{{ $day }}" @checked($isOpen)>
-                    <label class="form-check-label fw-medium" for="hours_{{ $day }}">
-                        {{ ucfirst($day) }}
-                    </label>
-                </div>
+        <div class="hours-row {{ !$loop->last ? 'border-bottom' : '' }}">
+            <input type="hidden" name="operating_hours[{{ $day }}][is_open]" value="0">
+            <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox"
+                       name="operating_hours[{{ $day }}][is_open]" value="1"
+                       id="hours_{{ $day }}" @checked($isOpen)>
+                <label class="form-check-label fw-medium" for="hours_{{ $day }}">
+                    {{ ucfirst($day) }}
+                </label>
             </div>
-            {{-- Time range --}}
-            <div class="d-flex align-items-center gap-2 flex-grow-1">
+            <div class="hours-times">
                 <input type="time" name="operating_hours[{{ $day }}][open]"
                        value="{{ $row['open'] ?? '08:00' }}"
-                       class="form-control form-control-sm" style="max-width:120px">
+                       class="form-control form-control-sm">
                 <span class="text-muted small">to</span>
                 <input type="time" name="operating_hours[{{ $day }}][close]"
                        value="{{ $row['close'] ?? '22:00' }}"
-                       class="form-control form-control-sm" style="max-width:120px">
+                       class="form-control form-control-sm">
+                @if(!$isOpen)
+                <span class="badge text-bg-secondary ms-1" style="font-size:.65rem;white-space:nowrap">Closed</span>
+                @endif
             </div>
-            {{-- Closed label --}}
-            @if(!$isOpen)
-            <span class="badge text-bg-secondary" style="font-size:.65rem">Closed</span>
-            @endif
         </div>
         @endforeach
         <div class="px-4 py-2 border-top">
