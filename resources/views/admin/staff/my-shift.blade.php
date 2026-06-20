@@ -351,7 +351,12 @@
     {{-- Recent attendance --}}
     <div class="col-12 col-lg-7">
         <div class="card h-100">
-            <div class="card-header"><h6 class="mb-0 fw-semibold"><i class="bi bi-clock-history me-1 text-muted"></i>Recent Attendance</h6></div>
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-semibold"><i class="bi bi-clock-history me-1 text-muted"></i>Recent Attendance</h6>
+                <a href="{{ route('admin.staff.my-shift.history') }}" class="small text-primary text-decoration-none">
+                    View all <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
             <div class="table-responsive">
                 <table class="table shift-attendance table-hover mb-0 align-middle">
                     <thead class="table-light">

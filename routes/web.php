@@ -290,6 +290,7 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         // shift/clock routes stay open to every staff member.
         Route::resource('staff', StaffController::class)->middleware(['branch.required', 'perm:staff.view']);
         Route::get('/my-shift', [StaffController::class, 'myShift'])->name('staff.my-shift');
+        Route::get('/my-shift/history', [StaffController::class, 'myShiftHistory'])->name('staff.my-shift.history');
         Route::get('/shifts', [StaffController::class, 'shifts'])->name('staff.shifts')->middleware('perm:staff.view');
         Route::post('/shifts', [StaffController::class, 'storeShift'])->name('shifts.store')->middleware(['branch.required', 'perm:staff.view']);
         Route::put('/shifts/{shift}', [StaffController::class, 'updateShift'])->name('shifts.update')->middleware(['branch.required', 'perm:staff.view']);

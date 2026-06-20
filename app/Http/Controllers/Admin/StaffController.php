@@ -222,7 +222,7 @@ class StaffController extends Controller
 
         $recent = Shift::where('staff_id', $user->id)
             ->orderByDesc('shift_date')->orderByDesc('scheduled_start')
-            ->limit(10)->get();
+            ->limit(5)->get();
 
         $hoursThisMonth = Shift::where('staff_id', $user->id)
             ->whereMonth('shift_date', now()->month)
@@ -252,6 +252,24 @@ class StaffController extends Controller
             'activeShift', 'todayShift', 'upcoming', 'recent',
             'hoursThisMonth', 'hoursThisWeek', 'daysWorked', 'onTimeRate'
         ));
+    }
+
+    public function myShiftHistory(Request $request)
+    {
+        $user = $this->authUser();
+
+        $history = Shift::where('staff_id', $user->id)
+            ->when($request->status, fn ($q, $v) => $q->where('status', $v))
+            ->when($request->month, fn ($q, $v) => $q->whereMonth('shift_date', $v))
+            ->when($request->year,  fn ($q, $v) => $q->whereYear('shift_date',  $v))
+            ->orderByDesc('shift_date')->orderByDesc('scheduled_start')
+            ->paginate(10)->withQueryString();
+
+        $totalHours = Shift::where('staff_id', $user->id)
+            ->whereNotNull('clocked_out_at')
+            ->get()->sum(fn ($s) => $s->duration_minutes / 60);
+
+        return view('admin.staff.shift-history', compact('history', 'totalHours'));
     }
 
     public function shifts(Request $request)
