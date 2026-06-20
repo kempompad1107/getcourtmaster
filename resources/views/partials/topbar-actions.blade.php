@@ -18,18 +18,18 @@
     @isset($availableBranches)
         @php $isAllBranches = ($canSeeAllBranches ?? false) && $activeBranchId === null; @endphp
         @if($availableBranches->count() > 1 || ($canSeeAllBranches ?? false))
-        <div class="dropdown me-2 d-none d-sm-block">
-            <span class="d-flex align-items-center gap-2 text-body-secondary small" style="cursor:pointer"
-                  data-bs-toggle="dropdown" aria-label="Switch branch"
-                  @if($isAllBranches) title="Read-only — select a branch to make changes" @endif>
-                <i class="bi {{ $isAllBranches ? 'bi-eye' : 'bi-shop' }}"></i>
-                <span class="text-truncate" style="max-width:140px">
+        <div class="dropdown me-2">
+            <button class="topbar-btn d-flex align-items-center gap-2"
+                    data-bs-toggle="dropdown" aria-label="Switch branch"
+                    @if($isAllBranches) title="Read-only — select a branch to make changes" @endif>
+                <i class="bi {{ $isAllBranches ? 'bi-house' : 'bi-shop' }}"></i>
+                <span class="d-none d-sm-inline text-truncate" style="max-width:140px">
                     {{ $activeBranch?->name ?? 'All branches' }}
                 </span>
                 @if($isAllBranches)
-                    <span class="badge text-bg-warning" style="font-size:.55rem">read-only</span>
+                    <span class="badge text-bg-warning d-none d-sm-inline" style="font-size:.55rem">read-only</span>
                 @endif
-            </span>
+            </button>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width:220px">
                 @if($canSeeAllBranches ?? false)
                     <li>

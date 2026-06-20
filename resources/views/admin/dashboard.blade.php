@@ -9,7 +9,7 @@
     .dash-hero {
         position: relative; overflow: hidden;
         border-radius: 1.1rem;
-        padding: clamp(1.25rem, 3vw, 1.85rem);
+        padding: 1.5rem;
         color: #fff;
         background:
             radial-gradient(130% 150% at 0% 0%,   rgba(16,185,129,.32), transparent 55%),
@@ -41,23 +41,26 @@
     }
 
     /* Hero inline mini-stats */
-    .hero-stats { display: flex; flex-wrap: wrap; gap: 0; margin-top: 1.35rem; }
-    .hero-stat { padding: .15rem 1.25rem .15rem 0; margin-right: 1.25rem; border-right: 1px solid rgba(255,255,255,.12); }
-    .hero-stat:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
-    .hero-stat .l { display:flex; align-items:center; gap:.4rem; font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:rgba(226,232,240,.62); }
-    .hero-stat .v { font-size: clamp(1.25rem, 2.4vw, 1.55rem); font-weight: 800; color:#fff; letter-spacing:-.02em; font-variant-numeric: tabular-nums; line-height: 1.2; }
-    @media (max-width: 575.98px) {
-        .hero-stat { flex: 1 1 40%; border-right: 0; padding: .5rem 0; margin-right: 0; }
+    .hero-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; margin-top: 1.25rem; }
+    @media (min-width: 576px) {
+        .hero-stats { display: flex; flex-wrap: wrap; gap: 0; margin-top: 1.35rem; }
+        .hero-stat { padding: .15rem 1.25rem .15rem 0; margin-right: 1.25rem; border-right: 1px solid rgba(255,255,255,.12); }
+        .hero-stat:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
     }
-    /* Consistent VISUAL rhythm in the hero on phones (date → buttons → stats).
-       Rect-gaps differ on purpose: the date carries ~5px line-leading below it and
-       the stats row ~8px top padding, so equal box-gaps would look uneven. These
-       compensate to ~12px even visual gaps (measured via headless render). */
+    .hero-stat {
+        background: rgba(255,255,255,.06);
+        border-radius: .65rem;
+        padding: .65rem .85rem;
+        border: 1px solid rgba(255,255,255,.08);
+    }
+    @media (min-width: 576px) {
+        .hero-stat { background: none; border-radius: 0; border: none; padding: .15rem 1.25rem .15rem 0; }
+    }
+    .hero-stat .l { display:flex; align-items:center; gap:.4rem; font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:rgba(226,232,240,.62); }
+    .hero-stat .v { font-size: clamp(1.25rem, 2.4vw, 1.55rem); font-weight: 800; color:#fff; letter-spacing:-.02em; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: .2rem; }
     @media (max-width: 767.98px) {
-        .dash-hero > .d-flex   { gap: .45rem !important; }
+        .dash-hero > .d-flex   { gap: .75rem !important; }
         .dash-hero .d-grid     { gap: .75rem !important; }
-        .dash-hero .hero-stats { margin-top: .2rem; }
-        .dash-hero .hero-stat  { padding-top: .35rem; padding-bottom: .35rem; }
     }
 
     /* Auto-flowing KPI grid — always fills the row cleanly, no orphan cards */
@@ -168,26 +171,40 @@
     <x-stat-card label="Monthly Revenue"   :value="'₱'.number_format($stats['monthly_revenue'])"
                  icon="bi-currency-dollar" color="emerald"
                  :trend="$trendLabel"
-                 :trendUp="$growth !== null ? $growth >= 0 : null"/>
+                 :trendUp="$growth !== null ? $growth >= 0 : null">
+        <p class="mb-0 text-muted mt-2" style="font-size:.72rem">{{ now()->format('F Y') }}</p>
+    </x-stat-card>
 
     <x-stat-card :label="$customersLabel" :value="$stats['customers']"
                  icon="bi-people" color="purple"
-                 :trend="($stats['customers_scoped'] ?? false) ? 'last 90 days' : null"/>
+                 :trend="($stats['customers_scoped'] ?? false) ? 'last 90 days' : null">
+        <p class="mb-0 text-muted mt-2" style="font-size:.72rem">Registered accounts</p>
+    </x-stat-card>
 
     <x-stat-card label="Pending Bookings"  :value="$stats['pending_bookings']"
                  icon="bi-clock" color="amber"
-                 :href="route('admin.bookings.index', ['status'=>'pending'])"/>
+                 :href="route('admin.bookings.index', ['status'=>'pending'])">
+        <p class="mb-0 text-muted mt-2" style="font-size:.72rem">Awaiting confirmation</p>
+    </x-stat-card>
 
     <x-stat-card label="Court Utilization" :value="$avgUtilization.'%'"
-                 icon="bi-bar-chart-line" color="emerald"/>
+                 icon="bi-bar-chart-line" color="emerald">
+        <p class="mb-0 text-muted mt-2" style="font-size:.72rem">Avg across all courts</p>
+    </x-stat-card>
 </div>
 
 {{-- Charts row --}}
+@php
+    $cAvailable = $courtStatuses->where('status', 'available')->count();
+    $cOccupied  = $courtStatuses->where('status', 'occupied')->count();
+    $cReserved  = $courtStatuses->where('status', 'reserved')->count();
+    $cTotal     = $courtStatuses->count();
+@endphp
 <div class="dash-section">Revenue &amp; courts</div>
 <div class="row g-4 mb-4">
 
     {{-- Revenue chart --}}
-    <div class="col-12 col-xl-8">
+    <div class="col-12 col-xl-6">
         <div class="card h-100">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <div>
@@ -206,15 +223,43 @@
     </div>
 
     {{-- Court status --}}
-    <div class="col-12 col-xl-4">
+    <div class="col-12 col-xl-3">
         <div class="card h-100 d-flex flex-column">
             <div class="card-header d-flex align-items-center justify-content-between flex-shrink-0">
                 <h6 class="mb-0 fw-semibold">Court Status</h6>
-                <span class="badge text-bg-success">
-                    {{ $courtStatuses->where('status', 'available')->count() }} free
-                </span>
+                <a href="{{ route('admin.courts.status-board') }}" class="small text-primary text-decoration-none">
+                    Full board <i class="bi bi-arrow-right ms-1"></i>
+                </a>
             </div>
-            <div class="flex-grow-1 overflow-auto" style="max-height:280px">
+            {{-- Availability summary --}}
+            <div class="px-3 pt-3 pb-2 border-bottom flex-shrink-0">
+                <div class="d-flex gap-3 justify-content-between">
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-success lh-1">{{ $cAvailable }}</div>
+                        <div class="text-muted" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:2px">Available</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-danger lh-1">{{ $cOccupied }}</div>
+                        <div class="text-muted" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:2px">Occupied</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 text-warning lh-1">{{ $cReserved }}</div>
+                        <div class="text-muted" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:2px">Reserved</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="fw-bold fs-5 lh-1">{{ $cTotal }}</div>
+                        <div class="text-muted" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:2px">Total</div>
+                    </div>
+                </div>
+                @if($cTotal > 0)
+                <div class="mt-2" style="height:6px;border-radius:3px;overflow:hidden;display:flex;gap:2px">
+                    @if($cAvailable > 0)<div style="flex:{{ $cAvailable }};background:#22c55e;border-radius:3px"></div>@endif
+                    @if($cOccupied > 0)<div style="flex:{{ $cOccupied }};background:#ef4444;border-radius:3px"></div>@endif
+                    @if($cReserved > 0)<div style="flex:{{ $cReserved }};background:#f59e0b;border-radius:3px"></div>@endif
+                </div>
+                @endif
+            </div>
+            <div class="flex-grow-1 overflow-auto" style="max-height:230px">
                 @forelse($courtStatuses as $court)
                 @php
                 $dot = match($court->status) {
@@ -224,7 +269,7 @@
                     default     => 'bg-secondary'
                 };
                 @endphp
-                <div class="d-flex align-items-center justify-content-between px-3 py-3 border-bottom court-status-item">
+                <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom court-status-item">
                     <div class="d-flex align-items-center gap-2 min-w-0">
                         <span class="rounded-circle flex-shrink-0 {{ $dot }}"
                               style="width:8px;height:8px;display:inline-block"></span>
@@ -248,10 +293,43 @@
                 <x-empty-state title="No courts configured" icon="bi-grid"/>
                 @endforelse
             </div>
-            <div class="card-footer flex-shrink-0">
-                <a href="{{ route('admin.courts.status-board') }}" class="small text-primary text-decoration-none">
-                    View full status board <i class="bi bi-arrow-right ms-1"></i>
-                </a>
+        </div>
+    </div>
+
+    {{-- Revenue by payment method (donut) --}}
+    <div class="col-12 col-xl-3">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-semibold">Revenue by Method</h6>
+                <small class="text-muted">{{ now()->format('M Y') }}</small>
+            </div>
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                @if(($revenue['by_method'] ?? collect())->isNotEmpty())
+                <div id="revenueByMethodChart" style="width:100%;max-width:220px"></div>
+                <div class="w-100 mt-2">
+                    @php
+                    $methodColors = ['cash'=>'#22c55e','gcash'=>'#3b82f6','card'=>'#8b5cf6','maya'=>'#06b6d4','paymongo'=>'#f59e0b'];
+                    $totalRev = max($revenue['total_revenue'] ?? 1, 1);
+                    @endphp
+                    @foreach(($revenue['by_method'] ?? collect()) as $method => $amount)
+                    <div class="d-flex align-items-center justify-content-between py-1" style="font-size:.78rem">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="rounded-circle flex-shrink-0"
+                                  style="width:8px;height:8px;display:inline-block;background:{{ $methodColors[$method] ?? '#9ca3af' }}"></span>
+                            <span class="text-capitalize fw-medium">{{ $method }}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-muted">
+                            <span>{{ round(($amount / $totalRev) * 100, 1) }}%</span>
+                            <span class="fw-semibold text-body">₱{{ number_format($amount) }}</span>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <x-empty-state title="No revenue data"
+                    description="Payment breakdowns appear once transactions are processed."
+                    icon="bi-pie-chart"/>
+                @endif
             </div>
         </div>
     </div>
@@ -397,93 +475,32 @@
     </div>
 </div>
 
-{{-- Bottom row --}}
-<div class="dash-collapsible" :class="{ open: open }" x-data="{ open: window.matchMedia('(min-width: 768px)').matches }">
-    <button type="button" class="dash-section dash-collapsible-toggle w-100 border-0 bg-transparent text-start" @click="open = !open" :aria-expanded="open.toString()" :tabindex="window.matchMedia('(min-width: 768px)').matches ? -1 : 0">
-        Shortcuts
-        <i class="bi bi-chevron-down ms-auto"></i>
-    </button>
-    <div class="dash-collapsible-body">
-        <div class="row g-4">
-
-    {{-- Quick actions --}}
-    <div class="col-12 col-md-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <h6 class="mb-0 fw-semibold">Quick Actions</h6>
+{{-- Bottom row: Quick Actions --}}
+<div class="dash-section">Quick actions</div>
+<div class="row g-3 mb-4">
+    @php
+    $quickActions = [
+        ['href' => route('admin.bookings.create'),  'label' => 'New Booking',   'icon' => 'bi-calendar-plus',  'bg' => 'bg-success bg-opacity-10', 'text' => 'text-success',  'desc' => 'Reserve a court'],
+        ['href' => route('admin.pos.index'),        'label' => 'Open POS',      'icon' => 'bi-receipt',         'bg' => 'bg-primary bg-opacity-10', 'text' => 'text-primary',  'desc' => 'Point of sale'],
+        ['href' => route('admin.customers.index'),  'label' => 'Customers',     'icon' => 'bi-people',          'bg' => 'bg-info bg-opacity-10',    'text' => 'text-info',     'desc' => 'Manage members'],
+        ['href' => route('admin.reports.index'),    'label' => 'Reports',       'icon' => 'bi-bar-chart-line',  'bg' => 'bg-warning bg-opacity-10', 'text' => 'text-warning',  'desc' => 'View analytics'],
+    ];
+    @endphp
+    @foreach($quickActions as $qa)
+    <div class="col-6 col-md-3">
+        <a href="{{ $qa['href'] }}"
+           class="qa-tile card text-decoration-none text-reset d-flex flex-row align-items-center gap-3 p-3">
+            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 {{ $qa['bg'] }}"
+                 style="width:44px;height:44px">
+                <i class="bi {{ $qa['icon'] }} {{ $qa['text'] }} fs-5"></i>
             </div>
-            <div class="card-body">
-                <div class="row g-2">
-                    @php
-                    $quickActions = [
-                        ['href' => route('admin.bookings.create'),  'label' => 'New Booking', 'icon' => 'bi-calendar-plus',   'bg' => 'bg-success bg-opacity-10', 'text' => 'text-success'],
-                        ['href' => route('admin.pos.index'),        'label' => 'Open POS',    'icon' => 'bi-receipt',          'bg' => 'bg-success bg-opacity-10', 'text' => 'text-primary'],
-                        ['href' => route('admin.customers.index'),  'label' => 'Customers',   'icon' => 'bi-people',           'bg' => 'bg-info bg-opacity-10',    'text' => 'text-info'],
-                        ['href' => route('admin.reports.index'),    'label' => 'Reports',     'icon' => 'bi-bar-chart-line',   'bg' => 'bg-warning bg-opacity-10', 'text' => 'text-warning'],
-                    ];
-                    @endphp
-                    @foreach($quickActions as $qa)
-                    <div class="col-6">
-                        <a href="{{ $qa['href'] }}"
-                           class="qa-tile d-flex flex-column align-items-center gap-2 p-3 rounded-3 text-center text-decoration-none
-                                  border text-reset">
-                            <div class="rounded-3 d-flex align-items-center justify-content-center {{ $qa['bg'] }}"
-                                 style="width:44px;height:44px">
-                                <i class="bi {{ $qa['icon'] }} {{ $qa['text'] }} fs-5"></i>
-                            </div>
-                            <span class="small fw-semibold">{{ $qa['label'] }}</span>
-                        </a>
-                    </div>
-                    @endforeach
-                </div>
+            <div class="min-w-0">
+                <p class="mb-0 fw-semibold small">{{ $qa['label'] }}</p>
+                <p class="mb-0 text-muted" style="font-size:.72rem">{{ $qa['desc'] }}</p>
             </div>
-        </div>
+        </a>
     </div>
-
-    {{-- Revenue by method --}}
-    <div class="col-12 col-md-6">
-        <div class="card h-100">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-semibold">Revenue by Method</h6>
-                <small class="text-muted">{{ now()->format('F Y') }}</small>
-            </div>
-            <div class="card-body">
-                @if(($revenue['by_method'] ?? collect())->isNotEmpty())
-                @php $total = max($revenue['total_revenue'] ?? 1, 1); @endphp
-                <div class="d-flex flex-column gap-3">
-                    @foreach(($revenue['by_method'] ?? collect()) as $method => $amount)
-                    @php
-                    $pct      = round(($amount / $total) * 100, 1);
-                    $barHex   = ['cash'=>'#22c55e','gcash'=>'#3b82f6','card'=>'#8b5cf6','maya'=>'#06b6d4','paymongo'=>'#f59e0b'];
-                    $labelHex = ['cash'=>'#16a34a','gcash'=>'#2563eb','card'=>'#7c3aed','maya'=>'#0891b2','paymongo'=>'#ca8a04'];
-                    $bar      = $barHex[$method]  ?? '#9ca3af';
-                    $label    = $labelHex[$method] ?? '#6b7280';
-                    @endphp
-                    <div>
-                        <div class="d-flex align-items-center justify-content-between mb-1">
-                            <span class="small fw-medium text-capitalize" @style(['color: ' . $label])>{{ $method }}</span>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="small text-muted">{{ $pct }}%</span>
-                                <span class="small fw-semibold">₱{{ number_format($amount, 2) }}</span>
-                            </div>
-                        </div>
-                        <div class="progress" style="height:6px;border-radius:3px">
-                            <div class="progress-bar" role="progressbar"
-                                 style="width:{{ $pct }}%;background-color:{{ $bar }}"></div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <x-empty-state title="No revenue data"
-                    description="Payment breakdowns appear once transactions are processed."
-                    icon="bi-bar-chart"/>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-    </div>
+    @endforeach
 </div>
 
 @endsection
@@ -491,10 +508,14 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
+let _isDark  = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+let _gridC   = _isDark ? '#334155' : '#f1f5f9';
+let _labelC  = _isDark ? '#64748b' : '#94a3b8';
+
 document.addEventListener('DOMContentLoaded', function () {
-    const isDark  = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-    const gridC   = isDark ? '#334155' : '#f1f5f9';
-    const labelC  = isDark ? '#64748b' : '#94a3b8';
+    const isDark  = _isDark;
+    const gridC   = _gridC;
+    const labelC  = _labelC;
 
     const el = document.getElementById('revenue-chart-data');
     const dailyData  = JSON.parse(el ? el.dataset.daily : '{}');
@@ -533,6 +554,29 @@ document.addEventListener('DOMContentLoaded', function () {
         markers: { size: 0, hover: { size: 4 } },
     });
     chart.render();
+
+    // Revenue by method donut chart
+    @if(($revenue['by_method'] ?? collect())->isNotEmpty())
+    const methodEl = document.querySelector('#revenueByMethodChart');
+    if (methodEl) {
+        const methodColors = { cash:'#22c55e', gcash:'#3b82f6', card:'#8b5cf6', maya:'#06b6d4', paymongo:'#f59e0b' };
+        const byMethod = @json($revenue['by_method'] ?? []);
+        const mLabels  = Object.keys(byMethod).map(k => k.charAt(0).toUpperCase() + k.slice(1));
+        const mValues  = Object.values(byMethod).map(Number);
+        const mColors  = Object.keys(byMethod).map(k => methodColors[k] ?? '#9ca3af');
+        new ApexCharts(methodEl, {
+            chart: { type: 'donut', height: 200, toolbar: { show: false }, background: 'transparent', fontFamily: 'Inter, sans-serif' },
+            series: mValues,
+            labels: mLabels,
+            colors: mColors,
+            dataLabels: { enabled: false },
+            legend: { show: false },
+            plotOptions: { pie: { donut: { size: '68%', labels: { show: true, total: { show: true, label: 'Total', formatter: () => '₱' + mValues.reduce((a,b)=>a+b,0).toLocaleString('en-PH',{maximumFractionDigits:0}) } } } } },
+            tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: v => '₱' + Number(v).toLocaleString('en-PH', { minimumFractionDigits: 2 }) } },
+            stroke: { width: 0 },
+        }).render();
+    }
+    @endif
 
     window.addEventListener('theme-changed', e => {
         const dark = e.detail.dark;
@@ -589,11 +633,30 @@ function dashboardAnalytics() {
             this.bookingsChart = new ApexCharts(document.querySelector('#bookingsPerDayChart'), {
                 chart: { type: 'bar', height: 240, toolbar: { show: false }, background: 'transparent', fontFamily: 'Inter, sans-serif' },
                 series: [{ name: 'Bookings', data: values }],
-                xaxis: { categories: labels, labels: { show: labels.length <= 31, style: { fontSize: '11px' } } },
+                xaxis: {
+                    categories: labels,
+                    tickAmount: 6,
+                    labels: {
+                        rotate: -40,
+                        rotateAlways: true,
+                        style: { fontSize: '10px', colors: _labelC },
+                        offsetY: 2,
+                    },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                },
+                yaxis: {
+                    labels: {
+                        formatter: v => Math.round(v),
+                        style: { fontSize: '11px', colors: _labelC },
+                    },
+                    tickAmount: 4,
+                },
                 colors: ['#3b82f6'],
-                plotOptions: { bar: { borderRadius: 4, columnWidth: '60%' } },
+                plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
                 dataLabels: { enabled: false },
-                grid: { strokeDashArray: 3 },
+                grid: { borderColor: _gridC, strokeDashArray: 3, xaxis: { lines: { show: false } } },
+                tooltip: { theme: _isDark ? 'dark' : 'light' },
             });
             this.bookingsChart.render();
         },
