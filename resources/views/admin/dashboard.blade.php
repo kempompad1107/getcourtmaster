@@ -40,32 +40,27 @@
         backdrop-filter: blur(4px); background: rgba(255,255,255,.06);
     }
 
-    /* Hero two-column layout */
-    .hero-inner {
+    /* Hero top row: greeting left, buttons right */
+    .hero-top {
         display: flex;
-        flex-direction: column;
-        gap: 1.25rem;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
     }
-    @media (min-width: 768px) {
-        .hero-inner {
-            flex-direction: row;
-            align-items: center;
-            gap: 2rem;
-        }
-        .hero-left { flex: 0 0 auto; }
-        .hero-stats { flex: 1; }
+    .hero-actions { display: flex; gap: .5rem; flex-shrink: 0; }
+    @media (max-width: 767.98px) {
+        .hero-top { flex-direction: column; }
+        .hero-actions { display: grid; width: 100%; }
     }
-    .hero-left { display: flex; flex-direction: column; gap: .6rem; }
-    .hero-actions { display: grid; gap: .5rem; margin-top: .25rem; }
-    @media (min-width: 768px) { .hero-actions { display: flex; } }
 
-    /* Hero stat tiles */
+    /* Hero stat tiles — full-width 4-col on desktop, 2×2 on mobile */
     .hero-stats {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: .6rem;
     }
-    @media (min-width: 992px) {
+    @media (min-width: 576px) {
         .hero-stats { grid-template-columns: repeat(4, 1fr); gap: .75rem; }
     }
     .hero-stat {
@@ -76,7 +71,7 @@
         backdrop-filter: blur(4px);
     }
     .hero-stat .l { display:flex; align-items:center; gap:.4rem; font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:rgba(226,232,240,.6); margin-bottom:.25rem; }
-    .hero-stat .v { font-size: 1.5rem; font-weight: 800; color:#fff; letter-spacing:-.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
+    .hero-stat .v { font-size: clamp(1.3rem, 2.4vw, 1.6rem); font-weight: 800; color:#fff; letter-spacing:-.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
 
     /* Auto-flowing KPI grid — always fills the row cleanly, no orphan cards */
     .kpi-grid { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -116,43 +111,43 @@
     $firstName = explode(' ', trim(auth()->user()->name ?? 'there'))[0];
 @endphp
 <div class="dash-hero mb-4">
-    <div class="hero-inner">
-        {{-- Left: greeting + actions --}}
-        <div class="hero-left">
+    {{-- Top row: greeting + buttons --}}
+    <div class="hero-top">
+        <div>
             <h1 class="dash-greet">{{ $greeting }}, {{ $firstName }} <span class="wave">👋</span></h1>
             <p class="dash-sub mb-0">
                 {{ now()->format('l, F j, Y') }}
                 <span class="sep">·</span>
                 <i class="bi bi-geo-alt-fill me-1"></i>{{ $branchLabel }}
             </p>
-            <div class="hero-actions">
-                <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-lg me-1"></i>New Booking
-                </a>
-                <a href="{{ route('admin.courts.status-board') }}" class="btn btn-hero btn-sm">
-                    <i class="bi bi-grid-3x3-gap me-1"></i>Status Board
-                </a>
-            </div>
         </div>
+        <div class="hero-actions">
+            <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>New Booking
+            </a>
+            <a href="{{ route('admin.courts.status-board') }}" class="btn btn-hero btn-sm">
+                <i class="bi bi-grid-3x3-gap me-1"></i>Status Board
+            </a>
+        </div>
+    </div>
 
-        {{-- Right: stat tiles --}}
-        <div class="hero-stats">
-            <div class="hero-stat">
-                <div class="l"><i class="bi bi-calendar-check"></i>Today's Bookings</div>
-                <div class="v">{{ $stats['todays_bookings'] }}</div>
-            </div>
-            <div class="hero-stat">
-                <div class="l"><i class="bi bi-cash-coin"></i>Today's Revenue</div>
-                <div class="v">₱{{ number_format($todayRevenue['total_revenue'] ?? 0) }}</div>
-            </div>
-            <div class="hero-stat">
-                <div class="l"><i class="bi bi-lightning-charge"></i>Active Courts</div>
-                <div class="v">{{ $stats['active_courts'] }}</div>
-            </div>
-            <div class="hero-stat">
-                <div class="l"><i class="bi bi-bar-chart-line"></i>Utilization</div>
-                <div class="v">{{ $avgUtilization }}%</div>
-            </div>
+    {{-- Bottom row: full-width stats --}}
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <div class="l"><i class="bi bi-calendar-check"></i>Today's Bookings</div>
+            <div class="v">{{ $stats['todays_bookings'] }}</div>
+        </div>
+        <div class="hero-stat">
+            <div class="l"><i class="bi bi-cash-coin"></i>Today's Revenue</div>
+            <div class="v">₱{{ number_format($todayRevenue['total_revenue'] ?? 0) }}</div>
+        </div>
+        <div class="hero-stat">
+            <div class="l"><i class="bi bi-lightning-charge"></i>Active Courts</div>
+            <div class="v">{{ $stats['active_courts'] }}</div>
+        </div>
+        <div class="hero-stat">
+            <div class="l"><i class="bi bi-bar-chart-line"></i>Utilization</div>
+            <div class="v">{{ $avgUtilization }}%</div>
         </div>
     </div>
 </div>
