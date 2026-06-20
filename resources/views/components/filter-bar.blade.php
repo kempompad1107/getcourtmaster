@@ -27,12 +27,13 @@
         @isset($filters)
         <div class="position-relative flex-shrink-0" @click.outside="open = false">
             <button type="button" @click="open = !open"
-                    class="btn btn-sm d-flex align-items-center gap-1 {{ $activeCount > 0 ? 'btn-primary' : 'btn-outline-secondary' }}"
+                    class="btn d-flex align-items-center gap-2 {{ $activeCount > 0 ? 'btn-primary' : 'btn-outline-secondary' }}"
+                    style="height:42px;border-radius:.6rem;padding:0 1rem;white-space:nowrap"
                     :aria-expanded="open.toString()">
-                <i class="bi bi-sliders"></i>
-                <span class="d-none d-sm-inline">Filters</span>
+                <i class="bi bi-sliders2"></i>
+                <span class="d-none d-sm-inline fw-medium" style="font-size:.875rem">Filters</span>
                 @if($activeCount > 0)
-                <span class="badge rounded-pill text-bg-light text-dark ms-1">{{ $activeCount }}</span>
+                <span class="badge rounded-pill text-bg-light text-dark">{{ $activeCount }}</span>
                 @endif
             </button>
 

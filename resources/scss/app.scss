@@ -670,13 +670,13 @@ a.text-primary:hover { color: $primary-dark !important; }
 
 // Search field with a leading emerald icon (kit)
 .search-field {
-    display: flex; align-items: center; gap: .25rem;
-    border: 1px solid var(--bs-border-color); border-radius: $border-radius;
-    background: var(--bs-card-bg); padding: 0 .5rem;
-    height: calc(1.5em + .5rem + 2px);
+    display: flex; align-items: center; gap: .5rem;
+    border: 1px solid var(--bs-border-color); border-radius: .6rem;
+    background: var(--bs-card-bg); padding: 0 .9rem;
+    height: 42px;
     transition: border-color .15s, box-shadow .15s;
-    &:focus-within { border-color: $primary; box-shadow: 0 0 0 .2rem rgba($primary,.18); }
-    > .bi { color: $primary; font-size: .85rem; flex-shrink: 0; }
+    &:focus-within { border-color: $primary; box-shadow: 0 0 0 3px rgba($primary,.12); }
+    > .bi { color: var(--bs-secondary-color); font-size: .95rem; flex-shrink: 0; }
     > input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; padding: 0; font-size: .875rem; line-height: 1.5; color: var(--bs-body-color); }
     > input::placeholder { color: var(--bs-secondary-color); }
 }
