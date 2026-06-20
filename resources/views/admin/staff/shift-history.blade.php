@@ -49,44 +49,46 @@
 
     /* Filter bar */
     .history-filters { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+    @media (max-width: 767.98px) {
+        .history-filters { display: grid; grid-template-columns: 1fr 1fr; }
+        .history-filters .btn   { grid-column: 1 / 3; }
+        .history-filters .ms-auto { grid-column: 1 / 3; text-align: center; }
+        .history-filters .form-select { width: 100% !important; }
+    }
 </style>
 @endpush
 
 @section('content')
 
-<x-page-header title="Attendance History" subtitle="Your full shift record">
-    <x-slot name="actions">
-        <a href="{{ route('admin.staff.my-shift') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>Back to My Shift
-        </a>
-    </x-slot>
-</x-page-header>
+<x-page-header title="Attendance History" subtitle="Your full shift record"/>
 
 {{-- Filters --}}
 <div class="card mb-4">
     <div class="card-body py-3">
         <form method="GET" class="history-filters">
-            <select name="status" class="form-select form-select-sm" style="width:auto">
+            <select name="status" class="form-select" style="width:auto">
                 <option value="">All statuses</option>
                 @foreach(['completed','active','late','absent','scheduled','cancelled'] as $s)
                 <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
                 @endforeach
             </select>
-            <select name="month" class="form-select form-select-sm" style="width:auto">
+            <select name="month" class="form-select" style="width:auto">
                 <option value="">All months</option>
                 @foreach(range(1,12) as $m)
                 <option value="{{ $m }}" @selected(request('month') == $m)>{{ \Carbon\Carbon::create()->month($m)->format('F') }}</option>
                 @endforeach
             </select>
-            <select name="year" class="form-select form-select-sm" style="width:auto">
+            <select name="year" class="form-select" style="width:auto">
                 <option value="">All years</option>
                 @foreach(range(now()->year, now()->year - 2) as $y)
                 <option value="{{ $y }}" @selected(request('year') == $y)>{{ $y }}</option>
                 @endforeach
             </select>
-            <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-funnel me-1"></i>Filter
+            </button>
             @if(request()->hasAny(['status','month','year']))
-            <a href="{{ route('admin.staff.my-shift.history') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+            <a href="{{ route('admin.staff.my-shift.history') }}" class="btn btn-outline-secondary">Clear</a>
             @endif
             <span class="text-muted small ms-auto">{{ $history->total() }} records &middot; {{ number_format($totalHours, 1) }}h total</span>
         </form>
