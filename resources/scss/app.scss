@@ -122,15 +122,34 @@ body {
 }
 
 // ── 6. Primary button uses $primary ─────────────────────────────────────────
+// TailAdmin-style buttons: flat fill, rounded-lg, font-medium, gap-based icons
 .btn {
-    --bs-btn-font-weight: 600;
-    border-radius: $border-radius;
+    --bs-btn-font-weight: 500;            // TailAdmin font-medium
+    --bs-btn-padding-x: 1.25rem;          // px-5
+    --bs-btn-padding-y: 0.625rem;         // py-2.5
+    --bs-btn-font-size: 0.875rem;         // text-sm
+    border-radius: $border-radius;        // rounded-lg (8px)
     letter-spacing: -0.01em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;                           // TailAdmin gap-2 — single source of icon spacing
     transition: transform .12s ease, box-shadow .15s ease, background-color .15s ease, border-color .15s ease;
     &:active { transform: translateY(1px); }
+    // Neutralise me-1/ms-1 margins on icons inside buttons; gap controls spacing
+    .bi { margin-left: 0; margin-right: 0; }
 }
-.btn-sm { border-radius: $border-radius-sm; }
-.btn-lg { border-radius: $border-radius-lg; }
+.btn-sm { --bs-btn-padding-x: .875rem; --bs-btn-padding-y: .4rem; --bs-btn-font-size: .8125rem; border-radius: $border-radius-sm; }
+
+// Page-header action buttons are always standard size — neutralise stray btn-sm
+// so every admin page's header buttons match (overrides .btn-sm above).
+.ph-actions .btn {
+    --bs-btn-padding-x: 1.25rem;
+    --bs-btn-padding-y: 0.625rem;
+    --bs-btn-font-size: 0.875rem;
+    border-radius: $border-radius;
+}
+.btn-lg { --bs-btn-padding-x: 1.5rem; --bs-btn-padding-y: .8125rem; border-radius: $border-radius-lg; }
 
 .btn-primary {
     --bs-btn-bg:              #{$primary};
@@ -143,9 +162,10 @@ body {
     --bs-btn-hover-color:     #fff;
     --bs-btn-active-color:    #fff;
     --bs-btn-focus-shadow-rgb: 16,185,129;
-    background-image: linear-gradient(180deg, lighten($primary, 4%) 0%, $primary 100%);
-    box-shadow: 0 1px 2px rgba(5,150,105,.25), 0 4px 14px -4px rgba(16,185,129,.5);
-    &:hover { box-shadow: 0 2px 4px rgba(5,150,105,.3), 0 8px 22px -4px rgba(16,185,129,.55); }
+    // TailAdmin: flat fill (no gradient), softened disabled state
+    --bs-btn-disabled-bg:           #6ee7b7;   // emerald-300
+    --bs-btn-disabled-border-color: #6ee7b7;
+    --bs-btn-disabled-color:        #fff;
 }
 .btn-outline-primary {
     --bs-btn-color:           #{$primary};
@@ -153,6 +173,18 @@ body {
     --bs-btn-hover-bg:        #{$primary};
     --bs-btn-hover-border-color: #{$primary};
     --bs-btn-active-bg:       #{$primary-dark};
+}
+// TailAdmin secondary: neutral surface, subtle border, light hover
+.btn-outline-secondary {
+    --bs-btn-color:           var(--bs-body-color);
+    --bs-btn-bg:              transparent;
+    --bs-btn-border-color:    var(--bs-border-color);
+    --bs-btn-hover-bg:        var(--bs-body-bg-alt);
+    --bs-btn-hover-color:     var(--bs-body-color);
+    --bs-btn-hover-border-color:  var(--bs-border-color);
+    --bs-btn-active-bg:       var(--bs-body-bg-alt);
+    --bs-btn-active-color:    var(--bs-body-color);
+    --bs-btn-active-border-color: var(--bs-border-color);
 }
 .text-primary  { color: $primary !important; }
 // Respect Bootstrap's --bs-bg-opacity so `.bg-primary.bg-opacity-10` tints

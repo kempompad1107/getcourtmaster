@@ -79,11 +79,11 @@
         @can('create', App\Models\Branch::class)
         @php $branchLimit = app(\App\Services\PlanLimitGuard::class)->check(auth()->user()->tenant, 'branches'); @endphp
         @if($branchLimit['allowed'])
-            <a href="{{ route('admin.branches.create') }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('admin.branches.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-lg me-1"></i>Add Branch
             </a>
         @else
-            <button class="btn btn-primary btn-sm" disabled title="Plan limit reached ({{ $branchLimit['used'] }}/{{ $branchLimit['max'] }} on {{ $branchLimit['plan'] }})">
+            <button class="btn btn-primary" disabled title="Plan limit reached ({{ $branchLimit['used'] }}/{{ $branchLimit['max'] }} on {{ $branchLimit['plan'] }})">
                 <i class="bi bi-lock-fill me-1"></i>Add Branch (limit reached)
             </button>
         @endif

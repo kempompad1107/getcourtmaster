@@ -59,7 +59,7 @@
 @section('content')
 
 <x-page-header title="Courts"
-    :subtitle="$courts->total() . ' courts across ' . auth()->user()->tenant->branches()->count() . ' branches'">
+    :subtitle="$courts->total() . ' ' . Str::plural('court', $courts->total()) . ' across ' . ($branchCount = auth()->user()->tenant->branches()->count()) . ' ' . Str::plural('branch', $branchCount)">
     <x-slot name="actions">
         <a href="{{ route('admin.courts.status-board') }}" class="btn btn-outline-secondary">
             <i class="bi bi-grid-3x3-gap me-1"></i>Status Board
