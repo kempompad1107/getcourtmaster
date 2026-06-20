@@ -54,7 +54,7 @@
             <div x-show="open" x-cloak x-transition class="mt-3 pt-3 border-top">
                 <form method="POST" action="{{ route('customer.wallet.topup') }}">
                     @csrf
-                    <div class="row g-3 align-items-end">
+                    <div class="row g-3 align-items-start">
                         <div class="col-12 col-md-5">
                             <label class="form-label small">Amount (₱)</label>
                             <input type="number" name="amount" min="50" max="50000" step="1"
@@ -92,6 +92,7 @@
                             <input type="hidden" name="method"  x-model="method">
                         </div>
                         <div class="col-12 col-md-2 d-grid">
+                            <label class="form-label small invisible">.</label>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-arrow-right-circle me-1"></i>Continue
                             </button>
