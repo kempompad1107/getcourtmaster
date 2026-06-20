@@ -100,24 +100,102 @@
     .shift-upcoming-item:hover { background: rgba(148,163,184,.05); }
     .shift-attendance tbody tr { transition: background-color .15s; }
 
-    /* Stack the attendance table into cards on phones (no horizontal scroll). */
+    /* Stack the attendance table into cards on phones */
     @media (max-width: 575.98px) {
         .shift-attendance thead { display: none; }
-        .shift-attendance, .shift-attendance tbody, .shift-attendance tr, .shift-attendance td { display: block; width: 100%; }
-        .shift-attendance tr {
-            border: 1px solid var(--bs-border-color); border-radius: .85rem;
-            padding: .35rem .9rem; margin: .75rem; background: var(--bs-card-bg);
+        .shift-attendance, .shift-attendance tbody { display: block; width: 100%; }
+
+        /* Each row becomes a card */
+        .shift-attendance tr:not(.shift-attendance-empty) {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            border: 1px solid var(--bs-border-color);
+            border-radius: .9rem;
+            overflow: hidden;
+            margin-bottom: .75rem;
+            background: var(--bs-card-bg);
         }
-        .shift-attendance td {
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            border: 0; padding: .45rem 0; text-align: right !important;
+
+        /* Date — full width header */
+        .shift-attendance td[data-label="Date"] {
+            grid-column: 1 / 2;
+            display: flex; flex-direction: column;
+            padding: .75rem 1rem .6rem;
+            border-bottom: 1px solid var(--bs-border-color);
+            font-weight: 700;
         }
-        .shift-attendance td + td { border-top: 1px solid var(--bs-border-color); }
-        .shift-attendance td::before {
-            content: attr(data-label); text-align: left;
-            font-size: .68rem; font-weight: 600; letter-spacing: .05em;
+        .shift-attendance td[data-label="Date"]::before {
+            content: attr(data-label);
+            font-size: .6rem; font-weight: 700; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--bs-secondary-color);
+            margin-bottom: .2rem;
+        }
+
+        /* Status — top-right aligned with date */
+        .shift-attendance td[data-label="Status"] {
+            grid-column: 2 / 3;
+            grid-row: 1;
+            display: flex; align-items: center; justify-content: flex-end;
+            padding: .75rem 1rem .6rem;
+            border-bottom: 1px solid var(--bs-border-color);
+        }
+        .shift-attendance td[data-label="Status"]::before { display: none; }
+
+        /* Scheduled — full width below header */
+        .shift-attendance td[data-label="Scheduled"] {
+            grid-column: 1 / 3;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: .55rem 1rem;
+            border-bottom: 1px solid var(--bs-border-color);
+            font-size: .82rem;
+        }
+        .shift-attendance td[data-label="Scheduled"]::before {
+            content: attr(data-label);
+            font-size: .6rem; font-weight: 700; letter-spacing: .08em;
             text-transform: uppercase; color: var(--bs-secondary-color);
         }
+
+        /* Clock In + Clock Out side by side */
+        .shift-attendance td[data-label="Clock In"],
+        .shift-attendance td[data-label="Clock Out"] {
+            display: flex; flex-direction: column;
+            padding: .55rem 1rem;
+            font-size: .82rem;
+        }
+        .shift-attendance td[data-label="Clock In"] { border-right: 1px solid var(--bs-border-color); border-bottom: 1px solid var(--bs-border-color); }
+        .shift-attendance td[data-label="Clock Out"] { border-bottom: 1px solid var(--bs-border-color); }
+        .shift-attendance td[data-label="Clock In"]::before,
+        .shift-attendance td[data-label="Clock Out"]::before {
+            content: attr(data-label);
+            font-size: .6rem; font-weight: 700; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--bs-secondary-color);
+            margin-bottom: .2rem;
+        }
+
+        /* Hours — full width footer */
+        .shift-attendance td[data-label="Hours"] {
+            grid-column: 1 / 3;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: .55rem 1rem;
+            font-size: .82rem;
+            background: var(--bs-body-bg-alt, rgba(148,163,184,.04));
+        }
+        .shift-attendance td[data-label="Hours"]::before {
+            content: attr(data-label);
+            font-size: .6rem; font-weight: 700; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--bs-secondary-color);
+        }
+
+        /* Empty state row reset */
+        .shift-attendance-empty,
+        .shift-attendance-empty td {
+            display: block !important;
+            border: 0 !important; padding: 0 !important;
+            margin: 0 !important; background: none !important;
+            border-radius: 0 !important;
+        }
+        .shift-attendance-empty td::before { display: none !important; }
     }
 </style>
 @endpush
@@ -302,7 +380,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr>
+                        <tr class="shift-attendance-empty">
                             <td colspan="6">
                                 <x-empty-state title="No attendance records yet" icon="bi-clock-history"/>
                             </td>
