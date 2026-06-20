@@ -405,6 +405,12 @@ class TenantController extends Controller
             DB::table('branches')->where('tenant_id', $tid)->delete();
             DB::table('audit_logs')->where('tenant_id', $tid)->delete();
 
+            $tenantUserIds = DB::table('users')->where('tenant_id', $tid)->pluck('id');
+            DB::table('activity_log')
+                ->where('causer_type', 'App\\Models\\User')
+                ->whereIn('causer_id', $tenantUserIds)
+                ->delete();
+
             // Remove staff and customer users, keep the business owner
             DB::table('users')
                 ->where('tenant_id', $tid)
