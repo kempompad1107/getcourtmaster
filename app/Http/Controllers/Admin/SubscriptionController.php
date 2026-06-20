@@ -89,7 +89,12 @@ class SubscriptionController extends Controller
         }
 
         // Keep the denormalised tenants.plan column in sync.
-        $tenant->update(['plan' => $plan->slug]);
+        // Promote trial tenants to active now that they have a subscription.
+        $tenantUpdate = ['plan' => $plan->slug];
+        if ($tenant->status === 'trial') {
+            $tenantUpdate['status'] = 'active';
+        }
+        $tenant->update($tenantUpdate);
 
         // Generate the invoice the owner now needs to settle for this change.
         $invoice = $this->billing->createInvoice($subscription->fresh('plan'));

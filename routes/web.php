@@ -82,6 +82,7 @@ Route::middleware('throttle:60,1')->group(function () {
 
 // Tenant status pages
 Route::view('/suspended', 'errors.suspended')->name('tenant.suspended');
+Route::view('/cancelled', 'errors.cancelled')->name('tenant.cancelled');
 Route::view('/trial-expired', 'errors.trial-expired')->name('tenant.trial-expired');
 Route::view('/offline', 'errors.offline')->name('offline');
 

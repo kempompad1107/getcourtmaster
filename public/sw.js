@@ -49,11 +49,16 @@ self.addEventListener('fetch', (event) => {
                 return response;
             })
             .catch(async () => {
-                // Try cache, then offline page
+                // Only show the offline page for genuine top-level navigations
+                // when the device is actually offline. Avoids swallowing server
+                // errors (500s, 403s, redirect failures) that look like network
+                // failures (e.g. the redirect GET after a cancel-membership POST).
+                if (event.request.mode !== 'navigate') return;
+
                 const cached = await caches.match(event.request);
                 if (cached) return cached;
 
-                if (event.request.headers.get('accept')?.includes('text/html')) {
+                if (event.request.headers.get('accept')?.includes('text/html') && !self.navigator?.onLine) {
                     return caches.match(OFFLINE_URL);
                 }
             })

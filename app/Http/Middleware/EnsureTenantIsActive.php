@@ -33,15 +33,18 @@ class EnsureTenantIsActive
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Account cancelled.'], 403);
             }
-            // 'offline' is the closest existing status page (web.php has no tenant.cancelled route)
-            return redirect()->route('offline');
+            return redirect()->route('tenant.cancelled');
         }
 
         if ($tenant->status === 'trial' && $tenant->trial_ends_at?->isPast()) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Trial period has expired. Please subscribe to continue.'], 403);
+            // Allow through if they already have an active subscription — the tenant
+            // status just hasn't been updated yet (e.g. manual payment pending).
+            if (!$tenant->activeSubscription()->exists()) {
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Trial period has expired. Please subscribe to continue.'], 403);
+                }
+                return redirect()->route('tenant.trial-expired');
             }
-            return redirect()->route('tenant.trial-expired');
         }
 
         return $next($request);
