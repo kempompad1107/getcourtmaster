@@ -986,12 +986,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     }
 }
 
-// Modal: tri-color accent crown bar
-.modal-content::before {
-    content: ''; display: block; height: 3px;
-    background: linear-gradient(90deg, #34d399 0%, $primary 45%, #3b82f6 100%);
-    border-radius: calc(#{$border-radius-xl} - 1px) calc(#{$border-radius-xl} - 1px) 0 0;
-}
 
 // Card header: very subtle warm tint — differentiates header from body
 .card > .card-header {

@@ -205,24 +205,24 @@
 
                 {{-- Footer actions --}}
                 <div class="card-footer d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-outline-success btn-sm"
+                    @can('update', $branch)
+                    <a href="{{ route('admin.branches.edit', $branch) }}"
+                       class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-pencil me-1"></i>Edit
+                    </a>
+                    @endcan
+                    <button type="button" class="btn btn-outline-secondary"
                             data-bs-toggle="modal" data-bs-target="#branchQrModal"
                             data-branch-name="{{ $branch->name }}"
                             data-signup-url="{{ $signupUrl }}"
                             title="Customer signup QR">
-                        <i class="bi bi-qr-code me-1"></i>QR
+                        <i class="bi bi-qr-code"></i>
                     </button>
-                    @can('update', $branch)
-                    <a href="{{ route('admin.branches.edit', $branch) }}"
-                       class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="bi bi-pencil me-1"></i>Edit
-                    </a>
-                    @endcan
                     @can('delete', $branch)
                     <form method="POST" action="{{ route('admin.branches.destroy', $branch) }}"
                           onsubmit="return confirm('Delete branch {{ $branch->name }}?');">
                         @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete branch">
+                        <button type="submit" class="btn btn-outline-danger" title="Delete branch">
                             <i class="bi bi-trash"></i>
                         </button>
                     </form>
@@ -245,42 +245,58 @@
      blocks pointer events. --}}
 @push('modals')
 <div class="modal fade" id="branchQrModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title fw-semibold">
-                    <i class="bi bi-qr-code me-1 text-success"></i>
-                    Customer signup &mdash; <span id="qrBranchName"></span>
-                </h6>
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+        <div class="modal-content border-0 shadow-lg overflow-hidden">
+
+            {{-- Header --}}
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <h6 class="modal-title fw-bold mb-0" id="qrBranchName"></h6>
+                    <p class="text-muted small mb-0">Customer signup QR</p>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center">
-                <p class="text-muted small mb-3">
-                    Print this and put it at the front desk, or share the link.
-                    New signups via this QR will land on <strong id="qrBranchNameInline"></strong> as their home branch.
-                </p>
-                <img id="qrImage" src="" alt="Signup QR code"
-                     class="img-fluid border rounded mb-3"
-                     style="max-width:280px;background:#fff;padding:10px">
 
-                <div class="input-group input-group-sm mb-2">
-                    <input type="text" id="qrUrl" class="form-control font-monospace" readonly>
-                    <button type="button" class="btn btn-outline-secondary" onclick="
-                        const i = document.getElementById('qrUrl'); i.select(); document.execCommand('copy');
-                        this.innerHTML = '<i class=\'bi bi-check2\'></i> Copied';
-                        setTimeout(() => this.innerHTML = '<i class=\'bi bi-clipboard\'></i> Copy', 1500);
-                    "><i class="bi bi-clipboard"></i> Copy</button>
+            {{-- QR --}}
+            <div class="modal-body text-center pt-3 pb-2">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-3 border p-3 mb-4"
+                     style="background:#fff">
+                    <img id="qrImage" src="" alt="Signup QR code"
+                         style="width:220px;height:220px;display:block">
                 </div>
 
-                <div class="d-flex justify-content-center gap-2">
+                <p class="text-muted small mb-4 px-2">
+                    Print and place at the front desk. New signups will be assigned to
+                    <strong id="qrBranchNameInline" class="text-body"></strong>.
+                </p>
+
+                {{-- URL copy row --}}
+                <div class="input-group mb-4">
+                    <input type="text" id="qrUrl" class="form-control form-control-sm font-monospace text-muted" readonly>
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" id="qrCopyBtn"
+                            onclick="
+                                const i = document.getElementById('qrUrl'); i.select(); document.execCommand('copy');
+                                const b = document.getElementById('qrCopyBtn');
+                                b.innerHTML = '<i class=\'bi bi-check2 me-1\'></i>Copied';
+                                b.classList.replace('btn-outline-secondary','btn-outline-success');
+                                setTimeout(() => { b.innerHTML = '<i class=\'bi bi-clipboard me-1\'></i>Copy'; b.classList.replace('btn-outline-success','btn-outline-secondary'); }, 1800);
+                            ">
+                        <i class="bi bi-clipboard me-1"></i>Copy
+                    </button>
+                </div>
+
+                {{-- Actions --}}
+                <div class="d-grid gap-2">
+                    <a id="qrVisit" href="#" target="_blank" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Preview signup page
+                    </a>
                     <a id="qrPrint" href="#" target="_blank" class="btn btn-outline-secondary btn-sm">
                         <i class="bi bi-printer me-1"></i>Open / Print QR
                     </a>
-                    <a id="qrVisit" href="#" target="_blank" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-box-arrow-up-right me-1"></i>Preview signup page
-                    </a>
                 </div>
             </div>
+
+            <div class="modal-footer border-0 pt-0"></div>
         </div>
     </div>
 </div>
