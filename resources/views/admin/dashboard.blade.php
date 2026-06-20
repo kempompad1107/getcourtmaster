@@ -40,28 +40,42 @@
         backdrop-filter: blur(4px); background: rgba(255,255,255,.06);
     }
 
-    /* Hero inline mini-stats */
-    .hero-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; margin-top: 1.25rem; }
-    @media (min-width: 576px) {
-        .hero-stats { display: flex; flex-wrap: wrap; gap: 0; margin-top: 1.35rem; }
-        .hero-stat { padding: .15rem 1.25rem .15rem 0; margin-right: 1.25rem; border-right: 1px solid rgba(255,255,255,.12); }
-        .hero-stat:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+    /* Hero two-column layout */
+    .hero-inner {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+    @media (min-width: 768px) {
+        .hero-inner {
+            flex-direction: row;
+            align-items: center;
+            gap: 2rem;
+        }
+        .hero-left { flex: 0 0 auto; }
+        .hero-stats { flex: 1; }
+    }
+    .hero-left { display: flex; flex-direction: column; gap: .6rem; }
+    .hero-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .25rem; }
+
+    /* Hero stat tiles */
+    .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: .6rem;
+    }
+    @media (min-width: 992px) {
+        .hero-stats { grid-template-columns: repeat(4, 1fr); gap: .75rem; }
     }
     .hero-stat {
-        background: rgba(255,255,255,.06);
-        border-radius: .65rem;
-        padding: .65rem .85rem;
-        border: 1px solid rgba(255,255,255,.08);
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: .75rem;
+        padding: .75rem 1rem;
+        backdrop-filter: blur(4px);
     }
-    @media (min-width: 576px) {
-        .hero-stat { background: none; border-radius: 0; border: none; padding: .15rem 1.25rem .15rem 0; }
-    }
-    .hero-stat .l { display:flex; align-items:center; gap:.4rem; font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:rgba(226,232,240,.62); }
-    .hero-stat .v { font-size: clamp(1.25rem, 2.4vw, 1.55rem); font-weight: 800; color:#fff; letter-spacing:-.02em; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: .2rem; }
-    @media (max-width: 767.98px) {
-        .dash-hero > .d-flex   { gap: .75rem !important; }
-        .dash-hero .d-grid     { gap: .75rem !important; }
-    }
+    .hero-stat .l { display:flex; align-items:center; gap:.4rem; font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:rgba(226,232,240,.6); margin-bottom:.25rem; }
+    .hero-stat .v { font-size: 1.5rem; font-weight: 800; color:#fff; letter-spacing:-.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
 
     /* Auto-flowing KPI grid — always fills the row cleanly, no orphan cards */
     .kpi-grid { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -101,41 +115,43 @@
     $firstName = explode(' ', trim(auth()->user()->name ?? 'there'))[0];
 @endphp
 <div class="dash-hero mb-4">
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-        <div class="min-w-0">
+    <div class="hero-inner">
+        {{-- Left: greeting + actions --}}
+        <div class="hero-left">
             <h1 class="dash-greet">{{ $greeting }}, {{ $firstName }} <span class="wave">👋</span></h1>
             <p class="dash-sub mb-0">
                 {{ now()->format('l, F j, Y') }}
                 <span class="sep">·</span>
                 <i class="bi bi-geo-alt-fill me-1"></i>{{ $branchLabel }}
             </p>
+            <div class="hero-actions">
+                <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>New Booking
+                </a>
+                <a href="{{ route('admin.courts.status-board') }}" class="btn btn-hero btn-sm">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>Status Board
+                </a>
+            </div>
         </div>
-        <div class="d-grid gap-2 d-md-flex align-items-md-center flex-shrink-0">
-            <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i>New Booking
-            </a>
-            <a href="{{ route('admin.courts.status-board') }}" class="btn btn-hero btn-sm">
-                <i class="bi bi-grid-3x3-gap me-1"></i>Status Board
-            </a>
-        </div>
-    </div>
 
-    <div class="hero-stats">
-        <div class="hero-stat">
-            <div class="l"><i class="bi bi-calendar-check"></i>Today's Bookings</div>
-            <div class="v">{{ $stats['todays_bookings'] }}</div>
-        </div>
-        <div class="hero-stat">
-            <div class="l"><i class="bi bi-cash-coin"></i>Today's Revenue</div>
-            <div class="v">₱{{ number_format($todayRevenue['total_revenue'] ?? 0) }}</div>
-        </div>
-        <div class="hero-stat">
-            <div class="l"><i class="bi bi-lightning-charge"></i>Active Courts</div>
-            <div class="v">{{ $stats['active_courts'] }}</div>
-        </div>
-        <div class="hero-stat">
-            <div class="l"><i class="bi bi-bar-chart-line"></i>Utilization</div>
-            <div class="v">{{ $avgUtilization }}%</div>
+        {{-- Right: stat tiles --}}
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="l"><i class="bi bi-calendar-check"></i>Today's Bookings</div>
+                <div class="v">{{ $stats['todays_bookings'] }}</div>
+            </div>
+            <div class="hero-stat">
+                <div class="l"><i class="bi bi-cash-coin"></i>Today's Revenue</div>
+                <div class="v">₱{{ number_format($todayRevenue['total_revenue'] ?? 0) }}</div>
+            </div>
+            <div class="hero-stat">
+                <div class="l"><i class="bi bi-lightning-charge"></i>Active Courts</div>
+                <div class="v">{{ $stats['active_courts'] }}</div>
+            </div>
+            <div class="hero-stat">
+                <div class="l"><i class="bi bi-bar-chart-line"></i>Utilization</div>
+                <div class="v">{{ $avgUtilization }}%</div>
+            </div>
         </div>
     </div>
 </div>
