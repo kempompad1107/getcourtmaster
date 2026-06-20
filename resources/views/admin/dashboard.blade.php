@@ -56,7 +56,8 @@
         .hero-stats { flex: 1; }
     }
     .hero-left { display: flex; flex-direction: column; gap: .6rem; }
-    .hero-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .25rem; }
+    .hero-actions { display: grid; gap: .5rem; margin-top: .25rem; }
+    @media (min-width: 768px) { .hero-actions { display: flex; } }
 
     /* Hero stat tiles */
     .hero-stats {
