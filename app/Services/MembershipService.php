@@ -25,20 +25,23 @@ class MembershipService
         MembershipPlan $plan,
         bool $autoRenew = true,
         string $method = 'cash',
+        ?float $finalPrice = null,
     ): Membership {
-        return DB::transaction(function () use ($customer, $plan, $autoRenew, $method) {
+        $price = $finalPrice ?? (float) $plan->price;
+
+        return DB::transaction(function () use ($customer, $plan, $autoRenew, $method, $price) {
             // Wallet payment: pull funds first so we don't issue the membership
             // when the balance isn't actually there.
             if ($method === 'wallet') {
-                if ($customer->wallet_balance < $plan->price) {
+                if ($customer->wallet_balance < $price) {
                     throw ValidationException::withMessages([
                         'payment_method' => "Customer wallet has ₱" . number_format($customer->wallet_balance, 2)
-                            . " — short by ₱" . number_format($plan->price - $customer->wallet_balance, 2) . ".",
+                            . " — short by ₱" . number_format($price - $customer->wallet_balance, 2) . ".",
                     ]);
                 }
                 app(WalletService::class)->debit(
                     $customer,
-                    (float) $plan->price,
+                    $price,
                     "Purchased {$plan->name} membership",
                 );
             }
@@ -61,7 +64,7 @@ class MembershipService
                 'membership_id' => $membership->id,
                 'type' => 'purchase',
                 'credits_change' => $plan->court_credits,
-                'amount' => $plan->price,
+                'amount' => $price,
                 'description' => "Purchased {$plan->name} membership (via {$method})",
             ]);
 
@@ -70,7 +73,7 @@ class MembershipService
                 'customer_id'  => $customer->id,
                 'payable_type' => Membership::class,
                 'payable_id'   => $membership->id,
-                'amount'       => $plan->price,
+                'amount'       => $price,
                 'method'       => $method,
                 'status'       => 'paid',
                 'paid_at'      => now(),

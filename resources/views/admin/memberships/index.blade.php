@@ -215,6 +215,24 @@
                     Wallet requires sufficient balance — short balances throw an error before the membership is created.
                 </div>
             </div>
+            @if($promotions->isNotEmpty())
+            <div class="col-12">
+                <label class="form-label">Promotion <span class="text-muted fw-normal">(optional)</span></label>
+                <select name="promo_code" class="form-select">
+                    <option value="">No promotion</option>
+                    @foreach($promotions as $promo)
+                    <option value="{{ $promo->code }}">
+                        {{ $promo->name }} ({{ $promo->code }}) —
+                        @if($promo->type === 'percentage')
+                            {{ $promo->value }}% off
+                        @else
+                            ₱{{ number_format($promo->value) }} off
+                        @endif
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
             <div class="col-12">
                 <div class="form-check">
                     <input type="checkbox" name="auto_renew" value="1" id="auto_renew"

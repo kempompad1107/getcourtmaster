@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Membership;
 use App\Models\MembershipPlan;
+use App\Models\Promotion;
+use App\Models\PromotionUsage;
 use App\Models\User;
 use App\Services\MembershipService;
 use Illuminate\Http\Request;
@@ -45,7 +47,9 @@ class MembershipController extends Controller
                                 ->sum('membership_plans.price'),
         ];
 
-        return view('admin.memberships.index', compact('memberships', 'plans', 'customers', 'stats'));
+        $promotions = Promotion::where('tenant_id', $tenantId)->active()->orderBy('name')->get();
+
+        return view('admin.memberships.index', compact('memberships', 'plans', 'customers', 'stats', 'promotions'));
     }
 
     public function store(Request $request)
@@ -58,6 +62,7 @@ class MembershipController extends Controller
             'plan_id'        => 'required|exists:membership_plans,id',
             'payment_method' => 'required|in:cash,wallet,gcash,maya,card,bank_transfer',
             'auto_renew'     => 'boolean',
+            'promo_code'     => 'nullable|string',
         ]);
 
         $customer = User::where('id', $data['customer_id'])
@@ -73,19 +78,52 @@ class MembershipController extends Controller
             return back()->with('error', 'This customer already has an active membership.');
         }
 
+        $finalPrice = (float) $plan->price;
+        $appliedPromotion = null;
+
+        if ($request->filled('promo_code')) {
+            $promo = Promotion::where('tenant_id', $tenant->id)
+                ->where('code', strtoupper($request->promo_code))
+                ->first();
+
+            if (! $promo || ! $promo->isValid()) {
+                return back()->with('error', 'Invalid or expired promo code.')->withInput();
+            }
+
+            $discount = $promo->calculateDiscount($finalPrice);
+            $finalPrice = max(0, $finalPrice - $discount);
+            $appliedPromotion = $promo;
+        }
+
         try {
-            $this->membershipService->subscribe(
+            $membership = $this->membershipService->subscribe(
                 $customer,
                 $plan,
                 $request->boolean('auto_renew', true),
                 $data['payment_method'],
+                $finalPrice,
             );
+
+            if ($appliedPromotion) {
+                PromotionUsage::create([
+                    'promotion_id'     => $appliedPromotion->id,
+                    'customer_id'      => $customer->id,
+                    'usable_type'      => $membership->getMorphClass(),
+                    'usable_id'        => $membership->id,
+                    'discount_applied' => (float) $plan->price - $finalPrice,
+                ]);
+                $appliedPromotion->increment('used_count');
+            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->with('error', $e->errors()['payment_method'][0] ?? 'Could not complete the sale.');
         }
 
-        return redirect()->route('admin.memberships.index')
-            ->with('success', "Membership assigned to {$customer->name} (paid via {$data['payment_method']}).");
+        $successMsg = "Membership assigned to {$customer->name} (paid via {$data['payment_method']})";
+        if ($appliedPromotion) {
+            $successMsg .= " with promo '{$appliedPromotion->code}'";
+        }
+
+        return redirect()->route('admin.memberships.index')->with('success', $successMsg . '.');
     }
 
     public function show(Membership $membership)
