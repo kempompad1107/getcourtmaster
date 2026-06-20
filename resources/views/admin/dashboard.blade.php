@@ -250,30 +250,31 @@
                 </a>
             </div>
             {{-- Availability summary --}}
-            <div class="px-3 pt-3 pb-2 border-bottom flex-shrink-0">
-                <div class="d-flex gap-3 justify-content-between">
+            <div class="px-4 pt-3 pb-3 border-bottom flex-shrink-0">
+                <div class="d-flex justify-content-between">
                     <div class="text-center">
-                        <div class="fw-bold fs-5 text-success lh-1">{{ $cAvailable }}</div>
-                        <div class="text-muted" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:2px">Available</div>
+                        <div class="fw-bold fs-4 text-success lh-1">{{ $cAvailable }}</div>
+                        <div class="text-muted mt-1" style="font-size:.63rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Available</div>
                     </div>
                     <div class="text-center">
-                        <div class="fw-bold fs-5 text-danger lh-1">{{ $cOccupied }}</div>
-                        <div class="text-muted" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:2px">Occupied</div>
+                        <div class="fw-bold fs-4 text-danger lh-1">{{ $cOccupied }}</div>
+                        <div class="text-muted mt-1" style="font-size:.63rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Occupied</div>
                     </div>
                     <div class="text-center">
-                        <div class="fw-bold fs-5 text-warning lh-1">{{ $cReserved }}</div>
-                        <div class="text-muted" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:2px">Reserved</div>
+                        <div class="fw-bold fs-4 text-warning lh-1">{{ $cReserved }}</div>
+                        <div class="text-muted mt-1" style="font-size:.63rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Reserved</div>
                     </div>
                     <div class="text-center">
-                        <div class="fw-bold fs-5 lh-1">{{ $cTotal }}</div>
-                        <div class="text-muted" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:2px">Total</div>
+                        <div class="fw-bold fs-4 lh-1">{{ $cTotal }}</div>
+                        <div class="text-muted mt-1" style="font-size:.63rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Total</div>
                     </div>
                 </div>
                 @if($cTotal > 0)
-                <div class="mt-2" style="height:6px;border-radius:3px;overflow:hidden;display:flex;gap:2px">
-                    @if($cAvailable > 0)<div style="flex:{{ $cAvailable }};background:#22c55e;border-radius:3px"></div>@endif
-                    @if($cOccupied > 0)<div style="flex:{{ $cOccupied }};background:#ef4444;border-radius:3px"></div>@endif
-                    @if($cReserved > 0)<div style="flex:{{ $cReserved }};background:#f59e0b;border-radius:3px"></div>@endif
+                <div class="mt-3" style="height:5px;border-radius:99px;overflow:hidden;display:flex;gap:3px">
+                    @if($cAvailable > 0)<div style="flex:{{ $cAvailable }};background:#22c55e;border-radius:99px"></div>@endif
+                    @if($cOccupied > 0)<div style="flex:{{ $cOccupied }};background:#ef4444;border-radius:99px"></div>@endif
+                    @if($cReserved > 0)<div style="flex:{{ $cReserved }};background:#f59e0b;border-radius:99px"></div>@endif
+                    @if($cTotal > 0 && $cAvailable === $cTotal)<div style="flex:1;background:#22c55e;border-radius:99px"></div>@endif
                 </div>
                 @endif
             </div>
@@ -287,7 +288,7 @@
                     default     => 'bg-secondary'
                 };
                 @endphp
-                <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom court-status-item">
+                <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom court-status-item">
                     <div class="d-flex align-items-center gap-2 min-w-0">
                         <span class="rounded-circle flex-shrink-0 {{ $dot }}"
                               style="width:8px;height:8px;display:inline-block"></span>
