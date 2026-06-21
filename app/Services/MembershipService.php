@@ -155,18 +155,42 @@ class MembershipService
         return $membership;
     }
 
-    public function cancel(Membership $membership): Membership
+    public function unfreeze(Membership $membership): Membership
     {
+        // Add only the days actually spent frozen, not the full planned freeze period.
+        $frozenFrom = $membership->frozen_at ?? now();
+        $frozenDays = (int) $frozenFrom->diffInDays(now()->min($membership->frozen_until ?? now()));
+        $frozenDays = max(0, $frozenDays);
+
         $membership->update([
-            'status' => 'cancelled',
-            'cancelled_at' => now(),
-            'auto_renew' => false,
+            'status'       => 'active',
+            'frozen_at'    => null,
+            'frozen_until' => null,
+            'expires_at'   => $membership->expires_at->addDays($frozenDays),
         ]);
 
         MembershipTransaction::create([
             'membership_id' => $membership->id,
-            'type' => 'cancel',
-            'description' => 'Membership cancelled',
+            'type'          => 'unfreeze',
+            'description'   => "Membership unfrozen" . ($frozenDays > 0 ? "; expiry extended by {$frozenDays} day(s) for time frozen" : ''),
+        ]);
+
+        return $membership;
+    }
+
+    public function cancel(Membership $membership): Membership
+    {
+        // Keep status active so the member retains access until expires_at.
+        // The daily processExpired job will flip it to 'cancelled' when it expires.
+        $membership->update([
+            'cancelled_at' => now(),
+            'auto_renew'   => false,
+        ]);
+
+        MembershipTransaction::create([
+            'membership_id' => $membership->id,
+            'type'          => 'cancel',
+            'description'   => 'Membership cancellation scheduled — access until ' . $membership->expires_at->toDateString(),
         ]);
 
         return $membership;
@@ -194,7 +218,7 @@ class MembershipService
     {
         $count = 0;
         Membership::active()->where('expires_at', '<', now())->each(function (Membership $m) use (&$count) {
-            $m->update(['status' => 'expired']);
+            $m->update(['status' => $m->cancelled_at ? 'cancelled' : 'expired']);
             $count++;
         });
         return $count;

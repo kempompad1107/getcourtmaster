@@ -102,9 +102,6 @@ class PosController extends Controller
         $tenant = $this->authTenant();
         $tenantId = $tenant->id;
 
-        // Prefer the active branch context (session-set via the topbar
-        // switcher). Owners with "All branches" selected fall back to the
-        // tenant's main branch so the POS still has somewhere to post the order.
         $activeBranchId = $this->branchContext->current()
             ?? $tenant->branches()->where('is_main', true)->value('id')
             ?? $tenant->branches()->value('id');

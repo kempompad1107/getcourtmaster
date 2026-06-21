@@ -29,8 +29,15 @@ class BookingController extends Controller
 
     public function index(Request $request): View
     {
-        $list = $this->bookings->forCustomer($request->user()->id);
-        return view('customer.bookings.index', ['bookings' => $list]);
+        $tab = $request->get('tab', 'upcoming');
+        $statuses = match($tab) {
+            'upcoming'  => ['pending', 'confirmed', 'active'],
+            'past'      => ['completed'],
+            'cancelled' => ['cancelled', 'denied'],
+            default     => [],
+        };
+        $list = $this->bookings->forCustomer($request->user()->id, $statuses);
+        return view('customer.bookings.index', ['bookings' => $list, 'tab' => $tab]);
     }
 
     public function create(Request $request, GatewayManager $gateways): View

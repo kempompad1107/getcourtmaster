@@ -129,7 +129,13 @@
                         </div>
                     </td>
                     <td data-label="Credits" class="small">{{ $membership->credits_label }}</td>
-                    <td data-label="Status"><x-badge :status="$membership->status">{{ ucfirst($membership->status) }}</x-badge></td>
+                    <td data-label="Status">
+                        @if($membership->cancelled_at && $membership->status === 'active')
+                            <x-badge status="cancelled">Pending Cancellation</x-badge>
+                        @else
+                            <x-badge :status="$membership->status">{{ ucfirst($membership->status) }}</x-badge>
+                        @endif
+                    </td>
                     <td class="cell-actions text-end">
                         <a href="{{ route('admin.memberships.show', $membership) }}"
                            class="btn btn-outline-primary btn-sm">View</a>

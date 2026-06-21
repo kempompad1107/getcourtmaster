@@ -17,7 +17,7 @@ class MembershipRepository extends BaseRepository implements MembershipRepositor
     {
         return $this->query()
             ->where('customer_id', $customerId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', 'frozen'])
             ->latest()
             ->first();
     }
