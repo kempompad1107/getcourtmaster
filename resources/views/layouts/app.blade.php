@@ -89,7 +89,7 @@
         @endif
 
         @if ($isOwner || $u->can('courts.view') || $u->can('bookings.view'))
-            <x-nav-item href="{{ route('admin.display.index') }}" icon="bi-tv"
+            <x-nav-item href="{{ route('admin.display.index') }}" icon="bi-tv" target="_blank"
                 :active="request()->routeIs('admin.display.*')">Smart Display</x-nav-item>
         @endif
 
