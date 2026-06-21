@@ -9,7 +9,7 @@
     }
     .court-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 16px 32px -22px rgba(0,0,0,.5);
+        box-shadow: 0 12px 28px -10px rgba(0,0,0,.18);
     }
 
     .court-card.s-available   { --c:#22c55e; --crgb:34,197,94;   }
@@ -18,21 +18,38 @@
     .court-card.s-maintenance { --c:#fb923c; --crgb:251,146,60;  }
     .court-card.s-closed      { --c:#94a3b8; --crgb:148,163,184; }
 
-    .court-card-header {
-        padding: 1rem 1.25rem .85rem;
+    /* Photo thumbnail — fills the top of the card */
+    .court-thumb {
+        width: 100%; height: 160px; object-fit: cover; display: block;
+        background: rgba(var(--crgb),.08);
+        border-bottom: 1px solid rgba(var(--crgb),.15);
+    }
+    .court-thumb-placeholder {
+        width: 100%; height: 160px; display: flex; align-items: center; justify-content: center;
         background: rgba(var(--crgb),.07);
-        border-bottom: 1px solid rgba(var(--crgb),.18);
+        border-bottom: 1px solid rgba(var(--crgb),.15);
         position: relative;
     }
-    .court-card-header::before {
-        content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    .court-thumb-placeholder::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
         background: var(--c);
     }
+    .court-thumb-placeholder i { font-size: 2.5rem; color: rgba(var(--crgb),.35); }
 
-    .court-status-dot {
-        width:8px; height:8px; border-radius:50%; flex-shrink:0;
-        background: var(--c); box-shadow: 0 0 6px var(--c);
+    /* Status badge overlaid on the photo */
+    .court-status-pill {
+        position: absolute; top: .65rem; right: .65rem;
+        display: inline-flex; align-items: center; gap: .35rem;
+        padding: .2rem .6rem; border-radius: 999px;
+        background: rgba(0,0,0,.45); backdrop-filter: blur(6px);
+        font-size: .68rem; font-weight: 600; color: #fff;
+        letter-spacing: .03em; text-transform: capitalize;
     }
+    .court-status-dot {
+        width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+        background: var(--c); box-shadow: 0 0 5px var(--c);
+    }
+
     .court-type-badge {
         font-size:.65rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase;
         padding:.2rem .55rem; border-radius:999px;
@@ -46,7 +63,7 @@
         border:1px solid var(--bs-border-color);
     }
     .court-price-chip .l { font-size:.6rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--bs-secondary-color); }
-    .court-price-chip .v { font-weight:800; font-size:.95rem; line-height:1.3; }
+    .court-price-chip .v { font-weight:700; font-size:.95rem; line-height:1.3; }
     .court-amenity {
         font-size:.68rem; font-weight:500; padding:.2rem .55rem; border-radius:999px;
         background:rgba(148,163,184,.1); color:var(--bs-secondary-color);
@@ -107,15 +124,31 @@
 </x-filter-bar>
 
 <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-    @forelse($courts as $court)
+    @foreach($courts as $court)
     @php
         $statusClass = 's-' . (in_array($court->status, ['available','occupied','reserved','maintenance','closed']) ? $court->status : 'closed');
     @endphp
     <div class="col">
         <div class="card court-card {{ $statusClass }} d-flex flex-column">
 
-            <div class="court-card-header">
-                <div class="d-flex align-items-start justify-content-between gap-2">
+            {{-- Photo or placeholder --}}
+            @php $photo = $court->getFirstMedia('photos'); @endphp
+            <div class="position-relative">
+                @if($photo)
+                <img src="{{ $photo->getUrl() }}" alt="{{ $court->name }}" class="court-thumb">
+                @else
+                <div class="court-thumb-placeholder">
+                    <i class="bi bi-image"></i>
+                </div>
+                @endif
+                <span class="court-status-pill">
+                    <span class="court-status-dot"></span>{{ $court->status }}
+                </span>
+            </div>
+
+            {{-- Card info header --}}
+            <div class="card-body pb-2 pt-3">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                     <div class="min-w-0">
                         <h6 class="fw-bold mb-1 text-truncate" style="letter-spacing:-.01em">{{ $court->name }}</h6>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -128,15 +161,9 @@
                             @endif
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-1 flex-shrink-0 mt-1">
-                        <span class="court-status-dot"></span>
-                        <span class="fw-medium text-capitalize" style="font-size:.72rem;color:var(--c)">{{ $court->status }}</span>
-                    </div>
                 </div>
-            </div>
 
-            <div class="card-body d-flex flex-column gap-3 pt-3">
-                <div class="court-price">
+                <div class="court-price mb-3">
                     <div class="court-price-chip">
                         <div class="l">Base</div>
                         <div class="v">&#8369;{{ number_format($court->base_hourly_rate) }}<span class="fw-normal text-muted" style="font-size:.75rem">/hr</span></div>
@@ -161,7 +188,7 @@
             <div class="card-footer d-flex align-items-center gap-2">
                 <a href="{{ route('admin.courts.edit', $court) }}"
                    class="btn btn-primary flex-grow-1">
-                    <i class="bi bi-pencil me-1"></i>Edit
+                    <i class="bi bi-pencil"></i>Edit
                 </a>
                 <a href="{{ route('admin.bookings.calendar', ['court' => $court->id]) }}"
                    class="btn btn-outline-secondary" title="Availability">
@@ -203,23 +230,27 @@
 
         </div>
     </div>
-    @empty
-    <div class="col-12">
-        <x-empty-state
-            title="No courts found"
-            description="Get started by adding your first court."
-            icon="bi-grid-3x3-gap"
-            @can('create', App\Models\Court::class)
-            action="{{ route('admin.courts.create') }}"
-            actionLabel="Add Court"
-            @endcan/>
-    </div>
-    @endforelse
+    @endforeach
 </div>
 
+@if($courts->isEmpty())
+<div class="card mt-2">
+    <x-empty-state
+        title="No courts found"
+        description="Get started by adding your first court."
+        icon="bi-grid-3x3-gap"
+        @can('create', App\Models\Court::class)
+        action="{{ route('admin.courts.create') }}"
+        actionLabel="Add Court"
+        @endcan/>
+</div>
+@endif
+
 @if($courts->hasPages())
-<div class="d-flex justify-content-center mt-4">
-    {{ $courts->links() }}
+<div class="card mt-3">
+    <div class="card-footer">
+        {{ $courts->withQueryString()->links() }}
+    </div>
 </div>
 @endif
 
