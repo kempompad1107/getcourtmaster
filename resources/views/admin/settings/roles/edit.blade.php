@@ -123,7 +123,7 @@
     }
     /* Push save bar above mobile bottom nav (58px) */
     @media (max-width: 991.98px) {
-        .perm-savebar { bottom: calc(58px + env(safe-area-inset-bottom) + .5rem); }
+        .perm-savebar { bottom: calc(58px + env(safe-area-inset-bottom) + 1.25rem); }
     }
 </style>
 @endpush
@@ -220,8 +220,8 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="{{ route('admin.roles.index') }}" class="btn btn-outline-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary">
+                    <a href="{{ route('admin.roles.index') }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-check-lg me-1"></i>Save
                     </button>
                 </div>
