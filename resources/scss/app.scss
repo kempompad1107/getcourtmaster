@@ -141,13 +141,13 @@ body {
 }
 .btn-sm { --bs-btn-padding-x: .875rem; --bs-btn-padding-y: .4rem; --bs-btn-font-size: .8125rem; border-radius: $border-radius-sm; }
 
-// Page-header action buttons are always standard size — neutralise stray btn-sm
-// so every admin page's header buttons match (overrides .btn-sm above).
+// Page-header action buttons are always the compact (btn-sm) size so every
+// admin page's header buttons match each other and the dashboard hero.
 .ph-actions .btn {
-    --bs-btn-padding-x: 1.25rem;
-    --bs-btn-padding-y: 0.625rem;
-    --bs-btn-font-size: 0.875rem;
-    border-radius: $border-radius;
+    --bs-btn-padding-x: .875rem;
+    --bs-btn-padding-y: .4rem;
+    --bs-btn-font-size: .8125rem;
+    border-radius: $border-radius-sm;
 }
 .btn-lg { --bs-btn-padding-x: 1.5rem; --bs-btn-padding-y: .8125rem; border-radius: $border-radius-lg; }
 
