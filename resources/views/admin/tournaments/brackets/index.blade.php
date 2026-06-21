@@ -12,8 +12,9 @@
     <x-slot name="actions">
         <div class="position-relative" @click.outside="open = false">
             <button type="button" @click="open = !open"
-                    class="btn {{ $activeFilters ? 'btn-primary' : 'btn-outline-secondary' }} position-relative">
+                    class="btn {{ $activeFilters ? 'btn-primary' : 'btn-outline-secondary' }} position-relative d-flex align-items-center gap-2">
                 <i class="bi bi-sliders2"></i>
+                <span class="d-none d-md-inline fw-medium" style="font-size:.875rem">Filters</span>
                 @if($activeFilters)
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                           style="font-size:.55rem">{{ $activeFilters }}</span>
