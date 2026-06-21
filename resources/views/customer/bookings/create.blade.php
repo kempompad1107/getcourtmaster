@@ -31,7 +31,7 @@
         <h4 class="fw-bold mb-0">Book a Court</h4>
         <p class="text-muted mb-0">Pick a court, time and how you'd like to pay.</p>
     </div>
-    <a href="{{ route('customer.bookings.index') }}" class="btn btn-outline-secondary btn-sm">
+    <a href="{{ route('customer.bookings.index') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>My bookings
     </a>
 </div>
@@ -67,9 +67,9 @@
                     <div class="wz-dot" :class="step >= 3 && 'wz-dot-on'">3</div>
                 </div>
                 <div class="d-flex justify-content-between small fw-semibold mt-2">
-                    <span :class="step >= 1 ? 'text-primary' : 'text-muted'">Court &amp; time</span>
-                    <span :class="step >= 2 ? 'text-primary' : 'text-muted'">Payment</span>
-                    <span :class="step >= 3 ? 'text-primary' : 'text-muted'">Confirm</span>
+                    <span :class="step >= 1 ? 'fw-semibold' : 'text-muted'" :style="step >= 1 ? 'color:#10b981' : ''">Court &amp; time</span>
+                    <span :class="step >= 2 ? 'fw-semibold' : 'text-muted'" :style="step >= 2 ? 'color:#10b981' : ''">Payment</span>
+                    <span :class="step >= 3 ? 'fw-semibold' : 'text-muted'" :style="step >= 3 ? 'color:#10b981' : ''">Confirm</span>
                 </div>
             </div>
 
@@ -131,9 +131,9 @@
                         @if(!empty($availableGateways))
                             @if(in_array('paymongo', $availableGateways))
                                 @foreach($paymongoMethods as $pm)
-                                <div class="col-md-4">
+                                <div class="col-6 col-md-4">
                                     <label class="card border-2 p-3 h-100 mb-0"
-                                           :class="paymentMethod === 'online' && gatewayName === 'paymongo' && gatewayMethod === '{{ $pm }}' ? 'border-success' : 'border-light-subtle'"
+                                           :class="paymentMethod === 'online' && gatewayName === 'paymongo' && gatewayMethod === '{{ $pm }}' ? 'border-success' : 'border'"
                                            style="cursor:pointer"
                                            @click="paymentMethod = 'online'; gatewayName = 'paymongo'; gatewayMethod = '{{ $pm }}'">
                                         <input type="radio" name="payment_method" value="online"
@@ -153,9 +153,9 @@
                                 @endforeach
                             @endif
                             @if(in_array('stripe', $availableGateways))
-                            <div class="col-md-4">
+                            <div class="col-6 col-md-4">
                                 <label class="card border-2 p-3 h-100 mb-0"
-                                       :class="paymentMethod === 'online' && gatewayName === 'stripe' ? 'border-success' : 'border-light-subtle'"
+                                       :class="paymentMethod === 'online' && gatewayName === 'stripe' ? 'border-success' : 'border'"
                                        style="cursor:pointer"
                                        @click="paymentMethod = 'online'; gatewayName = 'stripe'; gatewayMethod = ''">
                                     <input type="radio" name="payment_method" value="online"
@@ -176,9 +176,9 @@
                         @endif
 
                         {{-- Wallet --}}
-                        <div class="col-md-4">
+                        <div class="col-6 col-md-4">
                             <label class="card border-2 p-3 h-100 mb-0"
-                                   :class="paymentMethod === 'wallet' ? 'border-primary' : 'border-light-subtle'"
+                                   :class="paymentMethod === 'wallet' ? 'border-success' : 'border'"
                                    style="cursor:pointer"
                                    @click="paymentMethod = 'wallet'; gatewayName = ''; gatewayMethod = ''">
                                 <input type="radio" name="payment_method" value="wallet"
@@ -197,9 +197,9 @@
                         </div>
 
                         {{-- Court Credit --}}
-                        <div class="col-md-4">
+                        <div class="col-6 col-md-4">
                             <label class="card border-2 p-3 h-100 mb-0"
-                                   :class="paymentMethod === 'court_credit' ? 'border-primary' : 'border-light-subtle'"
+                                   :class="paymentMethod === 'court_credit' ? 'border-success' : 'border'"
                                    :style="creditAvailable ? 'cursor:pointer' : 'cursor:not-allowed;opacity:.6'">
                                 <input type="radio" name="payment_method" value="court_credit"
                                        x-model="paymentMethod" class="form-check-input mb-2"
@@ -220,9 +220,9 @@
 
                         {{-- Cash (hidden when require_payment is on and gateways are available) --}}
                         @if(!($requirePayment && !empty($availableGateways)))
-                        <div class="col-md-4">
+                        <div class="col-6 col-md-4">
                             <label class="card border-2 p-3 h-100 mb-0"
-                                   :class="paymentMethod === 'cash' ? 'border-primary' : 'border-light-subtle'"
+                                   :class="paymentMethod === 'cash' ? 'border-success' : 'border'"
                                    style="cursor:pointer"
                                    @click="paymentMethod = 'cash'; gatewayName = ''; gatewayMethod = ''">
                                 <input type="radio" name="payment_method" value="cash"
