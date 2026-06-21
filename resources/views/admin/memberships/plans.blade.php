@@ -3,20 +3,32 @@
 
 @push('styles')
 <style>
-    /* ── Membership plans — pricing cards over the admin theme ── */
     .plan-card {
         position: relative; overflow: hidden; height: 100%;
         --accent: #10b981; --accent-rgb: 16,185,129;
         border: 1px solid var(--bs-border-color);
         transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
-    .plan-card.is-vip { --accent: #f59e0b; --accent-rgb: 245,158,11; border-color: rgba(245,158,11,.4); }
-    .plan-card:hover { transform: translateY(-4px); border-color: rgba(var(--accent-rgb), .45); box-shadow: 0 18px 36px -24px rgba(0,0,0,.75); }
-    .plan-accent { height: 5px; background: linear-gradient(90deg, var(--accent), rgba(var(--accent-rgb), .25)); }
-    .plan-price { font-size: 2.3rem; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
-    .plan-feature { display: flex; gap: .6rem; align-items: flex-start; }
-    .plan-feature i { color: var(--accent); margin-top: .15rem; }
-    .plan-state-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .plan-card.is-vip { --accent: #f59e0b; --accent-rgb: 245,158,11; border-color: rgba(245,158,11,.35); }
+    .plan-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(var(--accent-rgb), .4);
+        box-shadow: 0 12px 28px -10px rgba(0,0,0,.18);
+    }
+    .plan-accent { height: 4px; background: linear-gradient(90deg, var(--accent), rgba(var(--accent-rgb),.2)); }
+    .plan-price { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; line-height: 1; }
+    .plan-feature { display: flex; gap: .55rem; align-items: flex-start; font-size: .85rem; }
+    .plan-feature i { color: var(--accent); margin-top: .15rem; flex-shrink: 0; }
+    .plan-state-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+    .plan-sub-count {
+        display: inline-flex; align-items: center; gap: .3rem;
+        font-size: .7rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+        color: var(--bs-secondary-color);
+    }
+    @media (max-width: 575.98px) {
+        .plan-card-actions { flex-direction: column; }
+        .plan-card-actions .btn { flex: 1; width: 100%; justify-content: center; }
+    }
 </style>
 @endpush
 
@@ -26,13 +38,13 @@
     <x-slot name="actions">
         <div class="btn-group" role="group">
             <a href="{{ route('admin.memberships.index') }}"
-               class="btn btn-sm btn-outline-secondary">Active Members</a>
+               class="btn btn-outline-secondary">Members</a>
             <a href="{{ route('admin.memberships.plans') }}"
-               class="btn btn-sm btn-primary">Plans</a>
+               class="btn btn-primary">Plans</a>
         </div>
-        <button type="button" class="btn btn-primary btn-sm"
+        <button type="button" class="btn btn-primary"
                 data-bs-toggle="modal" data-bs-target="#create-plan">
-            <i class="bi bi-plus-lg me-1"></i>New Plan
+            <i class="bi bi-plus-lg"></i>New Plan
         </button>
     </x-slot>
 </x-page-header>
@@ -40,9 +52,8 @@
 {{-- Plans grid --}}
 @if($plans->isEmpty())
 <div class="card">
-    <div class="card-body">
-        <x-empty-state title="No membership plans yet" icon="bi-grid"/>
-    </div>
+    <x-empty-state title="No membership plans yet" icon="bi-grid"
+        description="Create your first plan to start assigning memberships."/>
 </div>
 @else
 <div class="row g-4">
@@ -50,23 +61,32 @@
     <div class="col-12 col-sm-6 col-lg-4">
         <div class="card plan-card {{ $plan->is_vip ? 'is-vip' : '' }} overflow-hidden">
             <div class="plan-accent"></div>
-            <div class="card-body d-flex flex-column">
-                <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="card-body d-flex flex-column gap-0">
+
+                {{-- Header: name + badges --}}
+                <div class="d-flex align-items-start justify-content-between mb-2">
                     <div>
                         <h6 class="fw-bold mb-0">{{ $plan->name }}</h6>
                         <small class="text-muted text-capitalize">{{ $plan->billing_cycle }}</small>
                     </div>
-                    @if($plan->is_vip)
-                    <span class="badge rounded-pill bg-warning-subtle text-warning"><i class="bi bi-star-fill me-1"></i>VIP</span>
-                    @endif
+                    <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                        @if(!$plan->is_active)
+                        <span class="badge rounded-pill bg-secondary-subtle text-secondary">Inactive</span>
+                        @endif
+                        @if($plan->is_vip)
+                        <span class="badge rounded-pill bg-warning-subtle text-warning"><i class="bi bi-star-fill me-1"></i>VIP</span>
+                        @endif
+                    </div>
                 </div>
 
-                <div class="mb-4">
+                {{-- Price --}}
+                <div class="mb-3">
                     <span class="plan-price">₱{{ number_format($plan->price) }}</span>
                     <span class="text-muted small">/{{ $plan->billing_cycle }}</span>
                 </div>
 
-                <ul class="list-unstyled small flex-grow-1 mb-3 d-flex flex-column gap-2">
+                {{-- Features --}}
+                <ul class="list-unstyled flex-grow-1 mb-3 d-flex flex-column gap-2">
                     <li class="plan-feature">
                         <i class="bi bi-check-circle-fill"></i><span>{{ $plan->court_hours }} hours of court time</span>
                     </li>
@@ -82,14 +102,21 @@
                     @endforeach
                 </ul>
 
-                <div class="d-flex align-items-center justify-content-between pt-3 border-top">
-                    <span class="small fw-medium {{ $plan->is_active ? 'text-success' : 'text-muted' }}">
-                        <span class="plan-state-dot me-1" style="background:{{ $plan->is_active ? '#22c55e' : '#94a3b8' }}"></span>
-                        {{ $plan->is_active ? 'Active' : 'Inactive' }}
-                    </span>
-                    <div class="d-flex align-items-center gap-2">
+                {{-- Footer: subscriber count + actions --}}
+                <div class="pt-3 border-top">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="plan-sub-count">
+                            <i class="bi bi-people"></i>
+                            {{ $plan->active_memberships_count }} active
+                        </span>
+                        <span class="small fw-medium {{ $plan->is_active ? 'text-success' : 'text-muted' }}">
+                            <span class="plan-state-dot me-1" style="background:{{ $plan->is_active ? '#22c55e' : '#94a3b8' }}"></span>
+                            {{ $plan->is_active ? 'Active' : 'Inactive' }}
+                        </span>
+                    </div>
+                    <div class="d-flex gap-2 plan-card-actions">
                         <button type="button"
-                                class="btn btn-outline-secondary btn-sm edit-plan-btn"
+                                class="btn btn-outline-secondary btn-sm flex-grow-1 edit-plan-btn"
                                 data-bs-toggle="modal" data-bs-target="#edit-plan"
                                 data-plan-id="{{ $plan->id }}"
                                 data-name="{{ $plan->name }}"
@@ -99,7 +126,7 @@
                                 data-discount-percent="{{ $plan->discount_percent }}"
                                 data-is-vip="{{ $plan->is_vip ? '1' : '0' }}"
                                 data-is-active="{{ $plan->is_active ? '1' : '0' }}">
-                            <i class="bi bi-pencil me-1"></i>Edit
+                            <i class="bi bi-pencil"></i>Edit
                         </button>
                         <form method="POST" action="{{ route('admin.memberships.plans.destroy', $plan) }}"
                               onsubmit="return confirm('Delete this plan? Existing members will not be affected.')">
@@ -110,6 +137,7 @@
                         </form>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
