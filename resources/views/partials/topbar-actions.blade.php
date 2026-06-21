@@ -22,13 +22,10 @@
             <button class="topbar-btn d-flex align-items-center gap-2"
                     data-bs-toggle="dropdown" aria-label="Switch branch"
                     @if($isAllBranches) title="Read-only — select a branch to make changes" @endif>
-                <i class="bi {{ $isAllBranches ? 'bi-house' : 'bi-shop' }}"></i>
+                <i class="bi {{ $isAllBranches ? 'bi-house text-warning' : 'bi-shop' }}"></i>
                 <span class="d-none d-sm-inline text-truncate" style="max-width:140px">
                     {{ $activeBranch?->name ?? 'All branches' }}
                 </span>
-                @if($isAllBranches)
-                    <span class="badge text-bg-warning d-none d-sm-inline" style="font-size:.55rem">read-only</span>
-                @endif
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width:220px">
                 @if($canSeeAllBranches ?? false)
