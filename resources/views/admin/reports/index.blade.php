@@ -21,19 +21,19 @@
                 </div>
             </div>
 
-            {{-- Row 2: date pickers --}}
-            <div class="d-flex align-items-center gap-1 mb-2">
-                <input x-model="dateFrom" type="date" class="form-control form-control-sm" aria-label="From date">
-                <span class="text-muted flex-shrink-0 px-1">–</span>
-                <input x-model="dateTo"   type="date" class="form-control form-control-sm" aria-label="To date">
-            </div>
-
-            {{-- Row 3: branch + actions --}}
+            {{-- Row 2: date pickers + branch + actions --}}
             <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                {{-- Date range — each input fixed so they never overflow --}}
+                <div class="d-flex align-items-center gap-1 flex-shrink-0" style="min-width:0">
+                    <input x-model="dateFrom" type="date" class="form-control form-control-sm" style="width:130px;min-width:0" aria-label="From date">
+                    <span class="text-muted flex-shrink-0">–</span>
+                    <input x-model="dateTo"   type="date" class="form-control form-control-sm" style="width:130px;min-width:0" aria-label="To date">
+                </div>
 
                 @isset($availableBranches)
                     @if($availableBranches->count() > 1 || ($canSeeAllBranches ?? false))
-                    <select x-model="branchId" class="form-select form-select-sm flex-grow-1" style="max-width:200px" aria-label="Branch">
+                    <select x-model="branchId" class="form-select form-select-sm" style="width:auto;max-width:160px" aria-label="Branch">
                         @if($canSeeAllBranches ?? false)
                             <option value="all">All branches</option>
                         @endif
@@ -45,7 +45,7 @@
                 @endisset
 
                 {{-- Actions --}}
-                <div class="d-flex align-items-center gap-2 ms-auto">
+                <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
                     <button type="button" @click="loadActive(true)" class="btn btn-primary btn-sm">
                         <i class="bi bi-funnel"></i>Apply
                     </button>
