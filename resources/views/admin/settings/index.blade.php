@@ -423,14 +423,14 @@
             {{-- Intro banner --}}
             <div class="gw-intro mb-4">
                 <div class="gw-intro-icon"><i class="bi bi-bank2"></i></div>
-                <div class="flex-grow-1">
+                <div class="flex-grow-1 min-w-0">
                     <h6 class="mb-1 fw-semibold">Online Payments</h6>
                     <p class="mb-0 text-muted small">
                         Connect your own PayMongo or Stripe account. When customers pay online the money
                         lands <strong>directly in your bank</strong> — we never hold or touch it.
                     </p>
                 </div>
-                <a href="{{ route('admin.settings.gateways.guide') }}" class="btn btn-sm btn-outline-primary flex-shrink-0">
+                <a href="{{ route('admin.settings.gateways.guide') }}" class="btn btn-outline-secondary btn-sm flex-shrink-0 align-self-start">
                     <i class="bi bi-question-circle me-1"></i>Setup Guide
                 </a>
             </div>
@@ -442,7 +442,7 @@
                 <div class="gw-card mb-4" style="--gw-accent:#15c5a8"
                      x-data="{ on: {{ ($pm['enabled'] ?? false) ? 'true' : 'false' }} }"
                      :class="on ? 'is-on' : ''">
-                    <div class="gw-card-head">
+                    <div class="gw-card-head" :class="on ? 'border-bottom' : ''">
                         <div class="gw-logo">P</div>
                         <div class="gw-meta">
                             <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -459,21 +459,21 @@
                         </label>
                     </div>
 
-                    <div class="gw-card-body">
+                    <div class="gw-card-body" x-show="on" x-transition>
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
                                 <label class="gw-label">Secret key <span class="gw-hint-inline">sk_live_…</span></label>
                                 <input type="password" name="paymongo_secret_key" autocomplete="off"
                                        placeholder="{{ $mask($pm['secret_key'] ?? null) ?: 'sk_live_…' }}"
                                        class="form-control font-monospace">
-                                <div class="gw-help">Dashboard → Developers → API Keys. Leave blank to keep the saved key.</div>
+                                <div class="gw-help">Dashboard → Developers → API Keys. Leave blank to keep current.</div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="gw-label">Webhook secret <span class="gw-hint-inline">whsk_…</span></label>
                                 <input type="password" name="paymongo_webhook_secret" autocomplete="off"
                                        placeholder="{{ $mask($pm['webhook_secret'] ?? null) ?: 'whsk_…' }}"
                                        class="form-control font-monospace">
-                                <div class="gw-help">Shown once when you create the webhook below.</div>
+                                <div class="gw-help">Shown once when you create the webhook.</div>
                             </div>
 
                             <div class="col-12">
@@ -511,7 +511,7 @@
                 <div class="gw-card mb-4" style="--gw-accent:#635bff"
                      x-data="{ on: {{ ($sp['enabled'] ?? false) ? 'true' : 'false' }} }"
                      :class="on ? 'is-on' : ''">
-                    <div class="gw-card-head">
+                    <div class="gw-card-head" :class="on ? 'border-bottom' : ''">
                         <div class="gw-logo">S</div>
                         <div class="gw-meta">
                             <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -528,21 +528,21 @@
                         </label>
                     </div>
 
-                    <div class="gw-card-body">
+                    <div class="gw-card-body" x-show="on" x-transition>
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
                                 <label class="gw-label">Secret key <span class="gw-hint-inline">sk_live_…</span></label>
                                 <input type="password" name="stripe_secret" autocomplete="off"
                                        placeholder="{{ $mask($sp['secret'] ?? null) ?: 'sk_live_…' }}"
                                        class="form-control font-monospace">
-                                <div class="gw-help">Dashboard → Developers → API Keys. Leave blank to keep the saved key.</div>
+                                <div class="gw-help">Dashboard → Developers → API Keys. Leave blank to keep current.</div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="gw-label">Webhook signing secret <span class="gw-hint-inline">whsec_…</span></label>
                                 <input type="password" name="stripe_webhook_secret" autocomplete="off"
                                        placeholder="{{ $mask($sp['webhook_secret'] ?? null) ?: 'whsec_…' }}"
                                        class="form-control font-monospace">
-                                <div class="gw-help">Shown once when you create the webhook below.</div>
+                                <div class="gw-help">Shown once when you create the webhook.</div>
                             </div>
 
                             @if($webhookToken)
@@ -567,7 +567,7 @@
                     <span>Keys are encrypted at rest and never shown back to you. Lost a key? Create a new one in your provider's dashboard and paste it here again.</span>
                 </div>
 
-                <div class="d-flex justify-content-end mt-3">
+                <div class="d-grid d-sm-flex justify-content-sm-end mt-3">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check-lg me-1"></i>Save Payment Settings
                     </button>
@@ -832,7 +832,7 @@
         padding: 1rem 1.25rem; background: transparent; border: 0;
         color: inherit; text-align: left; cursor: pointer;
     }
-    .smtp-guide-toggle:hover { background: color-mix(in srgb, var(--bs-body-color, #1e293b) 4%, transparent); }
+    .smtp-guide-toggle:hover { background: rgba(0,0,0,.04); }
     .smtp-steps { display: flex; flex-direction: column; gap: .9rem; margin-top: .5rem; }
     .smtp-step { display: flex; align-items: flex-start; gap: .75rem; }
     .smtp-step-num {
@@ -917,9 +917,8 @@
 
     .gw-card-head {
         display: flex; align-items: center; gap: .875rem;
-        padding: 1rem 1.25rem; border-bottom: 1px solid transparent;
+        padding: 1rem 1.25rem;
     }
-    .gw-card.is-on .gw-card-head { border-bottom-color: var(--bs-border-color); }
 
     .gw-logo {
         width: 42px; height: 42px; flex-shrink: 0;
@@ -957,13 +956,8 @@
     .gw-switch input:checked + .gw-switch-track::after { transform: translateX(20px); }
     .gw-switch input:focus-visible + .gw-switch-track { outline: 2px solid var(--gw-accent); outline-offset: 2px; }
 
-    /* Collapsible body — dimmed & collapsed when off */
-    .gw-card-body {
-        max-height: 0; opacity: 0; overflow: hidden;
-        padding: 0 1.25rem;
-        transition: max-height .3s ease, opacity .25s ease, padding .3s ease;
-    }
-    .gw-card.is-on .gw-card-body { max-height: 1200px; opacity: 1; padding: 1.25rem; }
+    /* Body shown/hidden via Alpine x-show x-transition */
+    .gw-card-body { padding: 1.25rem; }
 
     .gw-label {
         display: block; font-size: .8125rem; font-weight: 600;
@@ -992,7 +986,7 @@
     .gw-chip:hover > span { border-color: var(--gw-accent); color: var(--bs-body-color); }
     .gw-chip input:checked + span {
         color: var(--gw-accent); font-weight: 600;
-        background: color-mix(in srgb, var(--gw-accent) 12%, transparent);
+        background: rgba(21,197,168,.12);
         border-color: var(--gw-accent);
     }
     .gw-chip input:checked + span i { filter: none; }
