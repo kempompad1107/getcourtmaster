@@ -25,10 +25,6 @@
         font-size: .7rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
         color: var(--bs-secondary-color);
     }
-    @media (max-width: 575.98px) {
-        .plan-card-actions { flex-direction: column; }
-        .plan-card-actions .btn { flex: 1; width: 100%; justify-content: center; }
-    }
 </style>
 @endpush
 
@@ -114,9 +110,9 @@
                             {{ $plan->is_active ? 'Active' : 'Inactive' }}
                         </span>
                     </div>
-                    <div class="d-flex gap-2 plan-card-actions">
+                    <div class="d-flex gap-2">
                         <button type="button"
-                                class="btn btn-outline-secondary btn-sm flex-grow-1 edit-plan-btn"
+                                class="btn btn-primary btn-sm flex-grow-1 edit-plan-btn"
                                 data-bs-toggle="modal" data-bs-target="#edit-plan"
                                 data-plan-id="{{ $plan->id }}"
                                 data-name="{{ $plan->name }}"
@@ -126,13 +122,13 @@
                                 data-discount-percent="{{ $plan->discount_percent }}"
                                 data-is-vip="{{ $plan->is_vip ? '1' : '0' }}"
                                 data-is-active="{{ $plan->is_active ? '1' : '0' }}">
-                            <i class="bi bi-pencil"></i>Edit
+                            <i class="bi bi-pencil"></i>Edit Plan
                         </button>
                         <form method="POST" action="{{ route('admin.memberships.plans.destroy', $plan) }}"
                               onsubmit="return confirm('Delete this plan? Existing members will not be affected.')">
                             @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete plan">
-                                <i class="bi bi-trash"></i>
+                            <button type="submit" class="btn btn-outline-secondary btn-sm" title="Delete plan">
+                                <i class="bi bi-trash text-danger"></i>
                             </button>
                         </form>
                     </div>
