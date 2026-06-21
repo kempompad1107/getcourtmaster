@@ -207,14 +207,15 @@
 @endif
 @endif {{-- end @if($active) --}}
 
-{{-- ── Plans grid (only when no active membership) ──────── --}}
-@if(!$active)
+{{-- ── Plans grid ───────────────────────────────────────── --}}
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <div>
-        <h5 class="fw-bold mb-0">Choose a Plan</h5>
+        <h5 class="fw-bold mb-0">{{ $active ? 'Available Plans' : 'Choose a Plan' }}</h5>
+        @if(!$active)
         <p class="text-muted small mb-0">
             Wallet balance: <strong>₱{{ number_format(auth()->user()->wallet_balance ?? 0, 2) }}</strong> — or pay at the desk.
         </p>
+        @endif
     </div>
 </div>
 
@@ -260,10 +261,16 @@
                 </ul>
 
                 <div class="mt-auto">
-                    <button type="button" class="btn btn-primary w-100"
-                            data-bs-toggle="modal" data-bs-target="#subscribeModal-{{ $plan->id }}">
-                        <i class="bi bi-credit-card me-1"></i>Subscribe
-                    </button>
+                    @if($active)
+                        <button class="btn btn-outline-secondary w-100" disabled>
+                            <i class="bi bi-check2 me-1"></i>Already subscribed
+                        </button>
+                    @else
+                        <button type="button" class="btn btn-primary w-100"
+                                data-bs-toggle="modal" data-bs-target="#subscribeModal-{{ $plan->id }}">
+                            <i class="bi bi-credit-card me-1"></i>Subscribe
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -277,7 +284,6 @@
     </div>
     @endforelse
 </div>
-@endif
 
 {{-- ── Membership history ───────────────────────────────── --}}
 @if($history->count() > 0)
