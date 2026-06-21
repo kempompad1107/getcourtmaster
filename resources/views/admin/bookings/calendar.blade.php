@@ -211,6 +211,38 @@
     background: var(--bs-primary); border-color: var(--bs-primary); color: #fff;
 }
 
+/* FullCalendar's STANDARD theme buttons (.fc-button-primary) default to dark
+   slate — recolour them to the same neutral/active-emerald segmented control so
+   prev/next/today and the view switcher match the rest of the UI. */
+.fc .fc-button-primary {
+    background: var(--bs-body-bg-alt, #f8fafc);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+    font-size: .8rem; font-weight: 600; text-transform: capitalize;
+    box-shadow: none;
+}
+.fc .fc-button-primary:hover {
+    background: var(--bs-border-color);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+.fc .fc-button-primary:disabled {
+    background: var(--bs-body-bg-alt, #f8fafc);
+    border-color: var(--bs-border-color);
+    color: var(--bs-secondary-color, #9aa4b2);
+    opacity: .65;
+}
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+.fc .fc-button-primary:focus,
+.fc .fc-button-primary:focus-visible {
+    box-shadow: 0 0 0 .2rem rgba(16,185,129,.25);
+}
+
 /* ── Mobile polish ───────────────────────────────────────────────── */
 @media (max-width: 575.98px) {
     .calendar-card .card-body { padding: .5rem; }
@@ -218,8 +250,11 @@
         flex-direction: column; align-items: stretch; gap: .6rem; margin-bottom: .85rem;
     }
     .fc .fc-toolbar-chunk { display: flex; justify-content: center; }
-    .fc .fc-toolbar-title { font-size: 1rem; text-align: center; }
-    .fc .fc-button { padding: .35rem .6rem; }
+    .fc .fc-toolbar-title { font-size: 1.05rem; font-weight: 800; text-align: center; }
+    .fc .fc-button { padding: .5rem .85rem; min-height: 40px; }
+    /* View switcher fills the row evenly for easy thumb taps */
+    .fc .fc-toolbar-chunk:last-child .fc-button-group { width: 100%; }
+    .fc .fc-toolbar-chunk:last-child .fc-button-group .fc-button { flex: 1; }
     .cal-legend { width: 100%; justify-content: flex-start; }
     /* Slightly larger touch targets for list rows */
     .fc .fc-list-event td { padding: .7rem .65rem; }
