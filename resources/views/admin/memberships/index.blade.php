@@ -158,9 +158,11 @@
             </tbody>
         </table>
     </div>
+    @if($memberships->hasPages())
     <div class="card-footer">
         {{ $memberships->withQueryString()->links() }}
     </div>
+    @endif
 </div>
 
 {{-- Assign Membership Modal --}}

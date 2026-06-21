@@ -164,9 +164,11 @@ $voidCount = $orders->where('status', 'voided')->count();
             </tbody>
         </table>
     </div>
+    @if($orders->hasPages())
     <div class="card-footer">
         {{ $orders->withQueryString()->links() }}
     </div>
+    @endif
 </div>
 
 @endsection

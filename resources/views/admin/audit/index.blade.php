@@ -113,8 +113,10 @@
             </tbody>
         </table>
     </div>
+    @if($logs->hasPages())
     <div class="card-footer">
         {{ $logs->links() }}
     </div>
+    @endif
 </div>
 @endsection

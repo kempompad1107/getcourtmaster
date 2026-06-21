@@ -138,9 +138,11 @@
             </tbody>
         </table>
     </div>
+    @if($staff->hasPages())
     <div class="card-footer">
         {{ $staff->links() }}
     </div>
+    @endif
 </div>
 
 @endsection

@@ -176,7 +176,7 @@
     </div>
     @if($bookings->hasPages())
     <div class="card-footer">
-        {{ $bookings->withQueryString()->links('pagination.courtmaster') }}
+        {{ $bookings->withQueryString()->links() }}
     </div>
     @endif
 </div>

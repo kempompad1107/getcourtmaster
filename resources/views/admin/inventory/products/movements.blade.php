@@ -64,9 +64,11 @@
             </tbody>
         </table>
     </div>
+    @if($movements->hasPages())
     <div class="card-footer">
         {{ $movements->links() }}
     </div>
+    @endif
 </div>
 
 @endsection
