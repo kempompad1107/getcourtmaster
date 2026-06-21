@@ -19,19 +19,19 @@
                 <button type="button" class="settings-tab-btn flex-shrink-0" @click="setRange('year')"  :class="activeRange === 'year'  && 'active'">This Year</button>
             </div>
 
-            {{-- Row 2: date pickers + branch + actions --}}
-            <div class="d-flex flex-wrap align-items-center gap-2">
+            {{-- Row 2: date pickers --}}
+            <div class="d-flex align-items-center gap-1 mb-2">
+                <input x-model="dateFrom" type="date" class="form-control form-control-sm" aria-label="From date">
+                <span class="text-muted flex-shrink-0 px-1">–</span>
+                <input x-model="dateTo"   type="date" class="form-control form-control-sm" aria-label="To date">
+            </div>
 
-                {{-- Date range --}}
-                <div class="d-flex align-items-center gap-1 flex-grow-1" style="min-width:220px;max-width:340px">
-                    <input x-model="dateFrom" type="date" class="form-control form-control-sm w-50" aria-label="From date">
-                    <span class="text-muted flex-shrink-0">–</span>
-                    <input x-model="dateTo"   type="date" class="form-control form-control-sm w-50" aria-label="To date">
-                </div>
+            {{-- Row 3: branch + actions --}}
+            <div class="d-flex align-items-center gap-2 flex-wrap">
 
                 @isset($availableBranches)
                     @if($availableBranches->count() > 1 || ($canSeeAllBranches ?? false))
-                    <select x-model="branchId" class="form-select form-select-sm" style="max-width:180px" aria-label="Branch">
+                    <select x-model="branchId" class="form-select form-select-sm flex-grow-1" style="max-width:200px" aria-label="Branch">
                         @if($canSeeAllBranches ?? false)
                             <option value="all">All branches</option>
                         @endif
@@ -43,7 +43,7 @@
                 @endisset
 
                 {{-- Actions --}}
-                <div class="d-flex align-items-center gap-2 ms-lg-auto flex-wrap">
+                <div class="d-flex align-items-center gap-2 ms-auto">
                     <button type="button" @click="loadActive(true)" class="btn btn-primary btn-sm">
                         <i class="bi bi-funnel"></i>Apply
                     </button>
