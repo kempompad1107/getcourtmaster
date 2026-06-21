@@ -52,6 +52,16 @@
 <div x-data="courtBoard()">
 
     {{-- Header --}}
+    <x-page-header title="Court Status Board"
+                   subtitle="Live view of every court — sessions, timers & availability">
+        <x-slot name="actions">
+            <a href="{{ route('admin.bookings.create', ['type' => 'walk_in']) }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Walk-in Booking
+            </a>
+        </x-slot>
+    </x-page-header>
+
+    {{-- Legend + live sync indicator --}}
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
         <div class="sb-legend">
             <span class="sb-legend-item"><span class="sb-legend-dot" style="background:#34d399"></span>Available</span>
@@ -59,9 +69,10 @@
             <span class="sb-legend-item"><span class="sb-legend-dot" style="background:#fbbf24"></span>Reserved</span>
             <span class="sb-legend-item"><span class="sb-legend-dot" style="background:#94a3b8"></span>Maintenance</span>
         </div>
-        <a href="{{ route('admin.bookings.create', ['type' => 'walk_in']) }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>Walk-in Booking
-        </a>
+        <span class="sb-foot-chip d-inline-flex align-items-center gap-2">
+            <span class="sb-dot sb-pulse" style="--c:#34d399;--crgb:52,211,153"></span>
+            Live &middot; updated <span x-text="lastSync"></span>
+        </span>
     </div>
 
     {{-- Court grid --}}
