@@ -1,71 +1,73 @@
 @extends('layouts.app')
 @section('title', 'Subscription Invoices')
 
-@push('styles')
-<style>
-    /* ── Subscription invoices — polish + mobile card stacking ── */
-    .inv-table tbody tr { transition: background-color .15s; }
-    @media (max-width: 767.98px) {
-        .inv-table thead { display: none; }
-        .inv-table, .inv-table tbody, .inv-table tr, .inv-table td { display: block; width: 100%; }
-        .inv-table tr {
-            border: 1px solid var(--bs-border-color); border-radius: .85rem;
-            padding: .35rem .9rem; margin: .75rem 0; background: var(--bs-card-bg);
-        }
-        .inv-table td {
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            border: 0; padding: .5rem 0; text-align: right;
-        }
-        .inv-table td + td { border-top: 1px solid var(--bs-border-color); }
-        .inv-table td::before {
-            content: attr(data-label); text-align: left; flex-shrink: 0;
-            font-size: .68rem; font-weight: 600; letter-spacing: .05em;
-            text-transform: uppercase; color: var(--bs-secondary-color);
-        }
-        .inv-table td.bk-cell-empty::before { content: none; }
-    }
-</style>
-@endpush
-
 @section('content')
 
-<x-page-header title="Subscription Invoices"
-                subtitle="Your platform subscription billing history."/>
+@php
+    $filterStatus  = request('status');
+    $activeFilters = (int) filled($filterStatus);
+@endphp
 
-{{-- Unified filter bar: status only (no search) --}}
-<x-filter-bar :searchable="false"
-              :active-count="(int) request()->filled('status')"
-              :clear="route('admin.subscription-invoices.index')">
-    <x-slot name="filters">
-        <div>
-            <label class="form-label small fw-semibold mb-1">Status</label>
-            <select name="status" class="form-select form-select-sm">
-                <option value="">All statuses</option>
-                @foreach(['pending','paid','failed','refunded','overdue'] as $s)
-                <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
-                @endforeach
-            </select>
+<form method="GET" action="{{ route('admin.subscription-invoices.index') }}" x-data="{ open: false }">
+<x-page-header title="Subscription Invoices" subtitle="Your platform billing history">
+    <x-slot name="actions">
+        <div class="position-relative" @click.outside="open = false">
+            <button type="button" @click="open = !open"
+                    class="btn {{ $activeFilters ? 'btn-primary' : 'btn-outline-secondary' }} position-relative">
+                <i class="bi bi-sliders2"></i>
+                @if($activeFilters)
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          style="font-size:.55rem">{{ $activeFilters }}</span>
+                @endif
+            </button>
+            <div x-show="open" x-cloak
+                 class="position-absolute end-0 mt-1 p-3 rounded-3 shadow-lg border bg-body z-3"
+                 style="min-width:210px">
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All statuses</option>
+                            @foreach(['pending','paid','failed','refunded','overdue'] as $s)
+                                <option value="{{ $s }}" @selected($filterStatus === $s)>{{ ucfirst($s) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">Apply</button>
+                        @if($activeFilters)
+                            <a href="{{ route('admin.subscription-invoices.index') }}" class="btn btn-outline-secondary">Clear</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
     </x-slot>
-</x-filter-bar>
+</x-page-header>
+</form>
 
-{{-- Table --}}
+@if($invoices->isEmpty())
+    <x-empty-state
+        title="{{ $activeFilters ? 'No invoices match this filter' : 'No invoices yet' }}"
+        description="{{ $activeFilters ? 'Try clearing the filter.' : 'Subscription invoices will appear here once billed.' }}"
+        icon="bi-receipt"/>
+@else
 <div class="card">
     <div class="table-responsive">
-        <table class="table inv-table table-hover align-middle mb-0">
+        <table class="table table-stack table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Invoice #</th>
-                    <th>Plan</th>
-                    <th>Issued</th>
-                    <th>Due</th>
-                    <th class="text-end">Total</th>
-                    <th>Status</th>
-                    <th class="text-end">Actions</th>
+                    <th style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)">Invoice #</th>
+                    <th style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)">Plan</th>
+                    <th style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)">Issued</th>
+                    <th style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)">Due</th>
+                    <th class="text-end" style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)">Total</th>
+                    <th style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)">Status</th>
+                    <th class="cell-actions" style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)"></th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($invoices as $invoice)
+                @foreach($invoices as $invoice)
                 @php
                     $badge = match($invoice->status) {
                         'paid'     => 'bg-success-subtle text-success',
@@ -77,46 +79,45 @@
                     };
                 @endphp
                 <tr>
-                    <td data-label="Invoice #" class="font-monospace small fw-semibold">{{ $invoice->invoice_number }}</td>
+                    <td data-label="Invoice #" class="font-monospace small fw-semibold">
+                        {{ $invoice->invoice_number }}
+                    </td>
                     <td data-label="Plan" class="small">
                         {{ $invoice->subscription?->plan?->name ?? '—' }}
                         @if($invoice->payment_gateway)
-                            <small class="text-muted d-block">via {{ ucfirst($invoice->payment_gateway) }}</small>
+                            <div class="text-muted" style="font-size:.75rem">via {{ ucfirst($invoice->payment_gateway) }}</div>
                         @endif
                     </td>
-                    <td data-label="Issued" class="small">{{ $invoice->created_at->format('M j, Y') }}</td>
-                    <td data-label="Due" class="small">
+                    <td data-label="Issued" class="small text-nowrap">
+                        {{ $invoice->created_at->format('M j, Y') }}
+                    </td>
+                    <td data-label="Due" class="small text-nowrap">
                         {{ $invoice->due_at?->format('M j, Y') ?? '—' }}
                         @if($invoice->status === 'pending' && $invoice->due_at?->isPast())
-                            <small class="text-danger d-block">Overdue</small>
+                            <div class="text-danger" style="font-size:.75rem">Overdue</div>
                         @endif
                     </td>
-                    <td data-label="Total" class="text-end small fw-semibold">₱{{ number_format($invoice->total, 2) }}</td>
-                    <td data-label="Status"><span class="badge rounded-pill {{ $badge }}">{{ ucfirst($invoice->status) }}</span></td>
-                    <td data-label="" class="bk-cell-empty text-end">
+                    <td data-label="Total" class="text-end small fw-semibold text-nowrap">
+                        ₱{{ number_format($invoice->total, 2) }}
+                    </td>
+                    <td data-label="Status">
+                        <span class="badge rounded-pill {{ $badge }}">{{ ucfirst($invoice->status) }}</span>
+                    </td>
+                    <td class="cell-actions">
                         <a href="{{ route('admin.subscription-invoices.pdf', $invoice) }}"
-                           class="btn btn-outline-primary btn-sm">
+                           class="btn btn-outline-secondary btn-sm">
                             <i class="bi bi-file-earmark-pdf me-1"></i>PDF
                         </a>
                     </td>
                 </tr>
-                @empty
-                <tr class="stack-skip">
-                    <td colspan="7" class="bk-cell-empty">
-                        <x-empty-state title="No invoices yet"
-                                       message="Subscription invoices will appear here once billed."
-                                       icon="bi-receipt"/>
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
     @if($invoices->hasPages())
-    <div class="card-footer">
-        {{ $invoices->links() }}
-    </div>
+        <div class="px-4 py-3 border-top">{{ $invoices->links() }}</div>
     @endif
 </div>
+@endif
 
 @endsection
