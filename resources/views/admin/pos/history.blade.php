@@ -40,6 +40,10 @@ $voidCount = $orders->where('status', 'voided')->count();
 <form method="GET" action="{{ route('admin.pos.history') }}" x-data="{ open: false }">
 <x-page-header title="Sales History">
     <x-slot name="actions">
+        <a href="{{ route('admin.pos.index') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i>New Order
+        </a>
+
         {{-- Filter button --}}
         @php $activeFilters = (int) request()->filled('status') + (int) request()->filled('date'); @endphp
         <div class="position-relative" @click.outside="open = false">
@@ -79,9 +83,6 @@ $voidCount = $orders->where('status', 'voided')->count();
             </div>
         </div>
 
-        <a href="{{ route('admin.pos.index') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i>New Order
-        </a>
     </x-slot>
 </x-page-header>
 <button type="submit" class="visually-hidden">Search</button>
