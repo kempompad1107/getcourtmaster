@@ -105,7 +105,7 @@
     {{-- Product Grid --}}
     <div class="col-12 col-lg-8">
 
-        <div x-show="scanning" x-cloak class="input-group input-group-sm pos-scan-bar mb-3">
+        <div x-show="scanning" x-cloak class="input-group pos-scan-bar mb-3">
             <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
             <input x-ref="scanInput" x-model="scanCode" type="text"
                    placeholder="Scan a barcode / SKU — adds automatically"
@@ -235,7 +235,7 @@
                 </div>
 
                 {{-- Promo code --}}
-                <div class="input-group input-group-sm mb-1">
+                <div class="input-group mb-1">
                     <input x-model="promoCode" type="text" placeholder="Promo Code"
                            @keydown.enter.prevent="applyPromo()"
                            class="form-control">
@@ -260,7 +260,7 @@
                 </div>
 
                 {{-- Amount tendered --}}
-                <div class="input-group input-group-sm mb-2">
+                <div class="input-group mb-2">
                     <span class="input-group-text">₱</span>
                     <input x-model.number="amountTendered" type="number" step="0.01"
                            :placeholder="'Amount (' + total.toFixed(2) + ')'"
