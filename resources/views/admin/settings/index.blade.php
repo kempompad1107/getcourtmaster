@@ -809,14 +809,13 @@
                         </div>
                     </form>
 
-                    <div class="border-top pt-4 mt-4">
-                        <form method="POST" action="{{ route('admin.settings.email.test') }}"
-                              class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3">
+                    <div class="border-top pt-4 mt-4 d-flex align-items-center justify-content-between gap-3">
+                        <div>
+                            <div class="fw-semibold">Send a test email</div>
+                            <small class="text-muted">Sends to {{ auth()->user()->email }} using the settings above.</small>
+                        </div>
+                        <form method="POST" action="{{ route('admin.settings.email.test') }}">
                             @csrf
-                            <div>
-                                <div class="fw-semibold">Send a test email</div>
-                                <small class="text-muted">Sends to {{ auth()->user()->email }} using the settings above.</small>
-                            </div>
                             <button type="submit" class="btn btn-outline-secondary flex-shrink-0">
                                 <i class="bi bi-send me-1"></i>Send test
                             </button>
