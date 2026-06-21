@@ -8,24 +8,16 @@
         display: grid; place-items: center; font-size: 1.1rem;
         background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2);
     }
-    .role-table tbody tr { transition: background-color .15s; }
-    @media (max-width: 575.98px) {
-        .role-table thead { display: none; }
-        .role-table, .role-table tbody, .role-table tr, .role-table td { display: block; width: 100%; }
-        .role-table tr {
-            border: 1px solid var(--bs-border-color); border-radius: .85rem;
-            padding: .35rem .9rem; margin: .75rem 0; background: var(--bs-card-bg);
-        }
-        .role-table td {
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            border: 0; padding: .5rem 0; text-align: right;
-        }
-        .role-table td + td { border-top: 1px solid var(--bs-border-color); }
-        .role-table td::before {
-            content: attr(data-label); text-align: left; flex-shrink: 0;
-            font-size: .68rem; font-weight: 600; letter-spacing: .05em;
-            text-transform: uppercase; color: var(--bs-secondary-color);
-        }
+    .perm-pill {
+        display: inline-flex; align-items: center;
+        font-size: .68rem; font-weight: 600; letter-spacing: .02em;
+        padding: .2rem .55rem; border-radius: 99px;
+        background: var(--bs-secondary-bg); color: var(--bs-secondary-color);
+        border: 1px solid var(--bs-border-color);
+        white-space: nowrap;
+    }
+    .perm-pills-wrap {
+        display: flex; flex-wrap: wrap; gap: .3rem; align-items: center;
     }
 </style>
 @endpush
@@ -34,7 +26,7 @@
 
 <x-page-header title="Roles & Permissions" :back="route('admin.settings.index')">
     <x-slot name="actions">
-        <a href="{{ route('admin.staff.index') }}" class="btn btn-sm btn-outline-secondary">
+        <a href="{{ route('admin.staff.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-person-badge me-1"></i>Manage Staff
         </a>
     </x-slot>
@@ -43,21 +35,24 @@
 <div class="row justify-content-center">
     <div class="col-12 col-lg-10">
 
-        <div class="alert alert-info small">
-            <i class="bi bi-info-circle me-1"></i>
-            Permissions here control what each role can <strong>see and do</strong> across the admin sidebar.
-            Changes apply immediately to every staff member with that role. The <strong>Business Owner</strong>
-            role always has full access and cannot be edited.
+        {{-- Subtle inline note replacing the heavy alert --}}
+        <div class="d-flex align-items-start gap-2 mb-4 px-1">
+            <i class="bi bi-info-circle text-muted flex-shrink-0 mt-1" style="font-size:.9rem"></i>
+            <p class="small text-muted mb-0">
+                These permissions control what each role can <strong>see and do</strong> in the admin panel.
+                Changes apply immediately to every staff member with that role.
+                The <strong>Business Owner</strong> role always has full access and cannot be edited.
+            </p>
         </div>
 
         <div class="card">
             <div class="table-responsive">
-                <table class="table role-table table-hover mb-0 align-middle">
+                <table class="table table-stack table-hover mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>Role</th>
-                            <th>Permissions granted</th>
-                            <th class="text-end">Actions</th>
+                            <th style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)">Role</th>
+                            <th style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)">Permissions granted</th>
+                            <th class="cell-actions" style="font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--bs-secondary-color)"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -69,35 +64,44 @@
                                 'inventory_manager' => 'bi-box-seam',
                                 default             => 'bi-person-badge',
                             };
+                            $roleDesc = match($role->name) {
+                                'manager'           => 'Broad operational access across the club.',
+                                'front_desk'        => 'Bookings, customers, POS at the counter.',
+                                'inventory_manager' => 'Stock, suppliers, purchase orders.',
+                                default             => '',
+                            };
+                            $permCount = $role->permissions->count();
                         @endphp
                         <tr>
                             <td data-label="Role">
-                                <div class="d-flex align-items-center gap-2 justify-content-end justify-content-sm-start">
+                                <div class="d-flex align-items-center gap-3">
                                     <span class="role-ico"><i class="bi {{ $roleIcon }}"></i></span>
                                     <div>
-                                        <p class="mb-0 fw-semibold">{{ str_replace('_', ' ', ucwords($role->name, '_')) }}</p>
-                                        <small class="text-muted">
-                                            @switch($role->name)
-                                                @case('manager') Broad operational access across the club. @break
-                                                @case('front_desk') Bookings, customers, POS at the counter. @break
-                                                @case('inventory_manager') Stock, suppliers, purchase orders. @break
-                                            @endswitch
-                                        </small>
+                                        <div class="fw-semibold">{{ str_replace('_', ' ', ucwords($role->name, '_')) }}</div>
+                                        @if($roleDesc)
+                                            <div class="small text-muted">{{ $roleDesc }}</div>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
                             <td data-label="Permissions">
                                 @if($role->permissions->isEmpty())
-                                    <span class="text-muted small">No permissions granted</span>
+                                    <span class="small text-muted">No permissions granted</span>
                                 @else
-                                    <span class="badge rounded-pill bg-primary-subtle text-primary">
-                                        {{ $role->permissions->count() }} permission{{ $role->permissions->count() === 1 ? '' : 's' }}
-                                    </span>
+                                    <div class="perm-pills-wrap">
+                                        @foreach($role->permissions->take(5) as $perm)
+                                            <span class="perm-pill">{{ ucwords(str_replace(['_', '.'], ' ', explode('.', $perm->name)[1] ?? $perm->name)) }}</span>
+                                        @endforeach
+                                        @if($permCount > 5)
+                                            <span class="perm-pill">+{{ $permCount - 5 }} more</span>
+                                        @endif
+                                    </div>
                                 @endif
                             </td>
-                            <td data-label="" class="text-end">
-                                <a href="{{ route('admin.roles.edit', $role) }}"
-                                   class="btn btn-outline-primary btn-sm"><i class="bi bi-sliders me-1"></i>Edit permissions</a>
+                            <td class="cell-actions">
+                                <a href="{{ route('admin.roles.edit', $role) }}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-sliders me-1"></i>Edit
+                                </a>
                             </td>
                         </tr>
                         @endforeach
