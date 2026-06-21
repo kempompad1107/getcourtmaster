@@ -14,7 +14,7 @@
 @endphp
 
 <form method="GET" action="{{ route('admin.audit.index') }}" x-data="{ open: false }">
-<x-page-header title="Audit Log" subtitle="Every change across the platform — who did what, and when">
+<x-page-header title="Audit Log" subtitle="Track who changed what, and when">
     <x-slot name="actions">
         <div class="position-relative" @click.outside="open = false">
             <button type="button" @click="open = !open"
