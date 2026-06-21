@@ -657,12 +657,11 @@
             {{-- Beginner-friendly setup guide (collapsible) --}}
             <div class="card mb-4 smtp-guide" x-data="{ help: false }">
                 <button type="button" class="smtp-guide-toggle" @click="help = !help" :aria-expanded="help">
-                    <span class="set-head-icon" style="--sh:#0ea5e9"><i class="bi bi-info-circle"></i></span>
                     <div class="flex-grow-1 text-start">
                         <h6 class="mb-0 fw-semibold">New to this? How to set up email (SMTP)</h6>
                         <small class="text-muted">A plain-English, step-by-step guide — no jargon.</small>
                     </div>
-                    <i class="bi" :class="help ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                    <i class="bi flex-shrink-0" :class="help ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                 </button>
 
                 <div class="card-body border-top" x-show="help" x-cloak>
@@ -737,7 +736,6 @@
 
             <div class="card mb-4">
                 <div class="card-header set-head">
-                    <span class="set-head-icon" style="--sh:#6366f1"><i class="bi bi-envelope-at"></i></span>
                     <div>
                         <h6 class="mb-0 fw-semibold">Email Delivery (SMTP)</h6>
                         <small class="text-muted">Send notifications through your own mail server.</small>
@@ -803,7 +801,7 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-2 mt-4">
                             <small class="text-muted">Leave host blank to use the platform mailer.</small>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-check-lg me-1"></i>Save Email Settings
@@ -811,19 +809,19 @@
                         </div>
                     </form>
 
-                    <hr class="my-4">
-
-                    <form method="POST" action="{{ route('admin.settings.email.test') }}"
-                          class="d-flex align-items-center justify-content-between gap-3">
-                        @csrf
-                        <div>
-                            <div class="fw-semibold">Send a test email</div>
-                            <small class="text-muted">Sends to {{ auth()->user()->email }} using the settings above.</small>
-                        </div>
-                        <button type="submit" class="btn btn-outline-primary flex-shrink-0">
-                            <i class="bi bi-send me-1"></i>Send test
-                        </button>
-                    </form>
+                    <div class="border-top pt-4 mt-4">
+                        <form method="POST" action="{{ route('admin.settings.email.test') }}"
+                              class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3">
+                            @csrf
+                            <div>
+                                <div class="fw-semibold">Send a test email</div>
+                                <small class="text-muted">Sends to {{ auth()->user()->email }} using the settings above.</small>
+                            </div>
+                            <button type="submit" class="btn btn-outline-secondary flex-shrink-0">
+                                <i class="bi bi-send me-1"></i>Send test
+                            </button>
+                        </form>
+                    </div>
                     @endunless
                 </div>
             </div>
