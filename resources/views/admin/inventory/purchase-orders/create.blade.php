@@ -77,15 +77,16 @@
                 <div class="alert alert-danger mx-3 mb-0 py-2 small border-0">{{ $message }}</div>
                 @enderror
 
-                <div class="table-responsive">
+                {{-- Desktop table (md+) --}}
+                <div class="table-responsive d-none d-md-block">
                     <table class="table po-items-table align-middle mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>Product</th>
-                                <th style="width:110px">Qty</th>
-                                <th style="width:130px">Unit Cost</th>
-                                <th class="text-end" style="width:110px">Total</th>
-                                <th style="width:40px"></th>
+                                <th style="width:120px">Qty</th>
+                                <th style="width:150px">Unit Cost (₱)</th>
+                                <th class="text-end" style="width:120px">Total</th>
+                                <th style="width:44px"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,8 +96,8 @@
                                         <select :name="`items[${idx}][product_id]`" required
                                                 x-model="row.product_id"
                                                 @change="onProductChange(idx)"
-                                                class="form-select form-select-sm">
-                                            <option value="">— Select —</option>
+                                                class="form-select">
+                                            <option value="">— Select product —</option>
                                             <template x-for="p in products" :key="p.id">
                                                 <option :value="p.id" x-text="p.name"></option>
                                             </template>
@@ -106,15 +107,15 @@
                                         <input type="number" min="1" step="1" required
                                                :name="`items[${idx}][quantity]`"
                                                x-model.number="row.quantity"
-                                               class="form-control form-control-sm">
+                                               class="form-control">
                                     </td>
                                     <td>
                                         <input type="number" min="0" step="0.01" required
                                                :name="`items[${idx}][unit_cost]`"
                                                x-model.number="row.unit_cost"
-                                               class="form-control form-control-sm">
+                                               class="form-control">
                                     </td>
-                                    <td class="text-end small fw-semibold text-nowrap">
+                                    <td class="text-end fw-semibold text-nowrap">
                                         ₱<span x-text="lineTotal(row).toFixed(2)"></span>
                                     </td>
                                     <td class="text-center">
@@ -130,13 +131,63 @@
                         <tfoot>
                             <tr class="table-light">
                                 <td colspan="3" class="text-end small fw-semibold">Subtotal</td>
-                                <td class="text-end small fw-bold text-nowrap">
+                                <td class="text-end fw-bold text-nowrap">
                                     ₱<span x-text="subtotal().toFixed(2)"></span>
                                 </td>
                                 <td></td>
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+
+                {{-- Mobile cards (below md) --}}
+                <div class="d-md-none px-3 pb-3">
+                    <template x-for="(row, idx) in rows" :key="idx">
+                        <div class="border rounded-3 p-3 mb-3 position-relative">
+                            <button type="button" @click="removeRow(idx)"
+                                    class="btn btn-link p-0 text-danger position-absolute top-0 end-0 mt-2 me-2"
+                                    :disabled="rows.length === 1">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            <div class="mb-3">
+                                <label class="form-label">Product</label>
+                                <select :name="`items[${idx}][product_id]`" required
+                                        x-model="row.product_id"
+                                        @change="onProductChange(idx)"
+                                        class="form-select">
+                                    <option value="">— Select product —</option>
+                                    <template x-for="p in products" :key="p.id">
+                                        <option :value="p.id" x-text="p.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="row g-3 align-items-end">
+                                <div class="col-5">
+                                    <label class="form-label">Qty</label>
+                                    <input type="number" min="1" step="1" required
+                                           :name="`items[${idx}][quantity]`"
+                                           x-model.number="row.quantity"
+                                           class="form-control">
+                                </div>
+                                <div class="col-7">
+                                    <label class="form-label">Unit Cost (₱)</label>
+                                    <input type="number" min="0" step="0.01" required
+                                           :name="`items[${idx}][unit_cost]`"
+                                           x-model.number="row.unit_cost"
+                                           class="form-control">
+                                </div>
+                                <div class="col-12 text-end">
+                                    <span class="text-muted small">Total: </span>
+                                    <span class="fw-bold">₱<span x-text="lineTotal(row).toFixed(2)"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-1">
+                        <span class="small fw-semibold text-muted">Subtotal</span>
+                        <span class="fw-bold">₱<span x-text="subtotal().toFixed(2)"></span></span>
+                    </div>
+                </div>
                 </div>
             </div>
 
