@@ -13,26 +13,15 @@
     .pos-sum-value { font-size: 1.5rem; font-weight: 800; line-height: 1; margin: 0; }
     .pos-sum-label { font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--bs-secondary-color); margin: .3rem 0 0; }
 
-    .pos-hist tbody tr { transition: background-color .15s; }
-    @media (max-width: 767.98px) {
-        .pos-hist thead { display: none; }
-        .pos-hist, .pos-hist tbody, .pos-hist tr, .pos-hist td { display: block; width: 100%; }
-        .pos-hist tr {
-            border: 1px solid var(--bs-border-color); border-radius: .85rem;
-            padding: .35rem .9rem; margin: .75rem 0; background: var(--bs-card-bg);
-        }
-        .pos-hist td {
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            border: 0; padding: .5rem 0; text-align: right;
-        }
-        .pos-hist td + td { border-top: 1px solid var(--bs-border-color); }
-        .pos-hist td::before {
-            content: attr(data-label); text-align: left; flex-shrink: 0;
-            font-size: .68rem; font-weight: 600; letter-spacing: .05em;
-            text-transform: uppercase; color: var(--bs-secondary-color);
-        }
-        .pos-hist td.bk-cell-empty::before { content: none; }
+    /* TailAdmin-style table header + airier rows (mobile stacking handled by the
+       shared .table-stack pattern). */
+    .pos-hist thead th {
+        text-transform: uppercase; font-size: .7rem; letter-spacing: .04em;
+        font-weight: 600; color: var(--bs-secondary-color);
+        padding-top: .85rem; padding-bottom: .85rem;
     }
+    .pos-hist tbody td { padding-top: .85rem; padding-bottom: .85rem; }
+    .pos-hist tbody tr { transition: background-color .15s; }
 </style>
 @endpush
 
@@ -116,7 +105,7 @@ $voidCount = $orders->where('status', 'voided')->count();
 {{-- Table --}}
 <div class="card">
     <div class="table-responsive">
-        <table class="table pos-hist table-hover align-middle mb-0">
+        <table class="table pos-hist table-stack table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
                     <th>Order #</th>
@@ -147,7 +136,7 @@ $voidCount = $orders->where('status', 'voided')->count();
                     <td data-label="Status">
                         <span class="badge rounded-pill {{ $badge }}">{{ ucfirst($order->status) }}</span>
                     </td>
-                    <td data-label="" class="bk-cell-empty text-end">
+                    <td data-label="" class="cell-actions text-end">
                         <a href="{{ route('admin.pos.receipt', $order) }}"
                            class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-receipt me-1"></i>Receipt
@@ -156,7 +145,7 @@ $voidCount = $orders->where('status', 'voided')->count();
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="bk-cell-empty">
+                    <td colspan="7" class="cell-plain">
                         <x-empty-state title="No orders found" icon="bi-receipt"/>
                     </td>
                 </tr>
