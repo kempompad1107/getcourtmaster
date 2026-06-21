@@ -3,23 +3,47 @@
 
 @section('content')
 
-<x-page-header title="Brackets" subtitle="Pick a division to view or generate its bracket."/>
+@php
+    $activeFilters = (int) request()->filled('tournament_id');
+@endphp
 
-<x-filter-bar :searchable="false"
-              :active-count="(int) request()->filled('tournament_id')"
-              :clear="route('admin.tournaments.brackets.index')">
-    <x-slot name="filters">
-        <div>
-            <label class="form-label small fw-semibold mb-1">Tournament</label>
-            <select name="tournament_id" class="form-select form-select-sm">
-                <option value="">All tournaments</option>
-                @foreach($tournaments as $t)
-                <option value="{{ $t->id }}" @selected((int) request('tournament_id') === $t->id)>{{ $t->name }}</option>
-                @endforeach
-            </select>
+<form method="GET" action="{{ route('admin.tournaments.brackets.index') }}" x-data="{ open: false }">
+<x-page-header title="Brackets" subtitle="Pick a division to view or generate its bracket.">
+    <x-slot name="actions">
+        <div class="position-relative" @click.outside="open = false">
+            <button type="button" @click="open = !open"
+                    class="btn {{ $activeFilters ? 'btn-primary' : 'btn-outline-secondary' }} position-relative">
+                <i class="bi bi-sliders2"></i>
+                @if($activeFilters)
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          style="font-size:.55rem">{{ $activeFilters }}</span>
+                @endif
+            </button>
+            <div x-show="open" x-cloak
+                 class="position-absolute end-0 mt-1 p-3 rounded-3 shadow-lg border bg-body z-3"
+                 style="min-width:220px">
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label small fw-semibold mb-1">Tournament</label>
+                        <select name="tournament_id" class="form-select form-select-sm">
+                            <option value="">All tournaments</option>
+                            @foreach($tournaments as $t)
+                                <option value="{{ $t->id }}" @selected((int) request('tournament_id') === $t->id)>{{ $t->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm flex-grow-1">Apply</button>
+                        @if($activeFilters)
+                            <a href="{{ route('admin.tournaments.brackets.index') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
     </x-slot>
-</x-filter-bar>
+</x-page-header>
+</form>
 
 <div class="card">
     <div class="table-responsive">
