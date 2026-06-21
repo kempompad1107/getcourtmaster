@@ -56,7 +56,6 @@
             {{-- Club information --}}
             <div class="card mb-4">
                 <div class="card-header set-head">
-                    <span class="set-head-icon" style="--sh:#3b82f6"><i class="bi bi-building"></i></span>
                     <div>
                         <h6 class="mb-0 fw-semibold">Club Information</h6>
                         <small class="text-muted">The basics used across receipts, bookings and your public page.</small>
@@ -108,7 +107,6 @@
             {{-- Public page & branding --}}
             <div class="card mb-4">
                 <div class="card-header set-head">
-                    <span class="set-head-icon" style="--sh:#10b981"><i class="bi bi-palette"></i></span>
                     <div>
                         <h6 class="mb-0 fw-semibold">Public Page &amp; Branding</h6>
                         <small class="text-muted">How your venue looks to customers on the public page.</small>
