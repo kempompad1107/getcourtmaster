@@ -267,8 +267,8 @@
                             <i class="bi bi-check-circle-fill me-1"></i>Your Plan
                         </button>
                     @elseif($active)
-                        <button type="button" class="btn btn-outline-secondary w-100" disabled>
-                            <i class="bi bi-arrow-up-circle me-1"></i>Upgrade
+                        <button class="btn btn-outline-secondary w-100" disabled>
+                            <i class="bi bi-check2 me-1"></i>Already subscribed
                         </button>
                     @else
                         <button type="button" class="btn btn-primary w-100"
