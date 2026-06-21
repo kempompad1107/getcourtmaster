@@ -95,7 +95,6 @@
                             <li><a class="dropdown-item" href="#" @click.prevent="window.print()"><i class="bi bi-printer me-2"></i>Print</a></li>
                         </ul>
                     </div>
-                </div>
             </div>
         </div>
     </div>
