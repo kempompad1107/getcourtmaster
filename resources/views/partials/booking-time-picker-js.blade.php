@@ -57,9 +57,11 @@
             // measured width (set by a ResizeObserver in the timeline partial);
             // before it reports, assume a narrow track so we over-thin rather
             // than overlap — the observer relaxes it once it measures wider.
-            // Each "7am"-style label needs ~64px to stay clear on narrow mobile screens.
-            const px      = this.tlPxWidth || 200;
-            const maxLbls = Math.max(2, Math.floor(px / 64));
+            // 56px per label keeps spacing comfortable down to ~320px mobile tracks.
+            // Fall back to 0 so stride is maximally conservative before ResizeObserver fires.
+            const px      = this.tlPxWidth || 0;
+            const maxLbls = px > 0 ? Math.max(2, Math.floor(px / 56)) : 5;
+
             const stride  = Math.max(1, Math.ceil(ticks.length / maxLbls));
             ticks.forEach((t, i) => { t.showLabel = (i % stride === 0); });
             return ticks;

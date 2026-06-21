@@ -30,8 +30,9 @@
     <div class="position-relative rounded border"
          :class="(timeline && timeline.is_closed) ? 'bg-secondary-subtle' : 'bg-body-tertiary'"
          style="height:48px;cursor:pointer;overflow:hidden"
-         x-init="tlPxWidth = $el.clientWidth;
-                 new ResizeObserver(es => tlPxWidth = es[0].contentRect.width).observe($el)"
+         x-init="const _d = $data;
+                 $nextTick(() => { _d.tlPxWidth = $el.clientWidth });
+                 new ResizeObserver(([e]) => { _d.tlPxWidth = e.contentRect.width }).observe($el)"
          @click="onTimelineClick($event, $el)">
 
         {{-- hour gridlines --}}
