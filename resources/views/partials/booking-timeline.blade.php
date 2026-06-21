@@ -61,7 +61,7 @@
          x-show="!(timeline && timeline.is_closed)">
         <template x-for="(t, i) in axisTicks" :key="'l' + i">
             <span class="position-absolute text-muted" x-show="t.showLabel"
-                  style="font-size:.65rem;top:0;white-space:nowrap;line-height:1"
+                  style="font-size:.65rem;font-weight:500;top:0;white-space:nowrap;line-height:1"
                   :style="`left:${t.left}%;transform:${i === 0 ? 'translateX(0)' : (i === axisTicks.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)')}`"
                   x-text="t.label"></span>
         </template>
