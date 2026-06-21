@@ -129,7 +129,7 @@
             @if($upcoming->isEmpty())
                 <x-empty-state
                     title="No tournaments scheduled"
-                    description='Nothing active or upcoming. <a href="{{ route(\'admin.tournaments.create\') }}">Create one</a>.'
+                    description="Nothing active or upcoming."
                     icon="bi-trophy"/>
             @else
                 <div class="list-group list-group-flush">
