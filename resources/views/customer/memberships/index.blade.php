@@ -261,9 +261,14 @@
                 </ul>
 
                 <div class="mt-auto">
-                    @if($active)
-                        <button class="btn btn-outline-secondary w-100" disabled>
-                            <i class="bi bi-check2 me-1"></i>Already subscribed
+                    @if($active && $active->plan_id === $plan->id)
+                        <button class="btn w-100 disabled"
+                                style="background:rgba(16,185,129,.1);border:1.5px solid rgba(16,185,129,.4);color:#10b981;font-weight:600">
+                            <i class="bi bi-check-circle-fill me-1"></i>Your Plan
+                        </button>
+                    @elseif($active)
+                        <button type="button" class="btn btn-outline-secondary w-100" disabled>
+                            <i class="bi bi-arrow-up-circle me-1"></i>Upgrade
                         </button>
                     @else
                         <button type="button" class="btn btn-primary w-100"
