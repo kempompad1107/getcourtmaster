@@ -41,7 +41,7 @@
         'all'       => ['All',       null,                 'secondary'],
     ];
 @endphp
-<ul class="nav nav-pills refund-tabs gap-1 mb-4">
+<ul class="nav nav-pills refund-tabs gap-1 mb-4 flex-nowrap overflow-x-auto pb-1" style="white-space:nowrap">
     @foreach($tabs as $key => [$label, $count, $color])
     <li class="nav-item">
         <a href="{{ route('admin.refund-requests.index', ['status' => $key]) }}"
