@@ -125,6 +125,17 @@ class MembershipController extends Controller
         return back()->with('success', "Membership frozen for {$data['days']} days.");
     }
 
+    public function unfreeze(Request $request, Membership $membership): RedirectResponse
+    {
+        $this->authorizeOwnership($membership, $request->user()->id);
+
+        abort_unless($membership->isFrozen(), 422, 'Membership is not frozen.');
+
+        $this->service->unfreeze($membership);
+
+        return back()->with('success', 'Membership unfrozen. Your expiry date has been extended for the remaining frozen days.');
+    }
+
     public function cancel(Request $request, Membership $membership): RedirectResponse
     {
         $this->authorizeOwnership($membership, $request->user()->id);

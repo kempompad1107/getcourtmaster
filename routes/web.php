@@ -478,6 +478,7 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         Route::post('/memberships/plans/{plan}/subscribe',     [\App\Http\Controllers\Customer\MembershipController::class, 'subscribe'])->name('memberships.subscribe');
         Route::post('/memberships/{membership}/renew',         [\App\Http\Controllers\Customer\MembershipController::class, 'renew'])->name('memberships.renew');
         Route::post('/memberships/{membership}/freeze',        [\App\Http\Controllers\Customer\MembershipController::class, 'freeze'])->name('memberships.freeze');
+        Route::post('/memberships/{membership}/unfreeze',      [\App\Http\Controllers\Customer\MembershipController::class, 'unfreeze'])->name('memberships.unfreeze');
         Route::post('/memberships/{membership}/cancel',        [\App\Http\Controllers\Customer\MembershipController::class, 'cancel'])->name('memberships.cancel');
 
         Route::get('/profile',           [\App\Http\Controllers\Customer\ProfileController::class, 'edit'])->name('profile.edit');

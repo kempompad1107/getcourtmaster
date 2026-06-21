@@ -20,6 +20,14 @@ class ProcessMembershipRenewals implements ShouldQueue
 
     public function handle(MembershipService $membershipService): void
     {
+        // Auto-unfreeze memberships whose freeze period has ended
+        Membership::where('status', 'frozen')
+            ->where('frozen_until', '<=', now())
+            ->each(function (Membership $m) use ($membershipService) {
+                $membershipService->unfreeze($m);
+                Log::info("Auto-unfroze membership #{$m->id}");
+            });
+
         // Expire overdue memberships
         $expired = $membershipService->processExpired();
         Log::info("Expired {$expired} memberships");

@@ -155,6 +155,27 @@ class MembershipService
         return $membership;
     }
 
+    public function unfreeze(Membership $membership): Membership
+    {
+        $frozenDays = (int) now()->diffInDays($membership->frozen_until ?? now(), false);
+        $frozenDays = max(0, $frozenDays);
+
+        $membership->update([
+            'status'       => 'active',
+            'frozen_at'    => null,
+            'frozen_until' => null,
+            'expires_at'   => $membership->expires_at->addDays($frozenDays),
+        ]);
+
+        MembershipTransaction::create([
+            'membership_id' => $membership->id,
+            'type'          => 'unfreeze',
+            'description'   => "Membership unfrozen early" . ($frozenDays > 0 ? "; expiry extended by {$frozenDays} day(s)" : ''),
+        ]);
+
+        return $membership;
+    }
+
     public function cancel(Membership $membership): Membership
     {
         $membership->update([
