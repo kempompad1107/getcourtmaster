@@ -64,14 +64,14 @@
                             <span class="badge rounded-pill bg-{{ $sBadge }}-subtle text-{{ $sBadge }}-emphasis">{{ $sLabel }}</span>
                         </td>
                         <td class="cell-actions text-end">
-                            <a href="{{ route('customer.bookings.show', $b) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{{ route('customer.bookings.show', $b) }}" class="btn btn-primary btn-sm">View</a>
                         </td>
                     </tr>
                 @empty
                     <tr><td colspan="8" class="cell-plain text-center text-muted py-5">
                         <i class="bi bi-calendar-x fs-3 d-block mb-2 opacity-50"></i>
                         No bookings yet.
-                        <div class="mt-3"><a href="{{ route('customer.bookings.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Book a court</a></div>
+                        <div class="mt-3"><a href="{{ route('customer.bookings.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Book a court</a></div>
                     </td></tr>
                 @endforelse
             </tbody>

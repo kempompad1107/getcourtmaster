@@ -117,14 +117,14 @@
                 <i class="bi bi-arrow-clockwise me-1"></i>Renew
             </button>
             @if($active->status !== 'frozen' && $plan?->max_freeze_days)
-                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#freezeModal">
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#freezeModal">
                     <i class="bi bi-snow me-1"></i>Freeze
                 </button>
             @endif
             <form method="POST" action="{{ route('customer.memberships.cancel', $active) }}"
                   onsubmit="return confirm('Cancel your membership? You can still book until the end of your current cycle.');">
                 @csrf
-                <button class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle me-1"></i>Cancel</button>
+                <button class="btn btn-outline-danger"><i class="bi bi-x-circle me-1"></i>Cancel</button>
             </form>
         </div>
     </div>

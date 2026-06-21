@@ -61,7 +61,7 @@
                     @endif
                     <div><i class="bi bi-people me-1"></i>{{ $tournament->teams_count }} team{{ $tournament->teams_count === 1 ? '' : 's' }} registered</div>
                 </div>
-                <a href="{{ route('customer.tournaments.show', $tournament->slug) }}" class="btn btn-outline-primary btn-sm mt-auto">
+                <a href="{{ route('customer.tournaments.show', $tournament->slug) }}" class="btn btn-primary mt-auto">
                     {{ $tournament->status === 'registration_open' ? 'View & Register' : 'View Details' }}
                 </a>
             </div>

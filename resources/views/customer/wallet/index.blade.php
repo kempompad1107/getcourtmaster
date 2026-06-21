@@ -45,7 +45,7 @@
                     <h6 class="mb-1 fw-semibold"><i class="bi bi-plus-circle me-2 text-success"></i>Add Money to Your Wallet</h6>
                     <div class="small text-muted">Pay online once, then use your balance for any booking or purchase.</div>
                 </div>
-                <button type="button" class="btn btn-primary btn-sm" @click="open = !open">
+                <button type="button" class="btn btn-primary" @click="open = !open">
                     <span x-show="!open"><i class="bi bi-wallet2 me-1"></i>Top up</span>
                     <span x-show="open" x-cloak>Cancel</span>
                 </button>
