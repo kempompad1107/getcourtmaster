@@ -73,7 +73,7 @@ $feeByDivision = $tournament->divisions->mapWithKeys(fn ($d) => [$d->id => $tour
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="6" class="cell-plain">
                         <x-empty-state title="No teams registered"
                             description="Register members into a division to get started."

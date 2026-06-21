@@ -10,104 +10,155 @@
     {{-- ── Filters ──────────────────────────────────────────────── --}}
     <div class="card mb-3">
         <div class="card-body py-3">
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                {{-- Quick ranges — segmented control --}}
+
+            {{-- ── DESKTOP (lg+): original single-row layout ── --}}
+            <div class="d-none d-lg-flex flex-wrap align-items-center gap-2">
                 <div class="settings-tabs" style="min-width:0">
                     <button type="button" class="settings-tab-btn" @click="setRange('today')" :class="activeRange === 'today' && 'active'">Today</button>
                     <button type="button" class="settings-tab-btn" @click="setRange('week')"  :class="activeRange === 'week'  && 'active'">This Week</button>
                     <button type="button" class="settings-tab-btn" @click="setRange('month')" :class="activeRange === 'month' && 'active'">This Month</button>
                     <button type="button" class="settings-tab-btn" @click="setRange('year')"  :class="activeRange === 'year'  && 'active'">This Year</button>
                 </div>
-
-                {{-- Custom date range --}}
                 <div class="d-flex align-items-center gap-1">
                     <input x-model="dateFrom" type="date" class="form-control form-control-sm" style="width:auto" aria-label="From date">
                     <span class="text-muted">–</span>
                     <input x-model="dateTo" type="date" class="form-control form-control-sm" style="width:auto" aria-label="To date">
                 </div>
-
                 @isset($availableBranches)
                     @if($availableBranches->count() > 1 || ($canSeeAllBranches ?? false))
                     <select x-model="branchId" class="form-select form-select-sm" style="width:auto" aria-label="Branch">
-                        @if($canSeeAllBranches ?? false)
-                            <option value="all">All branches</option>
-                        @endif
+                        @if($canSeeAllBranches ?? false)<option value="all">All branches</option>@endif
                         @foreach($availableBranches as $b)
                             <option value="{{ $b->id }}">{{ $b->name }}@if($b->is_main) (Main){{-- --}}@endif</option>
                         @endforeach
                     </select>
                     @endif
                 @endisset
-
-                {{-- Actions (right-aligned on wide screens) --}}
-                <div class="d-flex align-items-center gap-2 ms-lg-auto">
-                <button type="button" @click="loadActive(true)" class="btn btn-primary btn-sm">
-                    <i class="bi bi-funnel me-1"></i>Apply
-                </button>
-
-                {{-- Saved presets --}}
-                <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-bookmark-star me-1"></i>Presets
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" style="min-width:260px">
-                        <li class="px-3 py-2">
-                            <input x-model="presetName" type="text" class="form-control form-control-sm" placeholder="Preset name">
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" x-model="presetShared" id="presetShared">
-                                <label class="form-check-label small" for="presetShared">Shared with team</label>
-                            </div>
-                            <button @click="savePreset()" class="btn btn-sm btn-primary w-100 mt-2">Save current</button>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <template x-for="p in presets" :key="p.id">
-                            <li class="d-flex align-items-center justify-content-between px-3">
-                                <button @click="applyPreset(p)" class="btn btn-link btn-sm text-decoration-none p-1 text-start flex-grow-1">
-                                    <span x-text="p.name"></span>
-                                    <small class="text-muted ms-1" x-text="'(' + p.report_type + ')'"></small>
-                                </button>
-                                <button @click="deletePreset(p)" class="btn btn-sm btn-link text-danger p-1">
-                                    <i class="bi bi-x-lg small"></i>
-                                </button>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <button type="button" @click="loadActive(true)" class="btn btn-primary btn-sm"><i class="bi bi-funnel me-1"></i>Apply</button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-bookmark-star me-1"></i>Presets</button>
+                        <ul class="dropdown-menu dropdown-menu-end" style="min-width:260px">
+                            <li class="px-3 py-2">
+                                <input x-model="presetName" type="text" class="form-control form-control-sm" placeholder="Preset name">
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" x-model="presetShared" id="presetSharedDesktop">
+                                    <label class="form-check-label small" for="presetSharedDesktop">Shared with team</label>
+                                </div>
+                                <button @click="savePreset()" class="btn btn-sm btn-primary w-100 mt-2">Save current</button>
                             </li>
-                        </template>
-                        <template x-if="presets.length === 0">
-                            <li class="px-3 py-2 small text-muted">No saved presets yet</li>
-                        </template>
-                    </ul>
+                            <li><hr class="dropdown-divider"></li>
+                            <template x-for="p in presets" :key="p.id">
+                                <li class="d-flex align-items-center justify-content-between px-3">
+                                    <button @click="applyPreset(p)" class="btn btn-link btn-sm text-decoration-none p-1 text-start flex-grow-1">
+                                        <span x-text="p.name"></span><small class="text-muted ms-1" x-text="'(' + p.report_type + ')'"></small>
+                                    </button>
+                                    <button @click="deletePreset(p)" class="btn btn-sm btn-link text-danger p-1"><i class="bi bi-x-lg small"></i></button>
+                                </li>
+                            </template>
+                            <template x-if="presets.length === 0"><li class="px-3 py-2 small text-muted">No saved presets yet</li></template>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-download me-1"></i>Export</button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" @click.prevent="exportFile('pdf')"><i class="bi bi-file-pdf me-2"></i>PDF (combined)</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="exportFile('excel')"><i class="bi bi-file-excel me-2"></i>Excel (current tab)</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="exportFile('csv')"><i class="bi bi-file-text me-2"></i>CSV (current tab)</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="window.print()"><i class="bi bi-printer me-2"></i>Print</a></li>
+                        </ul>
+                    </div>
                 </div>
-
-                {{-- Exports --}}
-                <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-download me-1"></i>Export
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#" @click.prevent="exportFile('pdf')"><i class="bi bi-file-pdf me-2"></i>PDF (combined)</a></li>
-                        <li><a class="dropdown-item" href="#" @click.prevent="exportFile('excel')"><i class="bi bi-file-excel me-2"></i>Excel (current tab)</a></li>
-                        <li><a class="dropdown-item" href="#" @click.prevent="exportFile('csv')"><i class="bi bi-file-text me-2"></i>CSV (current tab)</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#" @click.prevent="window.print()"><i class="bi bi-printer me-2"></i>Print</a></li>
-                    </ul>
-                </div>
-                </div>{{-- /actions --}}
             </div>
+
+            {{-- ── MOBILE (below lg): stacked layout ── --}}
+            <div class="d-lg-none">
+                {{-- Quick ranges scrollable --}}
+                <div class="overflow-x-auto mb-2 pb-1">
+                    <div class="settings-tabs" style="white-space:nowrap;min-width:0">
+                        <button type="button" class="settings-tab-btn" @click="setRange('today')" :class="activeRange === 'today' && 'active'">Today</button>
+                        <button type="button" class="settings-tab-btn" @click="setRange('week')"  :class="activeRange === 'week'  && 'active'">This Week</button>
+                        <button type="button" class="settings-tab-btn" @click="setRange('month')" :class="activeRange === 'month' && 'active'">This Month</button>
+                        <button type="button" class="settings-tab-btn" @click="setRange('year')"  :class="activeRange === 'year'  && 'active'">This Year</button>
+                    </div>
+                </div>
+                {{-- Dates side by side --}}
+                <div class="d-flex align-items-center gap-1 mb-2">
+                    <input x-model="dateFrom" type="date" class="form-control form-control-sm" aria-label="From date">
+                    <span class="text-muted flex-shrink-0">–</span>
+                    <input x-model="dateTo" type="date" class="form-control form-control-sm" aria-label="To date">
+                </div>
+                {{-- Branch full width --}}
+                @isset($availableBranches)
+                    @if($availableBranches->count() > 1 || ($canSeeAllBranches ?? false))
+                    <div class="mb-2">
+                        <select x-model="branchId" class="form-select form-select-sm w-100" aria-label="Branch">
+                            @if($canSeeAllBranches ?? false)<option value="all">All branches</option>@endif
+                            @foreach($availableBranches as $b)
+                                <option value="{{ $b->id }}">{{ $b->name }}@if($b->is_main) (Main){{-- --}}@endif</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+                @endisset
+                {{-- Actions left-aligned --}}
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" @click="loadActive(true)" class="btn btn-primary btn-sm"><i class="bi bi-funnel"></i>Apply</button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-bookmark-star"></i></button>
+                        <ul class="dropdown-menu" style="min-width:260px">
+                            <li class="px-3 py-2">
+                                <input x-model="presetName" type="text" class="form-control form-control-sm" placeholder="Preset name">
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" x-model="presetShared" id="presetSharedMobile">
+                                    <label class="form-check-label small" for="presetSharedMobile">Shared with team</label>
+                                </div>
+                                <button @click="savePreset()" class="btn btn-sm btn-primary w-100 mt-2">Save current</button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <template x-for="p in presets" :key="p.id">
+                                <li class="d-flex align-items-center justify-content-between px-3">
+                                    <button @click="applyPreset(p)" class="btn btn-link btn-sm text-decoration-none p-1 text-start flex-grow-1">
+                                        <span x-text="p.name"></span>
+                                    </button>
+                                    <button @click="deletePreset(p)" class="btn btn-sm btn-link text-danger p-1"><i class="bi bi-x-lg small"></i></button>
+                                </li>
+                            </template>
+                            <template x-if="presets.length === 0"><li class="px-3 py-2 small text-muted">No saved presets yet</li></template>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-download"></i></button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" @click.prevent="exportFile('pdf')"><i class="bi bi-file-pdf me-2"></i>PDF</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="exportFile('excel')"><i class="bi bi-file-excel me-2"></i>Excel</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="exportFile('csv')"><i class="bi bi-file-text me-2"></i>CSV</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="window.print()"><i class="bi bi-printer me-2"></i>Print</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     {{-- ── Tabs ────────────────────────────────────────────────── --}}
-    <ul class="nav nav-pills flex-wrap gap-2 mb-3">
-        <template x-for="t in tabs" :key="t.key">
-            <li class="nav-item">
-                <button class="nav-link"
-                        :class="active === t.key ? 'active' : ''"
-                        @click="switchTab(t.key)">
-                    <i :class="'bi me-1 ' + t.icon"></i>
-                    <span x-text="t.label"></span>
-                </button>
-            </li>
-        </template>
-    </ul>
+    <div class="overflow-x-auto pb-1 mb-3">
+        <ul class="nav nav-pills flex-nowrap gap-2" style="white-space:nowrap">
+            <template x-for="t in tabs" :key="t.key">
+                <li class="nav-item flex-shrink-0">
+                    <button class="nav-link"
+                            :class="active === t.key ? 'active' : ''"
+                            @click="switchTab(t.key)">
+                        <i :class="'bi me-1 ' + t.icon"></i>
+                        <span x-text="t.label"></span>
+                    </button>
+                </li>
+            </template>
+        </ul>
+    </div>
 
     {{-- ── Loading bar ─────────────────────────────────────────── --}}
     <div class="progress mb-3" style="height:3px" x-show="loading" x-transition>

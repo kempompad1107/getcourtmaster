@@ -33,7 +33,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="6" class="cell-plain">
                         <x-empty-state title="No divisions yet"
                             description="Add divisions first — each division gets its own bracket."

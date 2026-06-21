@@ -12,15 +12,42 @@
     .pos-product:active { transform: translateY(-1px) scale(.99); }
     .pos-product.is-oos { opacity: .5; pointer-events: none; filter: grayscale(.3); }
     .pos-product-media {
-        height: 96px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+        position: relative;
+        height: 110px; display: flex; align-items: center; justify-content: center; overflow: hidden;
         background: rgba(148,163,184,.1);
         border-radius: var(--bs-card-border-radius) var(--bs-card-border-radius) 0 0;
     }
     .pos-product-media img { width: 100%; height: 100%; object-fit: cover; }
 
+    /* Stock chip overlaid on the image (TailAdmin product-tile style) — keeps the
+       card body to just name + price so every tile is the same height. */
+    .pos-stock-badge {
+        position: absolute; top: .4rem; left: .4rem; z-index: 1;
+        font-size: .62rem; font-weight: 600; line-height: 1.3;
+        padding: .12rem .45rem; border-radius: 999px;
+        backdrop-filter: blur(2px);
+    }
+
     .pos-cart { position: sticky; top: 80px; }
     .pos-cart .card-header { background: rgba(16,185,129,.07); border-bottom-color: rgba(16,185,129,.18); }
     .pos-qty-btn { width: 26px; height: 26px; display: grid; place-items: center; padding: 0; line-height: 1; }
+
+    /* Order summary box — TailAdmin-style tinted panel grouping the totals */
+    .pos-summary {
+        background: var(--bs-body-bg-alt, #f8fafc);
+        border: 1px solid var(--bs-border-color);
+        border-radius: .75rem;
+    }
+    .pos-summary .pos-summary-total {
+        border-top: 1px solid var(--bs-border-color);
+    }
+    /* Empty-cart state */
+    .pos-empty-icon {
+        width: 56px; height: 56px; border-radius: 50%;
+        display: grid; place-items: center; margin: 0 auto;
+        background: rgba(148,163,184,.12); color: var(--bs-secondary-color);
+        font-size: 1.5rem;
+    }
     .pos-cat-tabs::-webkit-scrollbar { height: 4px; }
     .pos-cat-tabs::-webkit-scrollbar-thumb { background: var(--bs-border-color); border-radius: 4px; }
 
@@ -81,7 +108,7 @@
     <x-slot name="actions">
         <button type="button" @click="toggleScan()"
                 :class="scanning ? 'btn-primary' : 'btn-outline-secondary'"
-                class="btn btn-sm me-2">
+                class="btn btn-sm">
             <i class="bi bi-upc-scan me-1"></i><span x-text="scanning ? 'Done' : 'Scan'"></span>
         </button>
         <a href="{{ route('admin.pos.history') }}" class="btn btn-outline-secondary btn-sm">
@@ -95,7 +122,7 @@
     {{-- Product Grid --}}
     <div class="col-12 col-lg-8">
 
-        <div x-show="scanning" x-cloak class="input-group input-group-sm pos-scan-bar mb-3">
+        <div x-show="scanning" x-cloak class="input-group pos-scan-bar mb-3">
             <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
             <input x-ref="scanInput" x-model="scanCode" type="text"
                    placeholder="Scan a barcode / SKU — adds automatically"
@@ -138,6 +165,19 @@
                      ]) }})"
                      @endif>
                     <div class="pos-product-media">
+                        @if($product->track_inventory)
+                            @if($product->isOutOfStock())
+                            <span class="pos-stock-badge bg-danger-subtle text-danger">
+                                <i class="bi bi-x-circle me-1"></i>Out of stock
+                            </span>
+                            @elseif($product->isLowStock())
+                            <span class="pos-stock-badge bg-warning-subtle text-warning">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Low: {{ $product->stock_quantity }}
+                            </span>
+                            @else
+                            <span class="pos-stock-badge bg-body-secondary text-secondary">{{ $product->stock_quantity }} in stock</span>
+                            @endif
+                        @endif
                         @if($product->image)
                         <img src="{{ file_url($product->image) }}" alt="{{ $product->name }}">
                         @else
@@ -146,22 +186,7 @@
                     </div>
                     <div class="card-body p-2 d-flex flex-column">
                         <p class="mb-1 small fw-semibold text-truncate">{{ $product->name }}</p>
-                        <p class="mb-0 fw-bold text-success">₱{{ number_format($product->selling_price, 2) }}</p>
-                        @if($product->track_inventory)
-                            @if($product->isOutOfStock())
-                            <span class="badge rounded-pill bg-danger-subtle text-danger mt-2 align-self-start">
-                                <i class="bi bi-x-circle me-1"></i>Out of stock
-                            </span>
-                            @elseif($product->isLowStock())
-                            <span class="badge rounded-pill bg-warning-subtle text-warning mt-2 align-self-start">
-                                <i class="bi bi-exclamation-triangle me-1"></i>Low: {{ $product->stock_quantity }}
-                            </span>
-                            @else
-                            <span class="badge rounded-pill bg-secondary-subtle text-secondary mt-2 align-self-start">
-                                <i class="bi bi-box-seam me-1"></i>Stock: {{ $product->stock_quantity }}
-                            </span>
-                            @endif
-                        @endif
+                        <p class="mb-0 fw-bold text-success mt-auto">₱{{ number_format($product->selling_price, 2) }}</p>
                     </div>
                 </div>
             </div>
@@ -205,29 +230,33 @@
                         </div>
                     </div>
                 </template>
-                <div x-show="cart.length === 0" class="list-group-item text-center text-muted py-5">
-                    <i class="bi bi-cart-x fs-3 d-block mb-2 opacity-50"></i>Cart is empty
+                <div x-show="cart.length === 0" class="list-group-item border-0 text-center py-5 px-3">
+                    <span class="pos-empty-icon mb-3"><i class="bi bi-cart3"></i></span>
+                    <p class="mb-1 fw-semibold text-body">Cart is empty</p>
+                    <p class="small text-muted mb-0">Tap a product to add it to the order.</p>
                 </div>
             </div>
 
             <div class="card-body border-top">
                 {{-- Totals --}}
-                <p x-show="stockMessage" x-text="stockMessage" class="small text-danger mb-2"></p>
-                <div class="d-flex justify-content-between small text-muted mb-1">
-                    <span>Subtotal</span><span x-text="'₱' + subtotal.toFixed(2)"></span>
-                </div>
-                <div class="d-flex justify-content-between small text-muted mb-1" x-show="tax > 0">
-                    <span>Tax</span><span x-text="'₱' + tax.toFixed(2)"></span>
-                </div>
-                <div class="d-flex justify-content-between small text-success mb-2" x-show="discount > 0">
-                    <span>Discount</span><span x-text="'-₱' + discount.toFixed(2)"></span>
-                </div>
-                <div class="d-flex justify-content-between fw-bold fs-5 mb-3 border-top pt-2">
-                    <span>Total</span><span class="text-success" x-text="'₱' + total.toFixed(2)"></span>
+                <p x-show="stockMessage" x-cloak x-text="stockMessage" class="small text-danger mb-2"></p>
+                <div class="pos-summary p-3 mb-3">
+                    <div class="d-flex justify-content-between small text-muted mb-2">
+                        <span>Subtotal</span><span x-text="'₱' + subtotal.toFixed(2)"></span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mb-2" x-show="tax > 0" x-cloak>
+                        <span>Tax</span><span x-text="'₱' + tax.toFixed(2)"></span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-success mb-2" x-show="discount > 0" x-cloak>
+                        <span>Discount</span><span x-text="'-₱' + discount.toFixed(2)"></span>
+                    </div>
+                    <div class="pos-summary-total d-flex justify-content-between align-items-center fw-bold fs-5 pt-2 mt-1">
+                        <span>Total</span><span class="text-success" x-text="'₱' + total.toFixed(2)"></span>
+                    </div>
                 </div>
 
                 {{-- Promo code --}}
-                <div class="input-group input-group-sm mb-1">
+                <div class="input-group mb-3">
                     <input x-model="promoCode" type="text" placeholder="Promo Code"
                            @keydown.enter.prevent="applyPromo()"
                            class="form-control">
@@ -238,7 +267,7 @@
                         <span x-show="promoChecking"><span class="spinner-border spinner-border-sm"></span></span>
                     </button>
                 </div>
-                <p x-show="promoMessage" class="small mb-3"
+                <p x-show="promoMessage" x-cloak class="small mb-3"
                    :class="promoValid ? 'text-success' : 'text-danger'" x-text="promoMessage"></p>
 
                 {{-- Payment method --}}
@@ -252,13 +281,13 @@
                 </div>
 
                 {{-- Amount tendered --}}
-                <div class="input-group input-group-sm mb-2">
+                <div class="input-group mb-2">
                     <span class="input-group-text">₱</span>
                     <input x-model.number="amountTendered" type="number" step="0.01"
                            :placeholder="'Amount (' + total.toFixed(2) + ')'"
                            class="form-control">
                 </div>
-                <div x-show="amountTendered > 0" class="d-flex justify-content-between small text-success fw-semibold mb-3">
+                <div x-show="amountTendered > 0" x-cloak class="d-flex justify-content-between small text-success fw-semibold mb-3">
                     <span>Change</span>
                     <span x-text="'₱' + Math.max(0, amountTendered - total).toFixed(2)"></span>
                 </div>

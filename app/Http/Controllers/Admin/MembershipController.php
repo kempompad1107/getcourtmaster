@@ -137,7 +137,9 @@ class MembershipController extends Controller
     {
         $this->authorize('memberships.view');
         $tenantId = $this->authTenant()->id;
-        $plans = MembershipPlan::where('tenant_id', $tenantId)->orderBy('sort_order')->get();
+        $plans = MembershipPlan::where('tenant_id', $tenantId)
+            ->withCount(['memberships as active_memberships_count' => fn($q) => $q->where('status', 'active')])
+            ->orderBy('sort_order')->get();
         return view('admin.memberships.plans', compact('plans'));
     }
 

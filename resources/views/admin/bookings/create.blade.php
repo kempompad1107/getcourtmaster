@@ -382,9 +382,9 @@
                 </template>
             </div>
 
-            <div class="d-flex justify-content-end gap-2">
-                <a href="{{ route('admin.bookings.index') }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
-                <button type="submit" class="btn btn-primary btn-sm"
+            <div class="d-flex justify-content-end gap-2 border-top pt-4">
+                <a href="{{ route('admin.bookings.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary"
                         :disabled="submitDisabled">
                     <span x-show="submitting" x-cloak class="spinner-border spinner-border-sm me-1"></span>
                     <span x-show="!isWalkIn">Create Booking</span>

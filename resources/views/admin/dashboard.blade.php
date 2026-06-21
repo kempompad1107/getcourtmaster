@@ -410,7 +410,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7" class="cell-plain">
                         <x-empty-state title="No bookings yet"
                             description="Bookings will appear here as customers make reservations."

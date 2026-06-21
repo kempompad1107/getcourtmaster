@@ -16,104 +16,166 @@
     $currentSessionId = $currentSessionId ?? request()->session()->getId();
 @endphp
 
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-semibold">
-            <i class="bi bi-shield-lock me-2"></i>Two-factor authentication
-        </h6>
-        @if ($user->two_factor_confirmed_at)
+{{-- ── Two-Factor Authentication ─────────────────────────────── --}}
+<div class="card mb-4">
+    <div class="card-header set-head">
+        <div class="flex-grow-1">
+            <h6 class="mb-0 fw-semibold">Two-Factor Authentication</h6>
+            <small class="text-muted">Add a one-time code to your sign-in for extra security.</small>
+        </div>
+        @if($user->two_factor_confirmed_at)
             <span class="badge bg-success-subtle text-success-emphasis">Enabled</span>
         @else
             <span class="badge bg-secondary-subtle text-secondary-emphasis">Off</span>
         @endif
     </div>
     <div class="card-body">
-        <p class="text-muted small mb-3">
-            Two-factor authentication adds a one-time code to your sign-in. <strong>Optional</strong> — turn it on only if you want the extra protection.
-        </p>
 
-        @if ($user->two_factor_confirmed_at)
-            <form method="POST" action="{{ route('2fa.disable') }}" class="row g-2">
+        @if($user->two_factor_confirmed_at)
+
+            {{-- 2FA is ON — show disable form --}}
+            <p class="small text-muted mb-3">
+                2FA is active on your account. Enter your password below to turn it off.
+            </p>
+            <form method="POST" action="{{ route('2fa.disable') }}">
                 @csrf
-                <div class="col-12 col-sm-7">
-                    <input type="password" name="password" class="form-control" placeholder="Confirm your password" required>
-                </div>
-                <div class="col-12 col-sm-5">
-                    <button class="btn btn-outline-danger w-100">
-                        <i class="bi bi-shield-slash me-1"></i> Disable 2FA
+                <div class="d-flex flex-column flex-sm-row gap-2" style="max-width:32rem">
+                    <input type="password" name="password" class="form-control"
+                           placeholder="Confirm your password" required>
+                    <button class="btn btn-outline-danger flex-shrink-0">
+                        <i class="bi bi-shield-slash me-1"></i>Disable 2FA
                     </button>
                 </div>
             </form>
+
         @else
-            <details>
-                <summary class="btn btn-outline-success btn-sm mb-3" style="list-style:none;">
-                    <i class="bi bi-shield-plus me-1"></i> Enable 2FA
-                </summary>
-                <div class="mt-3">
-                    @if ($qrUri)
+
+            {{-- 2FA is OFF — show enable flow --}}
+            <p class="small text-muted mb-3">
+                Two-factor authentication is <strong>optional</strong> — turn it on if you want extra protection for your account.
+            </p>
+
+            <div x-data="{ open: false }">
+                <button type="button" class="btn btn-primary btn-sm"
+                        @click="open = !open" x-show="!open">
+                    <i class="bi bi-shield-plus me-1"></i>Enable 2FA
+                </button>
+
+                <div x-show="open" x-transition x-cloak>
+                    @if($qrUri)
                         <p class="small mb-2">Scan with Google Authenticator, Authy, or 1Password:</p>
-                        <img
-                            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ urlencode($qrUri) }}"
-                            alt="QR code"
-                            class="mb-2 border rounded"
-                        >
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ urlencode($qrUri) }}"
+                             alt="QR code" class="mb-3 border rounded d-block">
                         <p class="small text-muted mb-1">Or enter this secret manually:</p>
-                        <code class="d-inline-block p-2 bg-light rounded small mb-3">{{ $secret }}</code>
+                        <code class="d-inline-block px-3 py-2 rounded small mb-3"
+                              style="background:var(--bs-secondary-bg);letter-spacing:.08em">{{ $secret }}</code>
                     @endif
-                    <form method="POST" action="{{ route('2fa.confirm') }}">
+
+                    <form method="POST" action="{{ route('2fa.confirm') }}" style="max-width:24rem">
                         @csrf
-                        <label class="form-label small">Enter the 6-digit code from your app</label>
+                        <label class="form-label small fw-medium">6-digit code from your authenticator app</label>
                         <div class="input-group">
-                            <input type="text" name="code" class="form-control font-monospace" inputmode="numeric" maxlength="6" pattern="\d{6}" required>
-                            <button class="btn btn-success">Confirm</button>
+                            <input type="text" name="code" class="form-control font-monospace"
+                                   inputmode="numeric" maxlength="6" pattern="\d{6}"
+                                   placeholder="000000" required autofocus>
+                            <button class="btn btn-primary">Confirm</button>
                         </div>
                     </form>
-                </div>
-            </details>
 
-            @if (session('recovery_codes'))
-                <div class="alert alert-warning mt-3 small">
-                    <strong>Save these recovery codes.</strong> Each can be used once if you lose your 2FA device.
-                    <pre class="mb-0 mt-2 small">{{ implode(PHP_EOL, session('recovery_codes')) }}</pre>
+                    <button type="button" class="btn btn-link btn-sm text-muted mt-2 p-0"
+                            @click="open = false">Cancel</button>
+                </div>
+            </div>
+
+            @if(session('recovery_codes'))
+                <div class="alert alert-warning d-flex gap-2 mt-3 small">
+                    <i class="bi bi-exclamation-triangle flex-shrink-0 mt-1"></i>
+                    <div>
+                        <strong>Save these recovery codes.</strong> Each can be used once if you lose your 2FA device.
+                        <pre class="mb-0 mt-2 small">{{ implode(PHP_EOL, session('recovery_codes')) }}</pre>
+                    </div>
                 </div>
             @endif
+
         @endif
+
     </div>
 </div>
 
-<div class="card border-0 shadow-sm mt-4">
-    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-semibold">
-            <i class="bi bi-laptop me-2"></i>Signed-in devices
-        </h6>
-        <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ $sessions->count() }}</span>
+{{-- ── Signed-in Devices ──────────────────────────────────────── --}}
+<div class="card">
+    <div class="card-header set-head">
+        <div class="flex-grow-1">
+            <h6 class="mb-0 fw-semibold">Signed-in Devices</h6>
+            <small class="text-muted">All sessions currently logged in to your account.</small>
+        </div>
+        <span class="badge bg-secondary-subtle text-secondary-emphasis">
+            {{ $sessions->count() }} {{ Str::plural('device', $sessions->count()) }}
+        </span>
     </div>
-    <div class="list-group list-group-flush">
-        @forelse ($sessions as $s)
-            <div class="list-group-item d-flex justify-content-between align-items-start">
-                <div class="me-3" style="min-width:0;flex:1;">
-                    <div class="fw-medium small">
-                        {{ $s->device_label ?? 'Unknown device' }}
-                        @if ($s->session_id === $currentSessionId)
-                            <span class="badge bg-success-subtle text-success-emphasis ms-1">This device</span>
+
+    @if($sessions->isEmpty())
+        <div class="card-body text-center text-muted small py-5">
+            <i class="bi bi-laptop fs-3 d-block mb-2 opacity-50"></i>
+            No active devices found.
+        </div>
+    @else
+        <div class="list-group list-group-flush">
+            @foreach($sessions as $s)
+            @php
+                $ua = $s->user_agent ?? '';
+                $isMobile  = preg_match('/iPhone|Android|Mobile/i', $ua);
+                $isTablet  = preg_match('/iPad|Tablet/i', $ua);
+                $deviceIcon = $isMobile ? 'bi-phone' : ($isTablet ? 'bi-tablet' : 'bi-laptop');
+
+                // Parse a readable browser + OS label
+                $browser = 'Unknown browser';
+                if (str_contains($ua, 'Edg/'))         $browser = 'Edge';
+                elseif (str_contains($ua, 'Chrome/'))  $browser = 'Chrome';
+                elseif (str_contains($ua, 'Firefox/')) $browser = 'Firefox';
+                elseif (str_contains($ua, 'Safari/'))  $browser = 'Safari';
+                elseif (str_contains($ua, 'OPR/'))     $browser = 'Opera';
+
+                $os = '';
+                if (str_contains($ua, 'Windows'))       $os = 'Windows';
+                elseif (str_contains($ua, 'Mac OS X'))  $os = 'macOS';
+                elseif (str_contains($ua, 'iPhone'))    $os = 'iPhone';
+                elseif (str_contains($ua, 'iPad'))      $os = 'iPad';
+                elseif (str_contains($ua, 'Android'))   $os = 'Android';
+                elseif (str_contains($ua, 'Linux'))     $os = 'Linux';
+
+                $deviceLabel = $s->device_label ?? ($os ? "$browser · $os" : $browser);
+                $isCurrent   = $s->session_id === $currentSessionId;
+            @endphp
+            <div class="list-group-item d-flex align-items-center gap-3 py-3">
+                {{-- Device icon --}}
+                <div class="flex-shrink-0 text-muted" style="font-size:1.3rem">
+                    <i class="bi {{ $deviceIcon }}"></i>
+                </div>
+                {{-- Info --}}
+                <div class="flex-grow-1 min-w-0">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="fw-medium small">{{ $deviceLabel }}</span>
+                        @if($isCurrent)
+                            <span class="badge bg-success-subtle text-success-emphasis">This device</span>
                         @endif
                     </div>
-                    <div class="small text-muted">
-                        {{ $s->ip }} · {{ $s->last_active_at?->diffForHumans() ?? '—' }}
-                    </div>
-                    <div class="small text-muted text-truncate" title="{{ $s->user_agent }}">
-                        {{ $s->user_agent }}
+                    <div class="small text-muted mt-1">
+                        {{ $s->ip }}
+                        @if($s->last_active_at)
+                            · {{ $s->last_active_at->diffForHumans() }}
+                        @endif
                     </div>
                 </div>
-                @if ($s->session_id !== $currentSessionId)
-                    <form method="POST" action="{{ route('devices.destroy', $s) }}">
+                {{-- Sign out --}}
+                @if(!$isCurrent)
+                    <form method="POST" action="{{ route('devices.destroy', $s) }}" class="flex-shrink-0">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-outline-danger">Sign out</button>
                     </form>
                 @endif
             </div>
-        @empty
-            <div class="list-group-item text-center text-muted py-4 small">No other active devices.</div>
-        @endforelse
-    </div>
+            @endforeach
+        </div>
+    @endif
 </div>

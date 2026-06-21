@@ -56,7 +56,6 @@
             {{-- Club information --}}
             <div class="card mb-4">
                 <div class="card-header set-head">
-                    <span class="set-head-icon" style="--sh:#3b82f6"><i class="bi bi-building"></i></span>
                     <div>
                         <h6 class="mb-0 fw-semibold">Club Information</h6>
                         <small class="text-muted">The basics used across receipts, bookings and your public page.</small>
@@ -69,9 +68,12 @@
                             <input type="text" name="name" value="{{ $tenant->name }}" required class="form-control">
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Contact email <span class="badge bg-secondary fw-normal ms-1" style="font-size:.7em">Display only</span></label>
+                            <label class="form-label d-flex align-items-center gap-1">Contact email
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Shown on your public profile (display only). For notification emails, use the Notifications tab."></i>
+                            </label>
                             <input type="email" name="email" value="{{ $tenant->email }}" required class="form-control">
-                            <div class="form-text"><i class="bi bi-info-circle me-1"></i>Shown on your public profile. To receive notification emails, set your address under the <a href="?tab=notifications">Notifications tab</a>.</div>
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label">Phone number</label>
@@ -108,7 +110,6 @@
             {{-- Public page & branding --}}
             <div class="card mb-4">
                 <div class="card-header set-head">
-                    <span class="set-head-icon" style="--sh:#10b981"><i class="bi bi-palette"></i></span>
                     <div>
                         <h6 class="mb-0 fw-semibold">Public Page &amp; Branding</h6>
                         <small class="text-muted">How your venue looks to customers on the public page.</small>
@@ -118,26 +119,36 @@
 
                     <div class="set-subhead">Media &amp; identity</div>
                     <div class="row g-3 mb-2">
-                        <div class="col-12 col-sm-3">
-                            <label class="form-label">Logo</label>
+                        {{-- Logo --}}
+                        <div class="col-12 col-sm-4">
+                            <label class="form-label d-flex align-items-center gap-1">Logo
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="PNG/JPG/SVG · square works best · max 2 MB"></i>
+                            </label>
                             @if($logoUrl)
-                                <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-3 mb-2">
                                     <img src="{{ $logoUrl }}" alt="Logo"
-                                         class="border rounded" style="width:64px;height:64px;object-fit:contain;background:#fff;padding:4px">
-                                    <div class="form-check form-check-inline small">
+                                         class="border rounded flex-shrink-0"
+                                         style="width:56px;height:56px;object-fit:contain;background:#fff;padding:4px">
+                                    <div class="form-check small">
                                         <input class="form-check-input" type="checkbox" name="remove_logo" value="1" id="remove_logo">
-                                        <label class="form-check-label" for="remove_logo">Remove</label>
+                                        <label class="form-check-label" for="remove_logo">Remove logo</label>
                                     </div>
                                 </div>
                             @endif
                             <input type="file" name="logo" accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                                   class="form-control form-control-sm @error('logo') is-invalid @enderror">
+                                   class="form-control @error('logo') is-invalid @enderror">
                             @error('logo')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">PNG/JPG/SVG, square works best, max 2MB.</div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
-                            <label class="form-label">Tagline <span class="text-muted small">(under the hero name)</span></label>
+                        {{-- Tagline --}}
+                        <div class="col-12 col-sm-8">
+                            <label class="form-label d-flex align-items-center gap-1">Tagline
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Shown under the club name on your public page"></i>
+                            </label>
                             <input type="text" name="tagline" maxlength="200"
                                    value="{{ $brandingSettings['tagline'] ?? '' }}"
                                    placeholder="e.g. The friendliest pickleball club in town."
@@ -145,36 +156,49 @@
                             @error('tagline')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        <div class="col-12 col-sm-3">
+                        {{-- Brand color --}}
+                        <div class="col-12 col-sm-4">
                             <label class="form-label">Brand color</label>
-                            <input type="color" name="brand_color"
-                                   value="{{ $brandingSettings['brand_color'] ?? '#10b981' }}"
-                                   class="form-control form-control-color w-100" style="height:38px">
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" name="brand_color"
+                                       value="{{ $brandingSettings['brand_color'] ?? '#10b981' }}"
+                                       class="form-control form-control-color flex-shrink-0" style="width:48px;height:38px;padding:.25rem">
+                                <span class="small text-muted">Used on your public page and customer emails.</span>
+                            </div>
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label">Hero image <span class="text-muted small">(big photo below the hero)</span></label>
+                        {{-- Hero image --}}
+                        <div class="col-12 col-sm-8">
+                            <label class="form-label d-flex align-items-center gap-1">Hero image
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Large photo shown below the club name · Landscape · PNG/JPG/WEBP · max 5 MB"></i>
+                            </label>
                             @if($heroImageUrl)
                                 <div class="d-flex align-items-start gap-3 mb-2">
                                     <img src="{{ $heroImageUrl }}" alt="Hero"
-                                         class="border rounded" style="max-width:280px;height:120px;object-fit:cover">
+                                         class="border rounded"
+                                         style="width:100%;max-width:240px;height:100px;object-fit:cover">
                                     <div class="form-check small mt-1">
                                         <input class="form-check-input" type="checkbox" name="remove_hero_image" value="1" id="remove_hero">
-                                        <label class="form-check-label" for="remove_hero">Remove current</label>
+                                        <label class="form-check-label" for="remove_hero">Remove</label>
                                     </div>
                                 </div>
                             @endif
                             <input type="file" name="hero_image" accept="image/png,image/jpeg,image/webp"
-                                   class="form-control form-control-sm @error('hero_image') is-invalid @enderror">
+                                   class="form-control @error('hero_image') is-invalid @enderror">
                             @error('hero_image')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">Landscape orientation works best. PNG/JPG/WEBP, max 5MB.</div>
                         </div>
                     </div>
 
                     <div class="set-subhead">Page content</div>
                     <div class="row g-3 mb-2">
                         <div class="col-12">
-                            <label class="form-label">About <span class="text-muted small">(rendered on the "About Us" section)</span></label>
+                            <label class="form-label d-flex align-items-center gap-1">About
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Rendered on the &quot;About Us&quot; section of your public page"></i>
+                            </label>
                             <textarea name="about" rows="4" maxlength="2000"
                                       placeholder="Tell visitors who you are, what makes your venue special, and who it's for."
                                       class="form-control @error('about') is-invalid @enderror">{{ $brandingSettings['about'] ?? '' }}</textarea>
@@ -182,12 +206,15 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Rules / House Policies <span class="text-muted small">(rendered on the "Rules" section)</span></label>
+                            <label class="form-label d-flex align-items-center gap-1">Rules / House Policies
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Rendered on the &quot;Rules&quot; section of your public page. Plain text — blank lines split paragraphs."></i>
+                            </label>
                             <textarea name="rules" rows="5" maxlength="4000"
                                       placeholder="One rule per line works great. Example:&#10;&#10;Reserve your slot in advance&#10;Non-marking shoes required&#10;15-minute grace period"
                                       class="form-control @error('rules') is-invalid @enderror">{{ $brandingSettings['rules'] ?? '' }}</textarea>
                             @error('rules')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">Plain text. Blank lines split paragraphs.</div>
                         </div>
                     </div>
 
@@ -218,7 +245,7 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end">
+            <div class="d-grid d-sm-flex justify-content-sm-end">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-check-lg me-1"></i>Save Changes
                 </button>
@@ -229,7 +256,6 @@
         {{-- Booking --}}
         <div x-show="tab === 'booking'" class="card" x-cloak>
             <div class="card-header set-head">
-                <span class="set-head-icon" style="--sh:#8b5cf6"><i class="bi bi-calendar-check"></i></span>
                 <div>
                     <h6 class="mb-0 fw-semibold">Booking Settings</h6>
                     <small class="text-muted">Tax, grace periods, pricing windows and confirmation rules.</small>
@@ -240,8 +266,10 @@
                     @csrf @method('PUT')
                     @php $bs = $settings; @endphp
                     <div class="row g-3">
+
+                        {{-- ── Numeric fields ─────────────────────────── --}}
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Tax rate (%)</label>
+                            <label class="form-label">Tax rate</label>
                             <div class="input-group">
                                 <input type="number" name="tax_rate" value="{{ $bs['tax_rate'] ?? 12 }}"
                                        min="0" max="100" step="0.5" class="form-control">
@@ -249,24 +277,49 @@
                             </div>
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Grace period (minutes)</label>
-                            <input type="number" name="grace_period_minutes" value="{{ $bs['grace_period_minutes'] ?? 5 }}"
-                                   min="0" max="60" class="form-control">
+                            <label class="form-label d-flex align-items-center gap-1">Grace period
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="How many minutes after the booking start time a session is still allowed to begin late."></i>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" name="grace_period_minutes" value="{{ $bs['grace_period_minutes'] ?? 5 }}"
+                                       min="0" max="60" class="form-control">
+                                <span class="input-group-text">min</span>
+                            </div>
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Cancellation window (hours)</label>
-                            <input type="number" name="cancellation_hours" value="{{ $bs['cancellation_hours'] ?? 24 }}"
-                                   min="0" class="form-control">
+                            <label class="form-label d-flex align-items-center gap-1">Cancellation window
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Customers can cancel for free up to this many hours before the booking start time."></i>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" name="cancellation_hours" value="{{ $bs['cancellation_hours'] ?? 24 }}"
+                                       min="0" class="form-control">
+                                <span class="input-group-text">hrs</span>
+                            </div>
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Max advance booking (days)</label>
-                            <input type="number" name="advance_booking_days" value="{{ $bs['advance_booking_days'] ?? 30 }}"
-                                   min="1" max="365" class="form-control">
+                            <label class="form-label d-flex align-items-center gap-1">Max advance booking
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="How far in advance a customer can book a court slot."></i>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" name="advance_booking_days" value="{{ $bs['advance_booking_days'] ?? 30 }}"
+                                       min="1" max="365" class="form-control">
+                                <span class="input-group-text">days</span>
+                            </div>
                         </div>
 
+                        {{-- ── Pricing hours ───────────────────────────── --}}
                         <div class="col-12">
-                            <div class="set-subhead mt-2">Pricing hours</div>
-                            <div class="form-text">Evening hours use the court's Evening rate; all other daytime hours use the Daylight rate. Saturday &amp; Sunday always use the Weekend rate.</div>
+                            <div class="set-subhead mt-2 d-flex align-items-center gap-1">Pricing hours
+                                <i class="bi bi-info-circle text-muted" style="font-size:.75rem;cursor:default;text-transform:none;letter-spacing:0"
+                                   data-bs-toggle="tooltip"
+                                   title="Evening hours use the Evening rate; daytime uses the Daylight rate. Sat &amp; Sun always use the Weekend rate."></i>
+                            </div>
                         </div>
                         <div class="col-6 col-sm-3">
                             <label class="form-label">Evening starts</label>
@@ -283,49 +336,70 @@
                             @error('evening_end')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
+                        {{-- ── Behaviour toggles ──────────────────────── --}}
                         <div class="col-12">
-                            <div class="form-check mb-2">
-                                <input type="hidden" name="require_payment" value="0">
-                                <input type="checkbox" name="require_payment" value="1" id="require_payment"
-                                       class="form-check-input" @checked($bs['require_payment'] ?? false)>
-                                <label class="form-check-label" for="require_payment">Require payment to confirm booking</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input type="hidden" name="auto_confirm" value="0">
-                                <input type="checkbox" name="auto_confirm" value="1" id="auto_confirm"
-                                       class="form-check-input" @checked($bs['auto_confirm'] ?? false)>
-                                <label class="form-check-label" for="auto_confirm">Auto-confirm bookings</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="hidden" name="auto_stop_after_grace" value="0">
-                                <input type="checkbox" name="auto_stop_after_grace" value="1" id="auto_stop_after_grace"
-                                       class="form-check-input" @checked($bs['auto_stop_after_grace'] ?? false)>
-                                <label class="form-check-label" for="auto_stop_after_grace">
-                                    Auto-stop session when grace period expires
-                                </label>
-                                <div class="form-text">
-                                    When <strong>ON</strong>: the booking ends automatically the moment the grace period runs out — no overtime is ever charged.
-                                    When <strong>OFF</strong> (default): the timer keeps running past grace and accumulates overtime at the court's live rate until staff clicks Stop.
+                            <div class="set-subhead mt-2">Behaviour</div>
+                            <div class="d-flex flex-column gap-3">
+
+                                <div class="form-check form-switch mb-0">
+                                    <input type="hidden" name="require_payment" value="0">
+                                    <input type="checkbox" name="require_payment" value="1" id="require_payment"
+                                           role="switch" class="form-check-input" @checked($bs['require_payment'] ?? false)>
+                                    <label class="form-check-label d-flex align-items-center gap-1" for="require_payment">
+                                        Require payment to confirm booking
+                                        <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                           data-bs-toggle="tooltip"
+                                           title="When ON, a booking stays pending until payment is received. When OFF, staff can confirm bookings without payment."></i>
+                                    </label>
                                 </div>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input type="hidden" name="shift_auto_clockout" value="0">
-                                <input type="checkbox" name="shift_auto_clockout" value="1" id="shift_auto_clockout"
-                                       class="form-check-input" @checked($bs['shift_auto_clockout'] ?? true)>
-                                <label class="form-check-label" for="shift_auto_clockout">
-                                    Auto clock-out staff at end of shift
-                                </label>
-                                <div class="form-text">
-                                    When <strong>ON</strong> (default): staff still clocked in are automatically clocked out at their shift's scheduled end time. Schedule a longer shift to extend it past the usual 8 hours.
-                                    When <strong>OFF</strong>: staff stay on the clock until they (or an owner) clock out manually.
+
+                                <div class="form-check form-switch mb-0">
+                                    <input type="hidden" name="auto_confirm" value="0">
+                                    <input type="checkbox" name="auto_confirm" value="1" id="auto_confirm"
+                                           role="switch" class="form-check-input" @checked($bs['auto_confirm'] ?? false)>
+                                    <label class="form-check-label d-flex align-items-center gap-1" for="auto_confirm">
+                                        Auto-confirm bookings
+                                        <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                           data-bs-toggle="tooltip"
+                                           title="When ON, new bookings are confirmed immediately without staff approval."></i>
+                                    </label>
                                 </div>
+
+                                <div class="form-check form-switch mb-0">
+                                    <input type="hidden" name="auto_stop_after_grace" value="0">
+                                    <input type="checkbox" name="auto_stop_after_grace" value="1" id="auto_stop_after_grace"
+                                           role="switch" class="form-check-input" @checked($bs['auto_stop_after_grace'] ?? false)>
+                                    <label class="form-check-label d-flex align-items-center gap-1" for="auto_stop_after_grace">
+                                        Auto-stop session when grace period expires
+                                        <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                           data-bs-toggle="tooltip"
+                                           title="ON: booking ends automatically when grace period runs out — no overtime charged. OFF (default): timer keeps running and overtime accumulates until staff clicks Stop."></i>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-0">
+                                    <input type="hidden" name="shift_auto_clockout" value="0">
+                                    <input type="checkbox" name="shift_auto_clockout" value="1" id="shift_auto_clockout"
+                                           role="switch" class="form-check-input" @checked($bs['shift_auto_clockout'] ?? true)>
+                                    <label class="form-check-label d-flex align-items-center gap-1" for="shift_auto_clockout">
+                                        Auto clock-out staff at end of shift
+                                        <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                           data-bs-toggle="tooltip"
+                                           title="ON (default): staff still clocked in are automatically clocked out at their shift&#39;s scheduled end time. OFF: staff stay on the clock until manually clocked out."></i>
+                                    </label>
+                                </div>
+
                             </div>
                         </div>
-                        <div class="col-12 d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i>Save Changes
-                            </button>
+
+                        <div class="col-12">
+                            <div class="d-grid d-sm-flex justify-content-sm-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>Save Changes
+                                </button>
+                            </div>
                         </div>
+
                     </div>
                 </form>
             </div>
@@ -349,14 +423,14 @@
             {{-- Intro banner --}}
             <div class="gw-intro mb-4">
                 <div class="gw-intro-icon"><i class="bi bi-bank2"></i></div>
-                <div class="flex-grow-1">
+                <div class="flex-grow-1 min-w-0">
                     <h6 class="mb-1 fw-semibold">Online Payments</h6>
                     <p class="mb-0 text-muted small">
                         Connect your own PayMongo or Stripe account. When customers pay online the money
                         lands <strong>directly in your bank</strong> — we never hold or touch it.
                     </p>
                 </div>
-                <a href="{{ route('admin.settings.gateways.guide') }}" class="btn btn-sm btn-outline-primary flex-shrink-0">
+                <a href="{{ route('admin.settings.gateways.guide') }}" class="btn btn-outline-secondary btn-sm flex-shrink-0 align-self-start">
                     <i class="bi bi-question-circle me-1"></i>Setup Guide
                 </a>
             </div>
@@ -368,7 +442,7 @@
                 <div class="gw-card mb-4" style="--gw-accent:#15c5a8"
                      x-data="{ on: {{ ($pm['enabled'] ?? false) ? 'true' : 'false' }} }"
                      :class="on ? 'is-on' : ''">
-                    <div class="gw-card-head">
+                    <div class="gw-card-head" :class="on ? 'border-bottom' : ''">
                         <div class="gw-logo">P</div>
                         <div class="gw-meta">
                             <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -385,21 +459,21 @@
                         </label>
                     </div>
 
-                    <div class="gw-card-body">
+                    <div class="gw-card-body" x-show="on" x-transition>
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
                                 <label class="gw-label">Secret key <span class="gw-hint-inline">sk_live_…</span></label>
                                 <input type="password" name="paymongo_secret_key" autocomplete="off"
                                        placeholder="{{ $mask($pm['secret_key'] ?? null) ?: 'sk_live_…' }}"
                                        class="form-control font-monospace">
-                                <div class="gw-help">Dashboard → Developers → API Keys. Leave blank to keep the saved key.</div>
+                                <div class="gw-help">Dashboard → Developers → API Keys. Leave blank to keep current.</div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="gw-label">Webhook secret <span class="gw-hint-inline">whsk_…</span></label>
                                 <input type="password" name="paymongo_webhook_secret" autocomplete="off"
                                        placeholder="{{ $mask($pm['webhook_secret'] ?? null) ?: 'whsk_…' }}"
                                        class="form-control font-monospace">
-                                <div class="gw-help">Shown once when you create the webhook below.</div>
+                                <div class="gw-help">Shown once when you create the webhook.</div>
                             </div>
 
                             <div class="col-12">
@@ -437,7 +511,7 @@
                 <div class="gw-card mb-4" style="--gw-accent:#635bff"
                      x-data="{ on: {{ ($sp['enabled'] ?? false) ? 'true' : 'false' }} }"
                      :class="on ? 'is-on' : ''">
-                    <div class="gw-card-head">
+                    <div class="gw-card-head" :class="on ? 'border-bottom' : ''">
                         <div class="gw-logo">S</div>
                         <div class="gw-meta">
                             <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -454,21 +528,21 @@
                         </label>
                     </div>
 
-                    <div class="gw-card-body">
+                    <div class="gw-card-body" x-show="on" x-transition>
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
                                 <label class="gw-label">Secret key <span class="gw-hint-inline">sk_live_…</span></label>
                                 <input type="password" name="stripe_secret" autocomplete="off"
                                        placeholder="{{ $mask($sp['secret'] ?? null) ?: 'sk_live_…' }}"
                                        class="form-control font-monospace">
-                                <div class="gw-help">Dashboard → Developers → API Keys. Leave blank to keep the saved key.</div>
+                                <div class="gw-help">Dashboard → Developers → API Keys. Leave blank to keep current.</div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="gw-label">Webhook signing secret <span class="gw-hint-inline">whsec_…</span></label>
                                 <input type="password" name="stripe_webhook_secret" autocomplete="off"
                                        placeholder="{{ $mask($sp['webhook_secret'] ?? null) ?: 'whsec_…' }}"
                                        class="form-control font-monospace">
-                                <div class="gw-help">Shown once when you create the webhook below.</div>
+                                <div class="gw-help">Shown once when you create the webhook.</div>
                             </div>
 
                             @if($webhookToken)
@@ -493,7 +567,7 @@
                     <span>Keys are encrypted at rest and never shown back to you. Lost a key? Create a new one in your provider's dashboard and paste it here again.</span>
                 </div>
 
-                <div class="d-flex justify-content-end mt-3">
+                <div class="d-grid d-sm-flex justify-content-sm-end mt-3">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check-lg me-1"></i>Save Payment Settings
                     </button>
@@ -504,43 +578,56 @@
         {{-- Notifications --}}
         <div x-show="tab === 'notifications'" class="card" x-cloak>
             <div class="card-header set-head">
-                <span class="set-head-icon" style="--sh:#f59e0b"><i class="bi bi-bell"></i></span>
                 <div>
                     <h6 class="mb-0 fw-semibold">Notification Settings</h6>
                     <small class="text-muted">Where alerts go and which events trigger them.</small>
                 </div>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.settings.notifications') }}">
+                <form method="POST" action="{{ route('admin.settings.notifications') }}"
+                      x-data="{ emailOn: {{ ($settings['notifications']['email_enabled'] ?? true) ? 'true' : 'false' }} }">
                     @csrf @method('PUT')
                     @php $ns = $settings['notifications'] ?? []; @endphp
+
+                    {{-- Email address --}}
                     <div class="mb-4">
                         <label class="form-label">Notification email</label>
                         <input type="email" name="notification_email"
                                value="{{ $ns['notification_email'] ?? auth()->user()->email }}"
-                               class="form-control">
-                        <div class="form-text">Alerts will be sent to this address.</div>
+                               class="form-control" style="max-width:28rem">
                     </div>
-                    <div class="form-check form-switch mb-4">
+
+                    {{-- Master toggle --}}
+                    <div class="form-check form-switch mb-3">
                         <input type="hidden" name="email_enabled" value="0">
                         <input type="checkbox" name="email_enabled" value="1" id="email_enabled"
-                               class="form-check-input" @checked($ns['email_enabled'] ?? true)>
-                        <label class="form-check-label" for="email_enabled">
+                               role="switch" class="form-check-input"
+                               x-model="emailOn" @checked($ns['email_enabled'] ?? true)>
+                        <label class="form-check-label fw-medium" for="email_enabled">
                             Send email notifications
                         </label>
                     </div>
+
+                    {{-- Per-event toggles — dimmed when master is off --}}
                     <div class="set-subhead">Notify me when</div>
-                    <div class="d-flex flex-column gap-2 mb-4">
-                        @foreach(['notify_new_booking' => 'New booking created', 'notify_cancellation' => 'Booking cancelled', 'notify_low_stock' => 'Low stock alert', 'notify_membership_expiry' => 'Membership expiring'] as $key => $label)
-                        <div class="form-check">
+                    <div class="d-flex flex-column gap-3 mb-4" :class="!emailOn && 'opacity-50 pe-none'">
+                        @foreach([
+                            'notify_new_booking'      => 'New booking created',
+                            'notify_cancellation'     => 'Booking cancelled',
+                            'notify_low_stock'        => 'Low stock alert',
+                            'notify_membership_expiry'=> 'Membership expiring',
+                        ] as $key => $label)
+                        <div class="form-check form-switch mb-0">
                             <input type="hidden" name="{{ $key }}" value="0">
                             <input type="checkbox" name="{{ $key }}" value="1"
-                                   id="{{ $key }}" class="form-check-input" @checked($ns[$key] ?? true)>
+                                   id="{{ $key }}" role="switch" class="form-check-input"
+                                   @checked($ns[$key] ?? true)>
                             <label class="form-check-label" for="{{ $key }}">{{ $label }}</label>
                         </div>
                         @endforeach
                     </div>
-                    <div class="d-flex justify-content-end">
+
+                    <div class="d-grid d-sm-flex justify-content-sm-end">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>Save Changes
                         </button>
@@ -570,12 +657,11 @@
             {{-- Beginner-friendly setup guide (collapsible) --}}
             <div class="card mb-4 smtp-guide" x-data="{ help: false }">
                 <button type="button" class="smtp-guide-toggle" @click="help = !help" :aria-expanded="help">
-                    <span class="set-head-icon" style="--sh:#0ea5e9"><i class="bi bi-info-circle"></i></span>
                     <div class="flex-grow-1 text-start">
                         <h6 class="mb-0 fw-semibold">New to this? How to set up email (SMTP)</h6>
                         <small class="text-muted">A plain-English, step-by-step guide — no jargon.</small>
                     </div>
-                    <i class="bi" :class="help ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                    <i class="bi flex-shrink-0" :class="help ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                 </button>
 
                 <div class="card-body border-top" x-show="help" x-cloak>
@@ -650,7 +736,6 @@
 
             <div class="card mb-4">
                 <div class="card-header set-head">
-                    <span class="set-head-icon" style="--sh:#6366f1"><i class="bi bi-envelope-at"></i></span>
                     <div>
                         <h6 class="mb-0 fw-semibold">Email Delivery (SMTP)</h6>
                         <small class="text-muted">Send notifications through your own mail server.</small>
@@ -716,7 +801,7 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-2 mt-4">
                             <small class="text-muted">Leave host blank to use the platform mailer.</small>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-check-lg me-1"></i>Save Email Settings
@@ -724,19 +809,18 @@
                         </div>
                     </form>
 
-                    <hr class="my-4">
-
-                    <form method="POST" action="{{ route('admin.settings.email.test') }}"
-                          class="d-flex align-items-center justify-content-between gap-3">
-                        @csrf
+                    <div class="border-top pt-4 mt-4 d-flex align-items-center justify-content-between gap-3">
                         <div>
                             <div class="fw-semibold">Send a test email</div>
                             <small class="text-muted">Sends to {{ auth()->user()->email }} using the settings above.</small>
                         </div>
-                        <button type="submit" class="btn btn-outline-primary flex-shrink-0">
-                            <i class="bi bi-send me-1"></i>Send test
-                        </button>
-                    </form>
+                        <form method="POST" action="{{ route('admin.settings.email.test') }}">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-secondary flex-shrink-0">
+                                <i class="bi bi-send me-1"></i>Send test
+                            </button>
+                        </form>
+                    </div>
                     @endunless
                 </div>
             </div>
@@ -758,7 +842,7 @@
         padding: 1rem 1.25rem; background: transparent; border: 0;
         color: inherit; text-align: left; cursor: pointer;
     }
-    .smtp-guide-toggle:hover { background: color-mix(in srgb, var(--bs-body-color, #1e293b) 4%, transparent); }
+    .smtp-guide-toggle:hover { background: rgba(0,0,0,.04); }
     .smtp-steps { display: flex; flex-direction: column; gap: .9rem; margin-top: .5rem; }
     .smtp-step { display: flex; align-items: flex-start; gap: .75rem; }
     .smtp-step-num {
@@ -843,9 +927,8 @@
 
     .gw-card-head {
         display: flex; align-items: center; gap: .875rem;
-        padding: 1rem 1.25rem; border-bottom: 1px solid transparent;
+        padding: 1rem 1.25rem;
     }
-    .gw-card.is-on .gw-card-head { border-bottom-color: var(--bs-border-color); }
 
     .gw-logo {
         width: 42px; height: 42px; flex-shrink: 0;
@@ -883,13 +966,8 @@
     .gw-switch input:checked + .gw-switch-track::after { transform: translateX(20px); }
     .gw-switch input:focus-visible + .gw-switch-track { outline: 2px solid var(--gw-accent); outline-offset: 2px; }
 
-    /* Collapsible body — dimmed & collapsed when off */
-    .gw-card-body {
-        max-height: 0; opacity: 0; overflow: hidden;
-        padding: 0 1.25rem;
-        transition: max-height .3s ease, opacity .25s ease, padding .3s ease;
-    }
-    .gw-card.is-on .gw-card-body { max-height: 1200px; opacity: 1; padding: 1.25rem; }
+    /* Body shown/hidden via Alpine x-show x-transition */
+    .gw-card-body { padding: 1.25rem; }
 
     .gw-label {
         display: block; font-size: .8125rem; font-weight: 600;
@@ -918,7 +996,7 @@
     .gw-chip:hover > span { border-color: var(--gw-accent); color: var(--bs-body-color); }
     .gw-chip input:checked + span {
         color: var(--gw-accent); font-weight: 600;
-        background: color-mix(in srgb, var(--gw-accent) 12%, transparent);
+        background: rgba(21,197,168,.12);
         border-color: var(--gw-accent);
     }
     .gw-chip input:checked + span i { filter: none; }

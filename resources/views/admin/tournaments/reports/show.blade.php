@@ -68,7 +68,7 @@
                     @endforeach
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="{{ count($report['headings']) }}">
                         <x-empty-state title="No data yet" description="This report fills in as the tournament progresses." icon="bi-clipboard-data"/>
                     </td>

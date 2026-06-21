@@ -404,6 +404,10 @@ Route::middleware(['auth', \App\Http\Middleware\SetTenantContext::class, \App\Ht
         });
 
         // Settings
+        Route::get('/account',          [\App\Http\Controllers\Admin\AccountController::class, 'edit'])->name('account');
+        Route::put('/account',          [\App\Http\Controllers\Admin\AccountController::class, 'update'])->name('account.update');
+        Route::put('/account/password', [\App\Http\Controllers\Admin\AccountController::class, 'updatePassword'])->name('account.password');
+
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::put('/settings/general', [SettingsController::class, 'updateGeneral'])->name('settings.general');
         Route::put('/settings/booking', [SettingsController::class, 'updateBooking'])->name('settings.booking');

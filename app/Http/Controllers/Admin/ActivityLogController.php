@@ -38,12 +38,22 @@ class ActivityLogController extends Controller
             }
         }
 
+        if ($from = $request->query('from')) {
+            $query->whereDate('created_at', '>=', $from);
+        }
+        if ($to = $request->query('to')) {
+            $query->whereDate('created_at', '<=', $to);
+        }
+
         $logs = $query->paginate(25)->withQueryString();
 
         $logNames = Activity::query()
             ->whereIn('causer_id', $tenantUserIds)
             ->distinct()->pluck('log_name')->filter()->values();
 
-        return view('admin.audit.index', compact('logs', 'logNames'));
+        $causerUsers = User::whereIn('id', $tenantUserIds)
+            ->orderBy('name')->get(['id', 'name']);
+
+        return view('admin.audit.index', compact('logs', 'logNames', 'causerUsers'));
     }
 }

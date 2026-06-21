@@ -5,34 +5,27 @@
 <style>
     /* ── POS history — summary tiles + mobile card stacking ── */
     .pos-sum {
+        height: 100%;
         display: flex; align-items: center; gap: .9rem;
         padding: 1rem 1.15rem; border-radius: 1rem;
         background: var(--bs-card-bg); border: 1px solid var(--bs-border-color);
+        box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 1px 3px rgba(15,23,42,.06);
+        transition: transform .15s ease, box-shadow .15s ease;
     }
-    .pos-sum-ico { width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0; display: grid; place-items: center; font-size: 1.3rem; }
-    .pos-sum-value { font-size: 1.5rem; font-weight: 800; line-height: 1; margin: 0; }
-    .pos-sum-label { font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--bs-secondary-color); margin: .3rem 0 0; }
+    .pos-sum:hover { transform: translateY(-2px); box-shadow: 0 6px 18px -8px rgba(15,23,42,.25); }
+    .pos-sum-ico { width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0; display: grid; place-items: center; font-size: 1.2rem; }
+    .pos-sum-value { font-size: 1.2rem; font-weight: 700; line-height: 1; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pos-sum-label { font-size: .65rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--bs-secondary-color); margin: .25rem 0 0; }
 
-    .pos-hist tbody tr { transition: background-color .15s; }
-    @media (max-width: 767.98px) {
-        .pos-hist thead { display: none; }
-        .pos-hist, .pos-hist tbody, .pos-hist tr, .pos-hist td { display: block; width: 100%; }
-        .pos-hist tr {
-            border: 1px solid var(--bs-border-color); border-radius: .85rem;
-            padding: .35rem .9rem; margin: .75rem 0; background: var(--bs-card-bg);
-        }
-        .pos-hist td {
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            border: 0; padding: .5rem 0; text-align: right;
-        }
-        .pos-hist td + td { border-top: 1px solid var(--bs-border-color); }
-        .pos-hist td::before {
-            content: attr(data-label); text-align: left; flex-shrink: 0;
-            font-size: .68rem; font-weight: 600; letter-spacing: .05em;
-            text-transform: uppercase; color: var(--bs-secondary-color);
-        }
-        .pos-hist td.bk-cell-empty::before { content: none; }
+    /* TailAdmin-style table header + airier rows (mobile stacking handled by the
+       shared .table-stack pattern). */
+    .pos-hist thead th {
+        text-transform: uppercase; font-size: .7rem; letter-spacing: .04em;
+        font-weight: 600; color: var(--bs-secondary-color);
+        padding-top: .85rem; padding-bottom: .85rem;
     }
+    .pos-hist tbody td { padding-top: .85rem; padding-bottom: .85rem; }
+    .pos-hist tbody tr { transition: background-color .15s; }
 </style>
 @endpush
 
@@ -44,43 +37,56 @@ $dayCount  = $orders->where('status', 'completed')->count();
 $voidCount = $orders->where('status', 'voided')->count();
 @endphp
 
+<form method="GET" action="{{ route('admin.pos.history') }}" x-data="{ open: false }">
 <x-page-header title="Sales History">
     <x-slot name="actions">
-        <a href="{{ route('admin.pos.index') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>New Order
+        <a href="{{ route('admin.pos.index') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i>New Order
         </a>
+
+        {{-- Filter button --}}
+        @php $activeFilters = (int) request()->filled('status') + (int) request()->filled('date'); @endphp
+        <div class="position-relative" @click.outside="open = false">
+            <button type="button" @click="open = !open"
+                    class="btn {{ $activeFilters > 0 ? 'btn-primary' : 'btn-outline-secondary' }} d-flex align-items-center gap-2"
+                    :aria-expanded="open.toString()">
+                <i class="bi bi-sliders2"></i>
+                @if($activeFilters > 0)
+                <span class="badge rounded-pill text-bg-light text-dark">{{ $activeFilters }}</span>
+                @endif
+            </button>
+            <div x-show="open" x-cloak x-transition.origin.top.right
+                 class="card shadow position-absolute end-0 mt-2"
+                 style="width:clamp(240px,80vw,300px);max-width:calc(100vw - 1.5rem);z-index:1050">
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-3">
+                        <div>
+                            <label class="form-label small fw-semibold mb-1">Date</label>
+                            <input type="date" name="date" value="{{ request('date', today()->toDateString()) }}"
+                                   class="form-control form-control-sm">
+                        </div>
+                        <div>
+                            <label class="form-label small fw-semibold mb-1">Status</label>
+                            <select name="status" class="form-select form-select-sm">
+                                <option value="">All</option>
+                                <option value="completed" @selected(request('status') === 'completed')>Completed</option>
+                                <option value="voided" @selected(request('status') === 'voided')>Voided</option>
+                                <option value="refunded" @selected(request('status') === 'refunded')>Refunded</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary btn-sm flex-grow-1">Apply</button>
+                        <a href="{{ route('admin.pos.history') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </x-slot>
 </x-page-header>
-
-{{-- Filters --}}
-<div class="card mb-4">
-    <div class="card-body py-3">
-        <form method="GET" action="{{ route('admin.pos.history') }}" class="row g-2 align-items-end">
-            <div class="col-6 col-sm-auto">
-                <label class="form-label small mb-1">Date</label>
-                <input type="date" name="date" value="{{ request('date', today()->toDateString()) }}"
-                       class="form-control form-control-sm">
-            </div>
-            <div class="col-6 col-sm-auto">
-                <label class="form-label small mb-1">Status</label>
-                <select name="status" class="form-select form-select-sm">
-                    <option value="">All</option>
-                    <option value="completed" @selected(request('status') === 'completed')>Completed</option>
-                    <option value="voided" @selected(request('status') === 'voided')>Voided</option>
-                    <option value="refunded" @selected(request('status') === 'refunded')>Refunded</option>
-                </select>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-funnel me-1"></i>Filter
-                </button>
-                @if(request()->anyFilled(['date','status']))
-                <a href="{{ route('admin.pos.history') }}" class="btn btn-link btn-sm text-muted">Clear</a>
-                @endif
-            </div>
-        </form>
-    </div>
-</div>
+<button type="submit" class="visually-hidden">Search</button>
+</form>
 
 {{-- Summary tiles --}}
 <div class="row g-3 mb-4">
@@ -93,7 +99,7 @@ $voidCount = $orders->where('status', 'voided')->count();
             </div>
         </div>
     </div>
-    <div class="col-6 col-sm-4">
+    <div class="col-12 col-sm-4">
         <div class="pos-sum">
             <div class="pos-sum-ico bg-success bg-opacity-10 text-success"><i class="bi bi-cash-coin"></i></div>
             <div>
@@ -102,7 +108,7 @@ $voidCount = $orders->where('status', 'voided')->count();
             </div>
         </div>
     </div>
-    <div class="col-6 col-sm-4">
+    <div class="col-12 col-sm-4">
         <div class="pos-sum">
             <div class="pos-sum-ico bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-octagon"></i></div>
             <div>
@@ -115,8 +121,11 @@ $voidCount = $orders->where('status', 'voided')->count();
 
 {{-- Table --}}
 <div class="card">
+    @if($orders->isEmpty())
+        <x-empty-state title="No orders found" icon="bi-receipt"/>
+    @else
     <div class="table-responsive">
-        <table class="table pos-hist table-hover align-middle mb-0">
+        <table class="table pos-hist table-stack table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
                     <th>Order #</th>
@@ -129,7 +138,7 @@ $voidCount = $orders->where('status', 'voided')->count();
                 </tr>
             </thead>
             <tbody>
-                @forelse($orders as $order)
+                @foreach($orders as $order)
                 @php
                 $badge = match($order->status) {
                     'completed' => 'bg-success-subtle text-success',
@@ -147,26 +156,23 @@ $voidCount = $orders->where('status', 'voided')->count();
                     <td data-label="Status">
                         <span class="badge rounded-pill {{ $badge }}">{{ ucfirst($order->status) }}</span>
                     </td>
-                    <td data-label="" class="bk-cell-empty text-end">
+                    <td data-label="" class="cell-actions text-end">
                         <a href="{{ route('admin.pos.receipt', $order) }}"
                            class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-receipt me-1"></i>Receipt
                         </a>
                     </td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="7" class="bk-cell-empty">
-                        <x-empty-state title="No orders found" icon="bi-receipt"/>
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
+    @if($orders->hasPages())
     <div class="card-footer">
         {{ $orders->withQueryString()->links() }}
     </div>
+    @endif
+    @endif
 </div>
 
 @endsection

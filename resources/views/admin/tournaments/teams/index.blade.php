@@ -95,11 +95,11 @@
                         </x-badge>
                     </td>
                     <td data-label="" class="cell-actions text-end">
-                        <a href="{{ route('admin.tournaments.show', [$team->tournament_id, 'tab' => 'teams']) }}" class="btn btn-outline-primary btn-sm">Manage</a>
+                        <a href="{{ route('admin.tournaments.show', [$team->tournament_id, 'tab' => 'teams']) }}" class="btn btn-primary btn-sm">Manage</a>
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="6" class="cell-plain">
                         <x-empty-state title="No teams found"
                             description="Try adjusting your filters, or register teams from a tournament page."
@@ -111,7 +111,7 @@
         </table>
     </div>
     @if($teams->hasPages())
-    <div class="card-footer">
+    <div class="px-4 py-3 border-top">
         {{ $teams->withQueryString()->links() }}
     </div>
     @endif

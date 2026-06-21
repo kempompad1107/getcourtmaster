@@ -15,6 +15,8 @@ class PromotionController extends Controller
 
         $promotions = Promotion::where('tenant_id', $tenant->id)
             ->withCount('usages')
+            ->when(request('status') === 'active',   fn($q) => $q->where('is_active', true))
+            ->when(request('status') === 'inactive', fn($q) => $q->where('is_active', false))
             ->latest()
             ->paginate(20);
 

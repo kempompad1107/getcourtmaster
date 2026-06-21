@@ -124,6 +124,11 @@ class AppServiceProvider extends ServiceProvider
         // the default Tailwind pagination renders huge unstyled chevrons.
         Paginator::useBootstrapFive();
 
+        // App-wide responsive pager: desktop shows a results summary + full
+        // numbered pagination; mobile collapses to compact Previous · Page X
+        // of Y · Next. Applies to every ->links() call automatically.
+        Paginator::defaultView('pagination.courtmaster');
+
         // Observers — Payment writes invalidate the per-tenant dashboard/
         // revenue cache so admins see new money on the next page load.
         Payment::observe(PaymentObserver::class);

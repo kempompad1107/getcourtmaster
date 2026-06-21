@@ -15,7 +15,7 @@
         'Tournaments' => ['icon' => 'bi-trophy',         'hue' => '43 96% 48%'],
         'Staff'       => ['icon' => 'bi-person-gear',    'hue' => '215 90% 54%'],
     ];
-    $totalPerms = collect($groups)->flatten()->count();
+    $totalPerms  = collect($groups)->flatten()->count();
     $selectedNow = count(array_intersect(collect($groups)->flatten()->all(), old('permissions', $assigned)));
 @endphp
 
@@ -23,10 +23,9 @@
 <style>
     .perm-scope { --pp-radius: 1rem; }
 
-    /* ── Hero summary ───────────────────────────────────────────── */
+    /* ── Hero ─────────────────────────────────────────────────────── */
     .perm-hero {
-        position: relative; overflow: hidden;
-        border-radius: 1.25rem;
+        position: relative; overflow: hidden; border-radius: 1.25rem;
         background:
             radial-gradient(120% 140% at 100% 0%, rgba(16,185,129,.18), transparent 55%),
             linear-gradient(180deg, var(--bs-card-bg), var(--bs-card-bg));
@@ -36,15 +35,15 @@
     .perm-hero::after {
         content: ""; position: absolute; inset: 0; pointer-events: none;
         background-image: radial-gradient(rgba(16,185,129,.10) 1px, transparent 1px);
-        background-size: 16px 16px; opacity: .5; mask-image: linear-gradient(90deg, transparent, #000 60%);
+        background-size: 16px 16px; opacity: .5;
+        mask-image: linear-gradient(90deg, transparent, #000 60%);
     }
     .perm-hero__inner { position: relative; z-index: 1; }
     .perm-hero__badge {
-        width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0;
-        display: grid; place-items: center; font-size: 1.5rem;
+        width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+        display: grid; place-items: center; font-size: 1.4rem;
         color: #10b981; background: rgba(16,185,129,.12);
         border: 1px solid rgba(16,185,129,.28);
-        box-shadow: inset 0 0 0 4px rgba(16,185,129,.06);
     }
     .perm-meter { height: 8px; border-radius: 99px; background: rgba(148,163,184,.22); overflow: hidden; }
     .perm-meter__fill {
@@ -53,110 +52,85 @@
         box-shadow: 0 0 12px rgba(16,185,129,.55);
         transition: width .45s cubic-bezier(.22,1,.36,1);
     }
-    .perm-chip-btn {
-        border: 1px solid var(--bs-border-color); background: var(--bs-body-bg);
-        color: var(--bs-body-color); border-radius: 99px; padding: .35rem .85rem;
-        font-size: .78rem; font-weight: 600; display: inline-flex; align-items: center; gap: .35rem;
-        transition: .18s ease;
-    }
-    .perm-chip-btn:hover { border-color: #10b981; color: #10b981; transform: translateY(-1px); }
 
-    /* ── Group cards ────────────────────────────────────────────── */
+    /* ── Group cards ──────────────────────────────────────────────── */
     .perm-group {
         --hue: 160 84% 39%;
         border: 1px solid var(--bs-border-color); border-radius: var(--pp-radius);
         background: var(--bs-card-bg); overflow: hidden;
-        transition: box-shadow .25s ease, transform .25s ease, border-color .25s ease;
-        animation: permRise .5s cubic-bezier(.22,1,.36,1) both;
+        transition: box-shadow .25s ease, border-color .25s ease;
+        animation: permRise .4s cubic-bezier(.22,1,.36,1) both;
     }
-    .perm-group:hover { box-shadow: 0 16px 34px -22px rgba(15,38,67,.55); border-color: hsl(var(--hue) / .4); }
+    .perm-group:hover { box-shadow: 0 16px 34px -22px rgba(15,38,67,.5); border-color: hsl(var(--hue) / .4); }
     .perm-group__head {
         display: flex; align-items: center; gap: .75rem;
-        padding: .9rem 1rem; border-bottom: 1px solid var(--bs-border-color);
+        padding: .85rem 1rem; border-bottom: 1px solid var(--bs-border-color);
         background: linear-gradient(180deg, hsl(var(--hue) / .06), transparent);
     }
     .perm-group__ico {
-        width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
-        display: grid; place-items: center; font-size: 1.05rem;
+        width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+        display: grid; place-items: center; font-size: 1rem;
         color: hsl(var(--hue)); background: hsl(var(--hue) / .12);
         border: 1px solid hsl(var(--hue) / .25);
     }
-    .perm-group__title { font-weight: 700; font-size: .95rem; line-height: 1.1; }
-    .perm-group__count {
-        font-size: .72rem; font-weight: 600; color: var(--bs-secondary-color);
-        font-variant-numeric: tabular-nums;
-    }
+    .perm-group__title { font-weight: 700; font-size: .92rem; }
+    .perm-group__count { font-size: .72rem; font-weight: 600; color: var(--bs-secondary-color); }
     .perm-group__count b { color: hsl(var(--hue)); }
-    .perm-toggle-all {
-        margin-left: auto; border: 0; background: transparent; cursor: pointer;
-        font-size: .72rem; font-weight: 700; letter-spacing: .02em; text-transform: uppercase;
-        color: var(--bs-secondary-color); display: inline-flex; align-items: center; gap: .3rem;
-        padding: .3rem .55rem; border-radius: 8px; transition: .15s ease;
-    }
-    .perm-toggle-all:hover { color: hsl(var(--hue)); background: hsl(var(--hue) / .1); }
+    .perm-group__body { padding: .5rem; display: grid; gap: .25rem; }
 
-    .perm-group__body { padding: .5rem; display: grid; gap: .3rem; }
-
-    /* ── Permission tile ────────────────────────────────────────── */
+    /* ── Permission tile ──────────────────────────────────────────── */
     .perm-tile {
-        position: relative; display: flex; align-items: center; gap: .7rem;
-        padding: .6rem .7rem; border-radius: .7rem; cursor: pointer; margin: 0;
-        border: 1px solid transparent; transition: background .18s ease, border-color .18s ease;
+        position: relative; display: flex; align-items: center; gap: .65rem;
+        padding: .55rem .65rem; border-radius: .65rem; cursor: pointer; margin: 0;
+        border: 1px solid transparent; transition: background .18s, border-color .18s;
     }
     .perm-tile:hover { background: var(--bs-tertiary-bg, rgba(148,163,184,.08)); }
     .perm-check { position: absolute; opacity: 0; pointer-events: none; }
     .perm-box {
-        width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+        width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
         border: 2px solid var(--bs-border-color); background: var(--bs-body-bg);
         display: grid; place-items: center; color: #fff;
-        transition: background .18s ease, border-color .18s ease, transform .18s ease;
+        transition: background .18s, border-color .18s, transform .18s;
     }
-    .perm-box .bi { font-size: .85rem; transform: scale(0); opacity: 0; transition: .2s cubic-bezier(.34,1.56,.64,1); }
-    .perm-text { min-width: 0; }
-    .perm-text__label { font-weight: 600; font-size: .88rem; line-height: 1.15; }
-    .perm-text__key {
-        font-size: .68rem; color: var(--bs-secondary-color);
-        font-family: var(--bs-font-monospace); letter-spacing: -.01em;
-    }
+    .perm-box .bi { font-size: .8rem; transform: scale(0); opacity: 0; transition: .2s cubic-bezier(.34,1.56,.64,1); }
+    .perm-label { font-weight: 600; font-size: .85rem; line-height: 1.2; }
 
     .perm-check:checked ~ .perm-box {
         background: hsl(var(--hue)); border-color: hsl(var(--hue));
-        box-shadow: 0 4px 10px -3px hsl(var(--hue) / .6);
+        box-shadow: 0 3px 8px -2px hsl(var(--hue) / .55);
     }
     .perm-check:checked ~ .perm-box .bi { transform: scale(1); opacity: 1; }
     .perm-tile:has(.perm-check:checked) {
-        background: hsl(var(--hue) / .07);
-        border-color: hsl(var(--hue) / .25);
+        background: hsl(var(--hue) / .07); border-color: hsl(var(--hue) / .25);
     }
-    .perm-check:focus-visible ~ .perm-box {
-        outline: 2px solid hsl(var(--hue)); outline-offset: 2px;
-    }
+    .perm-check:focus-visible ~ .perm-box { outline: 2px solid hsl(var(--hue)); outline-offset: 2px; }
 
-    /* ── Sticky save bar ────────────────────────────────────────── */
+    /* ── Sticky save bar ──────────────────────────────────────────── */
     .perm-savebar {
         position: sticky; bottom: 1rem; z-index: 20; margin-top: 1.5rem;
-        border-radius: 1rem; padding: .75rem 1rem;
-        display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-        background: color-mix(in srgb, var(--bs-card-bg) 86%, transparent);
+        border-radius: 1rem; padding: .85rem 1.25rem;
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+        background: var(--bs-card-bg);
         backdrop-filter: blur(12px) saturate(140%);
         border: 1px solid var(--bs-border-color);
         box-shadow: 0 22px 50px -26px rgba(15,38,67,.7);
     }
-    .perm-savebar__count {
-        font-variant-numeric: tabular-nums; font-weight: 800; font-size: 1.05rem;
-        color: var(--bs-emphasis-color);
-    }
+    .perm-savebar__count { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 1rem; }
 
-    @keyframes permRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    @keyframes permRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
     @media (prefers-reduced-motion: reduce) {
         .perm-group, .perm-meter__fill, .perm-box .bi { animation: none !important; transition: none !important; }
+    }
+    /* Push save bar above mobile bottom nav (58px) */
+    @media (max-width: 991.98px) {
+        .perm-savebar { bottom: calc(58px + env(safe-area-inset-bottom) + 1.25rem); }
     }
 </style>
 @endpush
 
 @section('content')
 
-<x-page-header :title="'Edit Role: ' . ucwords(str_replace('_', ' ', $role->name))"
+<x-page-header :title="'Edit: ' . ucwords(str_replace('_', ' ', $role->name))"
                :back="route('admin.roles.index')"/>
 
 <div class="row justify-content-center perm-scope">
@@ -165,73 +139,70 @@
         <form method="POST" action="{{ route('admin.roles.update', $role) }}" id="permForm">
             @csrf @method('PUT')
 
-            {{-- ── Hero summary ─────────────────────────────────────── --}}
+            {{-- ── Hero ────────────────────────────────────────────── --}}
             <div class="perm-hero mb-4">
-                <div class="perm-hero__inner p-3 p-md-4 d-flex flex-column flex-md-row align-items-md-center gap-3">
-                    <div class="perm-hero__badge"><i class="bi bi-shield-lock-fill"></i></div>
+                <div class="perm-hero__inner p-3 p-md-4">
 
-                    <div class="flex-grow-1 w-100">
-                        <h5 class="mb-1 fw-bold">{{ ucwords(str_replace('_', ' ', $role->name)) }} access</h5>
-                        <p class="mb-2 small text-muted" style="max-width: 46rem;">
-                            Tick the permissions this role should have. The sidebar and page actions update
-                            automatically for every staff member with this role.
-                        </p>
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="perm-meter flex-grow-1" style="max-width: 22rem;">
-                                <div class="perm-meter__fill" id="permMeter"></div>
-                            </div>
-                            <span class="small fw-semibold text-nowrap">
-                                <span id="permTotalInline" class="text-primary">{{ $selectedNow }}</span>
-                                <span class="text-muted">/ {{ $totalPerms }} enabled</span>
-                            </span>
+                    {{-- Top row: badge + title + master buttons --}}
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="perm-hero__badge"><i class="bi bi-shield-lock-fill"></i></div>
+                        <div class="flex-grow-1 min-w-0">
+                            <h5 class="mb-0 fw-bold">{{ ucwords(str_replace('_', ' ', $role->name)) }}</h5>
+                            <p class="mb-0 small text-muted d-none d-md-block">
+                                Tick the permissions this role should have. Changes apply immediately.
+                            </p>
+                        </div>
+                        <div class="d-flex gap-2 flex-shrink-0">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-master="all">
+                                <i class="bi bi-check2-all me-1"></i><span class="d-none d-sm-inline">Select all</span><span class="d-sm-none">All</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-master="none">
+                                <i class="bi bi-x-lg me-1"></i><span class="d-none d-sm-inline">Clear</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 flex-shrink-0">
-                        <button type="button" class="perm-chip-btn" data-master="all">
-                            <i class="bi bi-check2-all"></i>Select all
-                        </button>
-                        <button type="button" class="perm-chip-btn" data-master="none">
-                            <i class="bi bi-x-lg"></i>Clear
-                        </button>
+                    {{-- Bottom row: progress meter --}}
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="perm-meter flex-grow-1">
+                            <div class="perm-meter__fill" id="permMeter"></div>
+                        </div>
+                        <span class="small fw-semibold text-nowrap flex-shrink-0">
+                            <span id="permTotalInline" class="text-success">{{ $selectedNow }}</span>
+                            <span class="text-muted">/ {{ $totalPerms }} enabled</span>
+                        </span>
                     </div>
+
                 </div>
             </div>
 
-            {{-- ── Permission groups ────────────────────────────────── --}}
+            {{-- ── Permission groups ─────────────────────────────── --}}
             <div class="row g-3">
                 @foreach($groups as $groupLabel => $perms)
                     @php $meta = $groupMeta[$groupLabel] ?? ['icon' => 'bi-key', 'hue' => '160 84% 39%']; @endphp
                     <div class="col-12 col-md-6 col-xl-4">
                         <div class="perm-group h-100" data-group
-                             style="--hue: {{ $meta['hue'] }}; animation-delay: {{ $loop->index * 55 }}ms;">
+                             style="--hue: {{ $meta['hue'] }}; animation-delay: {{ min($loop->index * 40, 200) }}ms;">
                             <div class="perm-group__head">
                                 <span class="perm-group__ico"><i class="bi {{ $meta['icon'] }}"></i></span>
-                                <div>
+                                <div class="flex-grow-1 min-w-0">
                                     <div class="perm-group__title">{{ $groupLabel }}</div>
-                                    <div class="perm-group__count">
-                                        <b data-grp-current>0</b> of {{ count($perms) }} enabled
-                                    </div>
+                                    <div class="perm-group__count"><b data-grp-current>0</b> of {{ count($perms) }} enabled</div>
                                 </div>
-                                <button type="button" class="perm-toggle-all" data-toggle-all>
-                                    <i class="bi bi-check2-square"></i><span>All</span>
+                                <button type="button" class="btn btn-link btn-sm text-muted p-1 ms-1 flex-shrink-0" data-toggle-all
+                                        title="Toggle all {{ $groupLabel }} permissions">
+                                    <i class="bi bi-check2-square"></i>
                                 </button>
                             </div>
                             <div class="perm-group__body">
                                 @foreach($perms as $perm)
-                                    @php
-                                        $action = explode('.', $perm)[1] ?? $perm;
-                                        $label = ucwords(str_replace(['_', '.'], ' ', $action));
-                                    @endphp
+                                    @php $label = ucwords(str_replace(['_', '.'], ' ', explode('.', $perm)[1] ?? $perm)); @endphp
                                     <label class="perm-tile">
                                         <input type="checkbox" class="perm-check"
                                                name="permissions[]" value="{{ $perm }}"
                                                @checked(in_array($perm, old('permissions', $assigned)))>
                                         <span class="perm-box"><i class="bi bi-check-lg"></i></span>
-                                        <span class="perm-text">
-                                            <span class="perm-text__label d-block text-truncate">{{ $label }}</span>
-                                            <span class="perm-text__key d-block text-truncate">{{ $perm }}</span>
-                                        </span>
+                                        <span class="perm-label">{{ $label }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -240,19 +211,18 @@
                 @endforeach
             </div>
 
-            {{-- ── Sticky save bar ──────────────────────────────────── --}}
+            {{-- ── Sticky save bar ────────────────────────────────── --}}
             <div class="perm-savebar">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-fingerprint text-primary fs-5"></i>
+                    <i class="bi bi-fingerprint text-success fs-5"></i>
                     <div class="lh-1">
-                        <span class="perm-savebar__count"><span id="permTotalBar">{{ $selectedNow }}</span></span>
-                        <span class="text-muted small">of {{ $totalPerms }} permissions enabled</span>
+                        <span class="perm-savebar__count"><span id="permTotalBar">{{ $selectedNow }}</span> <span class="fs-6 fw-normal text-muted">of {{ $totalPerms }} enabled</span></span>
                     </div>
                 </div>
-                <div class="ms-auto d-flex gap-2">
-                    <a href="{{ route('admin.roles.index') }}" class="btn btn-outline-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary px-4">
-                        <i class="bi bi-check-lg me-1"></i>Save Permissions
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.roles.index') }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-check-lg me-1"></i>Save
                     </button>
                 </div>
             </div>
@@ -275,8 +245,6 @@
         const boxes   = group.querySelectorAll('.perm-check');
         const checked = group.querySelectorAll('.perm-check:checked').length;
         group.querySelector('[data-grp-current]').textContent = checked;
-        const btn = group.querySelector('[data-toggle-all] span');
-        if (btn) btn.textContent = (checked === boxes.length && boxes.length) ? 'None' : 'All';
     }
 
     function refreshTotals() {
@@ -291,7 +259,6 @@
         refreshTotals();
     }
 
-    // Per-group toggle-all
     document.querySelectorAll('[data-toggle-all]').forEach(btn => {
         btn.addEventListener('click', () => {
             const group = btn.closest('[data-group]');
@@ -302,7 +269,6 @@
         });
     });
 
-    // Master select all / clear
     document.querySelectorAll('[data-master]').forEach(btn => {
         btn.addEventListener('click', () => {
             const on = btn.dataset.master === 'all';

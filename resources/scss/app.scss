@@ -21,6 +21,13 @@ $font-size-base:  0.9rem;
 $font-weight-medium: 500;
 $headings-font-weight: 600;
 
+// Controls — shared button/input sizing so .btn and .form-control render at the
+// SAME height everywhere (TailAdmin-style comfortable, equal-height controls).
+// .btn already sets these via CSS vars; matching the SCSS vars makes inputs,
+// selects and input-group addons line up with buttons app-wide.
+$input-btn-padding-y: 0.625rem;
+$input-btn-padding-x: 0.9rem;
+
 // Transitions
 $transition-base: all 0.2s ease-in-out;
 
@@ -149,6 +156,10 @@ body {
     --bs-btn-font-size: .8125rem;
     border-radius: $border-radius-sm;
 }
+// Inside a btn-group the group manages border-radius per-side — don't override it
+.ph-actions .btn-group .btn { border-radius: 0; }
+.ph-actions .btn-group .btn:first-child { border-radius: $border-radius-sm 0 0 $border-radius-sm; }
+.ph-actions .btn-group .btn:last-child  { border-radius: 0 $border-radius-sm $border-radius-sm 0; }
 .btn-lg { --bs-btn-padding-x: 1.5rem; --bs-btn-padding-y: .8125rem; border-radius: $border-radius-lg; }
 
 .btn-primary {
@@ -1134,29 +1145,40 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
         // Inside a .card, render each stacked row as a soft-tinted "chip" with a
         // gap between them — clearly separate records without the heavy white
         // card-in-card look (no border, no shadow; fill differs from the parent).
-        .card .table-responsive & tr,
-        .card > & tr {
+        .card .table-responsive & tr:not(.stack-skip),
+        .card > & tr:not(.stack-skip) {
             border: 0; box-shadow: none;
             background: var(--bs-body-bg-alt);
             border-radius: .6rem;
             margin: 0 0 .6rem;
-            padding: .35rem .85rem;
+            padding: .5rem 1rem;
         }
-        .card .table-responsive & tr:last-child,
-        .card > & tr:last-child { margin-bottom: 0; }
+        .card .table-responsive & tr:not(.stack-skip):last-child,
+        .card > & tr:not(.stack-skip):last-child { margin-bottom: 0; }
+        .card .table-responsive & tr.stack-skip,
+        .card > & tr.stack-skip {
+            border: 0; box-shadow: none; background: transparent;
+            border-radius: 0; margin: 0; padding: 0;
+        }
 
         td {
             display: flex; align-items: center; justify-content: space-between;
-            gap: 1rem; border: 0; padding: .5rem 0; text-align: right;
+            gap: 1rem; border: 0; padding: .6rem 0; text-align: right;
             min-height: 40px;
+            overflow-wrap: anywhere;   // long IDs (booking #) break instead of overflowing
         }
+        // Let the value side shrink so it wraps rather than pushing past the edge
+        td > * { min-width: 0; }
         td + td { border-top: 1px solid var(--bs-border-color); }
         td::before {
             content: attr(data-label);
+            align-self: flex-start;    // label hugs the top when the value wraps
             text-align: left; flex-shrink: 0;
             font-size: .68rem; font-weight: 600; letter-spacing: .05em;
             text-transform: uppercase; color: var(--bs-secondary-color);
+            padding-top: .1rem;
         }
+        td.cell-plain { text-align: left; display: block; }
         td.cell-plain::before { content: none; }
         td.cell-actions {
             border-top: 1px solid var(--bs-border-color);

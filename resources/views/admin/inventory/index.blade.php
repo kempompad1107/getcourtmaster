@@ -106,7 +106,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7">
                         <x-empty-state title="No products found" icon="bi-box-seam"/>
                     </td>
@@ -115,9 +115,11 @@
             </tbody>
         </table>
     </div>
+    @if($products->hasPages())
     <div class="card-footer">
         {{ $products->withQueryString()->links() }}
     </div>
+    @endif
 </div>
 
 @endsection

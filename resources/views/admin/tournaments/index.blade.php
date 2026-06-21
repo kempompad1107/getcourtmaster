@@ -6,7 +6,7 @@
 <x-page-header title="Tournaments" subtitle="Create and run events from registration to champions.">
     <x-slot name="actions">
         @can('create', App\Models\Tournament::class)
-        <a href="{{ route('admin.tournaments.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('admin.tournaments.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>New Tournament
         </a>
         @endcan
@@ -110,14 +110,14 @@
                         </div>
                     </td>
                     <td data-label="" class="cell-actions text-end">
-                        <a href="{{ route('admin.tournaments.show', $tournament) }}" class="btn btn-outline-primary btn-sm">View</a>
+                        <a href="{{ route('admin.tournaments.show', $tournament) }}" class="btn btn-primary btn-sm">View</a>
                         @can('update', $tournament)
                         <a href="{{ route('admin.tournaments.edit', $tournament) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
                         @endcan
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="8" class="cell-plain">
                         <x-empty-state title="No tournaments found"
                             description="Create your first tournament to start taking registrations."
@@ -131,7 +131,7 @@
         </table>
     </div>
     @if($tournaments->hasPages())
-    <div class="card-footer">
+    <div class="px-4 py-3 border-top">
         {{ $tournaments->withQueryString()->links() }}
     </div>
     @endif
