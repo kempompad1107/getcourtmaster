@@ -8,7 +8,7 @@
 @endphp
 
 <form method="GET" action="{{ route('admin.tournaments.matches.index') }}" x-data="{ open: false }">
-<x-page-header title="Matches" subtitle="Schedule courts and referees, call matches, record scores.">
+<x-page-header title="Matches" subtitle="Call matches, assign courts and record scores.">
     <x-slot name="actions">
         <div class="position-relative" @click.outside="open = false">
             <button type="button" @click="open = !open"
