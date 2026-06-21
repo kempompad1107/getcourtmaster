@@ -183,9 +183,33 @@
 .fc .fc-list-event-title { font-weight: 600; }
 .fc .fc-list-empty { background: transparent; font-size: .85rem; color: var(--bs-secondary-color); }
 
-/* Toolbar buttons inherit Bootstrap theme via themeSystem; just refine grouping */
+/* Toolbar buttons → TailAdmin segmented control: neutral by default, the
+   active view (and pressed states) filled emerald. themeSystem renders these
+   as Bootstrap .btn-primary, so we recolour via the button CSS vars. */
+.fc .fc-toolbar .btn-primary {
+    --bs-btn-bg:                    var(--bs-body-bg-alt, #f8fafc);
+    --bs-btn-border-color:          var(--bs-border-color);
+    --bs-btn-color:                 var(--bs-body-color);
+    --bs-btn-hover-bg:              var(--bs-border-color);
+    --bs-btn-hover-border-color:    var(--bs-border-color);
+    --bs-btn-hover-color:           var(--bs-body-color);
+    --bs-btn-active-bg:             var(--bs-primary);
+    --bs-btn-active-border-color:   var(--bs-primary);
+    --bs-btn-active-color:          #fff;
+    --bs-btn-disabled-bg:           var(--bs-body-bg-alt, #f8fafc);
+    --bs-btn-disabled-border-color: var(--bs-border-color);
+    --bs-btn-disabled-color:        var(--bs-secondary-color, #9aa4b2);
+    box-shadow: none;
+    text-transform: capitalize;
+    font-size: .8rem;
+    font-weight: 600;
+}
 .fc .fc-button-group > .fc-button { text-transform: capitalize; }
-.fc .fc-button { font-size: .8rem; font-weight: 600; }
+/* Active view stays emerald however FC marks it (.active or .fc-button-active) */
+.fc .fc-toolbar .btn-primary.fc-button-active,
+.fc .fc-toolbar .btn-primary.active {
+    background: var(--bs-primary); border-color: var(--bs-primary); color: #fff;
+}
 
 /* ── Mobile polish ───────────────────────────────────────────────── */
 @media (max-width: 575.98px) {
