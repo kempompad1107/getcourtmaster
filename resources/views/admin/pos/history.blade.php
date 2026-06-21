@@ -13,9 +13,9 @@
         transition: transform .15s ease, box-shadow .15s ease;
     }
     .pos-sum:hover { transform: translateY(-2px); box-shadow: 0 6px 18px -8px rgba(15,23,42,.25); }
-    .pos-sum-ico { width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0; display: grid; place-items: center; font-size: 1.3rem; }
-    .pos-sum-value { font-size: 1.5rem; font-weight: 800; line-height: 1; margin: 0; }
-    .pos-sum-label { font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--bs-secondary-color); margin: .3rem 0 0; }
+    .pos-sum-ico { width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0; display: grid; place-items: center; font-size: 1.2rem; }
+    .pos-sum-value { font-size: 1.2rem; font-weight: 700; line-height: 1; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pos-sum-label { font-size: .65rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--bs-secondary-color); margin: .25rem 0 0; }
 
     /* TailAdmin-style table header + airier rows (mobile stacking handled by the
        shared .table-stack pattern). */
