@@ -31,6 +31,23 @@
     .pos-cart { position: sticky; top: 80px; }
     .pos-cart .card-header { background: rgba(16,185,129,.07); border-bottom-color: rgba(16,185,129,.18); }
     .pos-qty-btn { width: 26px; height: 26px; display: grid; place-items: center; padding: 0; line-height: 1; }
+
+    /* Order summary box — TailAdmin-style tinted panel grouping the totals */
+    .pos-summary {
+        background: var(--bs-body-bg-alt, #f8fafc);
+        border: 1px solid var(--bs-border-color);
+        border-radius: .75rem;
+    }
+    .pos-summary .pos-summary-total {
+        border-top: 1px solid var(--bs-border-color);
+    }
+    /* Empty-cart state */
+    .pos-empty-icon {
+        width: 56px; height: 56px; border-radius: 50%;
+        display: grid; place-items: center; margin: 0 auto;
+        background: rgba(148,163,184,.12); color: var(--bs-secondary-color);
+        font-size: 1.5rem;
+    }
     .pos-cat-tabs::-webkit-scrollbar { height: 4px; }
     .pos-cat-tabs::-webkit-scrollbar-thumb { background: var(--bs-border-color); border-radius: 4px; }
 
@@ -213,25 +230,29 @@
                         </div>
                     </div>
                 </template>
-                <div x-show="cart.length === 0" class="list-group-item text-center text-muted py-5">
-                    <i class="bi bi-cart-x fs-3 d-block mb-2 opacity-50"></i>Cart is empty
+                <div x-show="cart.length === 0" class="list-group-item border-0 text-center py-5 px-3">
+                    <span class="pos-empty-icon mb-3"><i class="bi bi-cart3"></i></span>
+                    <p class="mb-1 fw-semibold text-body">Cart is empty</p>
+                    <p class="small text-muted mb-0">Tap a product to add it to the order.</p>
                 </div>
             </div>
 
             <div class="card-body border-top">
                 {{-- Totals --}}
                 <p x-show="stockMessage" x-cloak x-text="stockMessage" class="small text-danger mb-2"></p>
-                <div class="d-flex justify-content-between small text-muted mb-1">
-                    <span>Subtotal</span><span x-text="'₱' + subtotal.toFixed(2)"></span>
-                </div>
-                <div class="d-flex justify-content-between small text-muted mb-1" x-show="tax > 0" x-cloak>
-                    <span>Tax</span><span x-text="'₱' + tax.toFixed(2)"></span>
-                </div>
-                <div class="d-flex justify-content-between small text-success mb-2" x-show="discount > 0" x-cloak>
-                    <span>Discount</span><span x-text="'-₱' + discount.toFixed(2)"></span>
-                </div>
-                <div class="d-flex justify-content-between fw-bold fs-5 mb-3 border-top pt-2">
-                    <span>Total</span><span class="text-success" x-text="'₱' + total.toFixed(2)"></span>
+                <div class="pos-summary p-3 mb-3">
+                    <div class="d-flex justify-content-between small text-muted mb-2">
+                        <span>Subtotal</span><span x-text="'₱' + subtotal.toFixed(2)"></span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mb-2" x-show="tax > 0" x-cloak>
+                        <span>Tax</span><span x-text="'₱' + tax.toFixed(2)"></span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-success mb-2" x-show="discount > 0" x-cloak>
+                        <span>Discount</span><span x-text="'-₱' + discount.toFixed(2)"></span>
+                    </div>
+                    <div class="pos-summary-total d-flex justify-content-between align-items-center fw-bold fs-5 pt-2 mt-1">
+                        <span>Total</span><span class="text-success" x-text="'₱' + total.toFixed(2)"></span>
+                    </div>
                 </div>
 
                 {{-- Promo code --}}
