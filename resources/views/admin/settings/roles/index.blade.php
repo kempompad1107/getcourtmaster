@@ -24,13 +24,7 @@
 
 @section('content')
 
-<x-page-header title="Roles & Permissions" :back="route('admin.settings.index')">
-    <x-slot name="actions">
-        <a href="{{ route('admin.staff.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-person-badge me-1"></i>Manage Staff
-        </a>
-    </x-slot>
-</x-page-header>
+<x-page-header title="Roles & Permissions" :back="route('admin.settings.index')"/>
 
 <div class="row justify-content-center">
     <div class="col-12 col-lg-10">
@@ -73,7 +67,7 @@
                             $permCount = $role->permissions->count();
                         @endphp
                         <tr>
-                            <td data-label="Role">
+                            <td data-label="Role" class="cell-plain">
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="role-ico"><i class="bi {{ $roleIcon }}"></i></span>
                                     <div>
@@ -89,11 +83,11 @@
                                     <span class="small text-muted">No permissions granted</span>
                                 @else
                                     <div class="perm-pills-wrap">
-                                        @foreach($role->permissions->take(5) as $perm)
+                                        @foreach($role->permissions->take(3) as $perm)
                                             <span class="perm-pill">{{ ucwords(str_replace(['_', '.'], ' ', explode('.', $perm->name)[1] ?? $perm->name)) }}</span>
                                         @endforeach
-                                        @if($permCount > 5)
-                                            <span class="perm-pill">+{{ $permCount - 5 }} more</span>
+                                        @if($permCount > 3)
+                                            <span class="perm-pill">+{{ $permCount - 3 }} more</span>
                                         @endif
                                     </div>
                                 @endif
