@@ -3,7 +3,6 @@
 
 @push('styles')
 <style>
-    /* ── Wallet management — scoped polish over the admin theme ── */
     .wallet-hero {
         position: relative; overflow: hidden;
         border: 1px solid rgba(16,185,129,.28);
@@ -39,44 +38,49 @@
     .wallet-metric-value { font-size: 1.15rem; font-weight: 700; margin: .1rem 0 0; line-height: 1; white-space: nowrap; }
 
     .wallet-avatar {
-        width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
-        display: grid; place-items: center; font-weight: 700; font-size: .85rem;
+        width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+        display: grid; place-items: center; font-weight: 700; font-size: .82rem;
         color: #fff; background: linear-gradient(135deg, #10b981, #059669);
-        box-shadow: 0 4px 12px -4px rgba(16,185,129,.6);
     }
     .wallet-balance-pill {
         display: inline-block; padding: .28rem .7rem; border-radius: 999px;
-        font-weight: 700; font-size: .9rem;
-        background: rgba(16,185,129,.12); color: #34d399;
+        font-weight: 700; font-size: .85rem;
+        background: rgba(16,185,129,.12); color: #10b981;
         border: 1px solid rgba(16,185,129,.22);
     }
-    .wallet-balance-pill.is-zero { background: rgba(148,163,184,.1); color: var(--bs-secondary-color); border-color: var(--bs-border-color); }
-
+    .wallet-balance-pill.is-zero {
+        background: rgba(148,163,184,.1); color: var(--bs-secondary-color);
+        border-color: var(--bs-border-color);
+    }
+    /* TailAdmin table header */
+    .wallet-roster thead th {
+        text-transform: uppercase; font-size: .7rem; letter-spacing: .04em;
+        font-weight: 600; color: var(--bs-secondary-color);
+        padding-top: .85rem; padding-bottom: .85rem;
+    }
+    .wallet-roster tbody td { padding-top: .75rem; padding-bottom: .75rem; }
     .wallet-roster tbody tr { transition: background-color .15s; }
-    .wallet-roster tbody tr:hover { background: rgba(16,185,129,.05); }
 
-    .wallet-feed-item { transition: background-color .15s; }
-    .wallet-feed-item:hover { background: rgba(148,163,184,.05); }
     .wallet-feed-ico {
         width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
         display: grid; place-items: center; font-size: 1rem;
     }
     .wallet-feed-amount { font-variant-numeric: tabular-nums; font-size: .95rem; }
+
+    .section-label {
+        font-size: .68rem; font-weight: 600; letter-spacing: .07em;
+        text-transform: uppercase; color: var(--bs-secondary-color);
+        display: block; margin-bottom: .75rem;
+    }
 </style>
 @endpush
 
 @section('content')
 
-<x-page-header title="Wallet Management" subtitle="Manual top-ups, deductions and audit trail">
-    <x-slot name="actions">
-        <span class="badge bg-info-subtle text-info rounded-pill px-3 py-2">
-            <i class="bi bi-shield-lock me-1"></i>Owner / Staff only
-        </span>
-    </x-slot>
-</x-page-header>
+<x-page-header title="Wallet Management" subtitle="Manual top-ups, deductions and audit trail"/>
 
-<div class="alert alert-warning border-0 small d-flex gap-2 align-items-start mb-4">
-    <i class="bi bi-info-circle-fill mt-1"></i>
+<div class="alert alert-info border-0 small d-flex gap-2 align-items-start mb-4">
+    <i class="bi bi-info-circle-fill mt-1 flex-shrink-0"></i>
     <div>
         Customers cannot top up their own wallets. All balance changes must be processed
         manually by you or your staff — every entry is logged with the processor's name,
@@ -123,36 +127,48 @@
 </div>
 
 <div class="row g-4">
+
     {{-- Customer roster --}}
     <div class="col-12 col-lg-7">
-        <div class="card h-100">
-            <div class="card-header">
-                <form method="GET" class="d-flex gap-2 align-items-center">
-                    <h6 class="mb-0 fw-semibold flex-grow-1">
-                        <i class="bi bi-people me-1 text-muted"></i>Customers
-                    </h6>
-                    <div class="input-group input-group-sm" style="max-width:320px">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="search" name="search" value="{{ $search }}"
-                               placeholder="Search name, email or phone…"
-                               class="form-control form-control-sm">
-                        @if($search !== '')
-                            <a href="{{ route('admin.wallet.index') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
-                        @endif
-                    </div>
-                </form>
+        <div class="card">
+
+            {{-- Search inside card body --}}
+            <div class="card-body pb-0">
+                <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-3">
+                    <span class="section-label mb-0">Customers</span>
+                    <form method="GET" class="d-flex gap-2 align-items-center flex-grow-1" style="max-width:320px;margin-left:auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="search" name="search" value="{{ $search }}"
+                                   placeholder="Name, email or phone…"
+                                   class="form-control">
+                            @if($search !== '')
+                            <a href="{{ route('admin.wallet.index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                            @endif
+                        </div>
+                    </form>
+                </div>
             </div>
+
+            @if($customers->isEmpty())
+                <div class="card-body pt-0">
+                    <x-empty-state title="No customers found" icon="bi-people"
+                        description="Try a different search term."/>
+                </div>
+            @else
             <div class="table-responsive">
-                <table class="table wallet-roster align-middle mb-0">
+                <table class="table wallet-roster table-stack align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Customer</th>
                             <th class="text-end">Balance</th>
-                            <th style="width:1%"></th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                    @forelse($customers as $c)
+                    @foreach($customers as $c)
                         @php
                             $initials = collect(explode(' ', trim($c->name)))
                                 ->filter()->take(2)
@@ -161,92 +177,97 @@
                             $hasBalance = $c->wallet_balance > 0;
                         @endphp
                         <tr>
-                            <td>
+                            <td class="cell-plain">
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="wallet-avatar">{{ $initials }}</span>
                                     <div class="min-w-0">
-                                        <div class="fw-semibold text-truncate">{{ $c->name }}</div>
+                                        <div class="fw-semibold small text-truncate">{{ $c->name }}</div>
                                         <div class="small text-muted text-truncate">{{ $c->email }}@if($c->phone) · {{ $c->phone }}@endif</div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="text-end">
-                                <span class="wallet-balance-pill {{ $hasBalance ? '' : 'is-zero' }}">₱{{ number_format($c->wallet_balance, 2) }}</span>
+                            <td data-label="Balance" class="text-end">
+                                <span class="wallet-balance-pill {{ $hasBalance ? '' : 'is-zero' }}">
+                                    ₱{{ number_format($c->wallet_balance, 2) }}
+                                </span>
                             </td>
-                            <td class="text-end">
-                                <a href="{{ route('admin.wallet.show', $c) }}" class="btn btn-sm btn-outline-primary text-nowrap">
-                                    Manage<i class="bi bi-chevron-right ms-1 small"></i>
+                            <td class="cell-actions text-end">
+                                <a href="{{ route('admin.wallet.show', $c) }}" class="btn btn-primary btn-sm">
+                                    Manage
                                 </a>
                             </td>
                         </tr>
-                    @empty
-                        <tr><td colspan="3" class="text-center text-muted py-5">
-                            <i class="bi bi-people fs-3 d-block mb-2 opacity-50"></i>No customers found.
-                        </td></tr>
-                    @endforelse
+                    @endforeach
                     </tbody>
                 </table>
             </div>
             @if($customers->hasPages())
-                <div class="card-footer">{{ $customers->links() }}</div>
+            <div class="card-footer">{{ $customers->withQueryString()->links() }}</div>
             @endif
+            @endif
+
         </div>
     </div>
 
     {{-- Recent activity --}}
     <div class="col-12 col-lg-5">
-        <div class="card h-100">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-semibold">
-                    <i class="bi bi-clock-history me-1 text-muted"></i>Recent wallet activity
-                </h6>
-                <span class="badge bg-secondary-subtle text-secondary rounded-pill">Last 50</span>
+        <div class="card">
+            <div class="card-body pb-0">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="section-label mb-0">Recent Activity</span>
+                    <span class="badge bg-secondary-subtle text-secondary rounded-pill">Last 50</span>
+                </div>
             </div>
-            <div class="list-group list-group-flush" style="max-height:560px;overflow-y:auto">
-                @forelse($recent as $tx)
-                    @php
-                        $isCredit = in_array($tx->type, ['credit', 'refund', 'reward']);
-                        $colour   = $isCredit ? 'success' : 'danger';
-                        $icon     = $isCredit ? 'bi-arrow-down-left' : 'bi-arrow-up-right';
-                    @endphp
-                    <div class="list-group-item wallet-feed-item py-3">
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="wallet-feed-ico bg-{{ $colour }} bg-opacity-10 text-{{ $colour }}">
-                                <i class="bi {{ $icon }}"></i>
+
+            @if($recent->isEmpty())
+            <div class="card-body pt-0">
+                <x-empty-state title="No wallet activity yet" icon="bi-clock-history"/>
+            </div>
+            @else
+            <div class="list-group list-group-flush">
+                @foreach($recent as $tx)
+                @php
+                    $isCredit = in_array($tx->type, ['credit', 'refund', 'reward']);
+                    $colour   = $isCredit ? 'success' : 'danger';
+                    $icon     = $isCredit ? 'bi-arrow-down-left' : 'bi-arrow-up-right';
+                @endphp
+                <div class="list-group-item py-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="wallet-feed-ico bg-{{ $colour }} bg-opacity-10 text-{{ $colour }}">
+                            <i class="bi {{ $icon }}"></i>
+                        </div>
+                        <div class="min-w-0 flex-grow-1">
+                            <div class="d-flex justify-content-between gap-2">
+                                <p class="mb-0 small fw-semibold text-truncate">
+                                    <a href="{{ route('admin.wallet.show', $tx->user_id) }}" class="text-decoration-none text-reset">
+                                        {{ $tx->user?->name ?? '—' }}
+                                    </a>
+                                </p>
+                                <span class="wallet-feed-amount fw-bold text-{{ $colour }} flex-shrink-0">
+                                    {{ $isCredit ? '+' : '−' }}₱{{ number_format($tx->amount, 2) }}
+                                </span>
                             </div>
-                            <div class="min-w-0 flex-grow-1">
-                                <div class="d-flex justify-content-between gap-2">
-                                    <p class="mb-0 small fw-semibold text-truncate">
-                                        <a href="{{ route('admin.wallet.show', $tx->user_id) }}" class="text-decoration-none text-reset">
-                                            {{ $tx->user?->name ?? '—' }}
-                                        </a>
-                                    </p>
-                                    <span class="wallet-feed-amount fw-bold text-{{ $colour }} flex-shrink-0">
-                                        {{ $isCredit ? '+' : '−' }}₱{{ number_format($tx->amount, 2) }}
-                                    </span>
-                                </div>
-                                <p class="mb-1 small text-muted text-truncate">{{ $tx->description ?: ucfirst($tx->type) }}</p>
-                                <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <span class="badge bg-{{ $colour }}-subtle text-{{ $colour }} text-capitalize rounded-pill">{{ $tx->type }}</span>
-                                    <small class="text-muted">{{ $tx->created_at->format('M j, g:i A') }}</small>
-                                    @if($tx->processedBy)
-                                        <small class="text-muted">· by {{ $tx->processedBy->name }}</small>
-                                    @endif
-                                </div>
-                                @if($tx->note)
-                                    <div class="small fst-italic text-muted mt-1">“{{ $tx->note }}”</div>
+                            <p class="mb-1 small text-muted text-truncate">{{ $tx->description ?: ucfirst($tx->type) }}</p>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="badge bg-{{ $colour }}-subtle text-{{ $colour }} text-capitalize rounded-pill">{{ $tx->type }}</span>
+                                <small class="text-muted">{{ $tx->created_at->format('M j, g:i A') }}</small>
+                                @if($tx->processedBy)
+                                <small class="text-muted">· by {{ $tx->processedBy->name }}</small>
                                 @endif
                             </div>
+                            @if($tx->note)
+                            <div class="small fst-italic text-muted mt-1">"{{ $tx->note }}"</div>
+                            @endif
                         </div>
                     </div>
-                @empty
-                    <div class="list-group-item text-center text-muted py-5">
-                        <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>No wallet activity yet.
-                    </div>
-                @endforelse
+                </div>
+                @endforeach
             </div>
+            @endif
+
         </div>
     </div>
+
 </div>
 
 @endsection
