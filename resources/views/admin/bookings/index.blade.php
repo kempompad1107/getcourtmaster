@@ -174,9 +174,11 @@
             </tbody>
         </table>
     </div>
+    @if($bookings->hasPages())
     <div class="card-footer">
-        {{ $bookings->withQueryString()->links() }}
+        {{ $bookings->withQueryString()->links('pagination.courtmaster') }}
     </div>
+    @endif
 </div>
 
 @endsection
