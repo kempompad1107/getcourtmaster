@@ -21,6 +21,13 @@ $font-size-base:  0.9rem;
 $font-weight-medium: 500;
 $headings-font-weight: 600;
 
+// Controls — shared button/input sizing so .btn and .form-control render at the
+// SAME height everywhere (TailAdmin-style comfortable, equal-height controls).
+// .btn already sets these via CSS vars; matching the SCSS vars makes inputs,
+// selects and input-group addons line up with buttons app-wide.
+$input-btn-padding-y: 0.625rem;
+$input-btn-padding-x: 0.9rem;
+
 // Transitions
 $transition-base: all 0.2s ease-in-out;
 
