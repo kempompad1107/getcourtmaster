@@ -57,9 +57,9 @@
             // measured width (set by a ResizeObserver in the timeline partial);
             // before it reports, assume a narrow track so we over-thin rather
             // than overlap — the observer relaxes it once it measures wider.
-            // Each "7am"-style label needs ~36px.
+            // Each "7am"-style label needs ~48px at .65rem.
             const px      = this.tlPxWidth || 260;
-            const maxLbls = Math.max(2, Math.floor(px / 36));
+            const maxLbls = Math.max(2, Math.floor(px / 48));
             const stride  = Math.max(1, Math.ceil(ticks.length / maxLbls));
             ticks.forEach((t, i) => { t.showLabel = (i % stride === 0); });
             return ticks;
