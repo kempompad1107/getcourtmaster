@@ -68,9 +68,12 @@
                             <input type="text" name="name" value="{{ $tenant->name }}" required class="form-control">
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Contact email</label>
+                            <label class="form-label d-flex align-items-center gap-1">Contact email
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Shown on your public profile (display only). For notification emails, use the Notifications tab."></i>
+                            </label>
                             <input type="email" name="email" value="{{ $tenant->email }}" required class="form-control">
-                            <div class="form-text">Shown on your public profile (display only). To receive notification emails, set your address under the <a href="#" @click.prevent="tab='notifications'; history.replaceState(null,'','?tab=notifications')">Notifications tab</a>.</div>
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label">Phone number</label>
@@ -118,7 +121,11 @@
                     <div class="row g-3 mb-2">
                         {{-- Logo --}}
                         <div class="col-12 col-sm-4">
-                            <label class="form-label">Logo</label>
+                            <label class="form-label d-flex align-items-center gap-1">Logo
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="PNG/JPG/SVG · square works best · max 2 MB"></i>
+                            </label>
                             @if($logoUrl)
                                 <div class="d-flex align-items-center gap-3 mb-2">
                                     <img src="{{ $logoUrl }}" alt="Logo"
@@ -133,12 +140,15 @@
                             <input type="file" name="logo" accept="image/png,image/jpeg,image/webp,image/svg+xml"
                                    class="form-control @error('logo') is-invalid @enderror">
                             @error('logo')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">PNG/JPG/SVG · square · max 2 MB</div>
                         </div>
 
                         {{-- Tagline --}}
                         <div class="col-12 col-sm-8">
-                            <label class="form-label">Tagline <span class="text-muted small fw-normal">— shown under the club name on your public page</span></label>
+                            <label class="form-label d-flex align-items-center gap-1">Tagline
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Shown under the club name on your public page"></i>
+                            </label>
                             <input type="text" name="tagline" maxlength="200"
                                    value="{{ $brandingSettings['tagline'] ?? '' }}"
                                    placeholder="e.g. The friendliest pickleball club in town."
@@ -159,7 +169,11 @@
 
                         {{-- Hero image --}}
                         <div class="col-12 col-sm-8">
-                            <label class="form-label">Hero image <span class="text-muted small fw-normal">— large photo shown below the club name</span></label>
+                            <label class="form-label d-flex align-items-center gap-1">Hero image
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Large photo shown below the club name · Landscape · PNG/JPG/WEBP · max 5 MB"></i>
+                            </label>
                             @if($heroImageUrl)
                                 <div class="d-flex align-items-start gap-3 mb-2">
                                     <img src="{{ $heroImageUrl }}" alt="Hero"
@@ -174,14 +188,17 @@
                             <input type="file" name="hero_image" accept="image/png,image/jpeg,image/webp"
                                    class="form-control @error('hero_image') is-invalid @enderror">
                             @error('hero_image')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">Landscape · PNG/JPG/WEBP · max 5 MB</div>
                         </div>
                     </div>
 
                     <div class="set-subhead">Page content</div>
                     <div class="row g-3 mb-2">
                         <div class="col-12">
-                            <label class="form-label">About <span class="text-muted small">(rendered on the "About Us" section)</span></label>
+                            <label class="form-label d-flex align-items-center gap-1">About
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Rendered on the &quot;About Us&quot; section of your public page"></i>
+                            </label>
                             <textarea name="about" rows="4" maxlength="2000"
                                       placeholder="Tell visitors who you are, what makes your venue special, and who it's for."
                                       class="form-control @error('about') is-invalid @enderror">{{ $brandingSettings['about'] ?? '' }}</textarea>
@@ -189,12 +206,15 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Rules / House Policies <span class="text-muted small">(rendered on the "Rules" section)</span></label>
+                            <label class="form-label d-flex align-items-center gap-1">Rules / House Policies
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Rendered on the &quot;Rules&quot; section of your public page. Plain text — blank lines split paragraphs."></i>
+                            </label>
                             <textarea name="rules" rows="5" maxlength="4000"
                                       placeholder="One rule per line works great. Example:&#10;&#10;Reserve your slot in advance&#10;Non-marking shoes required&#10;15-minute grace period"
                                       class="form-control @error('rules') is-invalid @enderror">{{ $brandingSettings['rules'] ?? '' }}</textarea>
                             @error('rules')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">Plain text. Blank lines split paragraphs.</div>
                         </div>
                     </div>
 
