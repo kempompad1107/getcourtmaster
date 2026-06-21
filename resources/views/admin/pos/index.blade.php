@@ -12,11 +12,21 @@
     .pos-product:active { transform: translateY(-1px) scale(.99); }
     .pos-product.is-oos { opacity: .5; pointer-events: none; filter: grayscale(.3); }
     .pos-product-media {
-        height: 96px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+        position: relative;
+        height: 110px; display: flex; align-items: center; justify-content: center; overflow: hidden;
         background: rgba(148,163,184,.1);
         border-radius: var(--bs-card-border-radius) var(--bs-card-border-radius) 0 0;
     }
     .pos-product-media img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Stock chip overlaid on the image (TailAdmin product-tile style) — keeps the
+       card body to just name + price so every tile is the same height. */
+    .pos-stock-badge {
+        position: absolute; top: .4rem; left: .4rem; z-index: 1;
+        font-size: .62rem; font-weight: 600; line-height: 1.3;
+        padding: .12rem .45rem; border-radius: 999px;
+        backdrop-filter: blur(2px);
+    }
 
     .pos-cart { position: sticky; top: 80px; }
     .pos-cart .card-header { background: rgba(16,185,129,.07); border-bottom-color: rgba(16,185,129,.18); }
@@ -81,7 +91,7 @@
     <x-slot name="actions">
         <button type="button" @click="toggleScan()"
                 :class="scanning ? 'btn-primary' : 'btn-outline-secondary'"
-                class="btn btn-sm me-2">
+                class="btn btn-sm">
             <i class="bi bi-upc-scan me-1"></i><span x-text="scanning ? 'Done' : 'Scan'"></span>
         </button>
         <a href="{{ route('admin.pos.history') }}" class="btn btn-outline-secondary btn-sm">
@@ -138,6 +148,19 @@
                      ]) }})"
                      @endif>
                     <div class="pos-product-media">
+                        @if($product->track_inventory)
+                            @if($product->isOutOfStock())
+                            <span class="pos-stock-badge bg-danger-subtle text-danger">
+                                <i class="bi bi-x-circle me-1"></i>Out of stock
+                            </span>
+                            @elseif($product->isLowStock())
+                            <span class="pos-stock-badge bg-warning-subtle text-warning">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Low: {{ $product->stock_quantity }}
+                            </span>
+                            @else
+                            <span class="pos-stock-badge bg-body-secondary text-secondary">{{ $product->stock_quantity }} in stock</span>
+                            @endif
+                        @endif
                         @if($product->image)
                         <img src="{{ file_url($product->image) }}" alt="{{ $product->name }}">
                         @else
@@ -146,22 +169,7 @@
                     </div>
                     <div class="card-body p-2 d-flex flex-column">
                         <p class="mb-1 small fw-semibold text-truncate">{{ $product->name }}</p>
-                        <p class="mb-0 fw-bold text-success">₱{{ number_format($product->selling_price, 2) }}</p>
-                        @if($product->track_inventory)
-                            @if($product->isOutOfStock())
-                            <span class="badge rounded-pill bg-danger-subtle text-danger mt-2 align-self-start">
-                                <i class="bi bi-x-circle me-1"></i>Out of stock
-                            </span>
-                            @elseif($product->isLowStock())
-                            <span class="badge rounded-pill bg-warning-subtle text-warning mt-2 align-self-start">
-                                <i class="bi bi-exclamation-triangle me-1"></i>Low: {{ $product->stock_quantity }}
-                            </span>
-                            @else
-                            <span class="badge rounded-pill bg-secondary-subtle text-secondary mt-2 align-self-start">
-                                <i class="bi bi-box-seam me-1"></i>Stock: {{ $product->stock_quantity }}
-                            </span>
-                            @endif
-                        @endif
+                        <p class="mb-0 fw-bold text-success mt-auto">₱{{ number_format($product->selling_price, 2) }}</p>
                     </div>
                 </div>
             </div>
