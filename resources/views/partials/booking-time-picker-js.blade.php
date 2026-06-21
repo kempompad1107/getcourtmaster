@@ -19,7 +19,6 @@
         verdict: null,
         checking: false,
         _checkSeq: 0,
-        tlPxWidth: 0,
         _autoAdvanced: false,
 
         get courtOption() {
@@ -41,8 +40,7 @@
         pct(hm) { return ((this._toMin(hm) - this.tlOpenMin) / this.tlSpan) * 100; },
         clampPct(v) { return Math.max(0, Math.min(100, v)); },
         // Hour marks across the operating window, for gridlines + axis labels.
-        // Every tick draws a gridline; labels are thinned to a stride so they
-        // never overlap on narrow screens (the track shrinks but hours don't).
+        // Track is 52px/hr wide and scrollable, so all labels always fit — no stride needed.
         get axisTicks() {
             if (!this.timeline) return [];
             const ticks = [];
@@ -53,17 +51,6 @@
                     label: `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`,
                 });
             }
-            // Thin labels to a stride so they never overlap. Use the track's
-            // measured width (set by a ResizeObserver in the timeline partial);
-            // before it reports, assume a narrow track so we over-thin rather
-            // than overlap — the observer relaxes it once it measures wider.
-            // 56px per label keeps spacing comfortable down to ~320px mobile tracks.
-            // Fall back to 0 so stride is maximally conservative before ResizeObserver fires.
-            const px      = this.tlPxWidth || 0;
-            const maxLbls = px > 0 ? Math.max(2, Math.floor(px / 56)) : 5;
-
-            const stride  = Math.max(1, Math.ceil(ticks.length / maxLbls));
-            ticks.forEach((t, i) => { t.showLabel = (i % stride === 0); });
             return ticks;
         },
         segClass(seg) {

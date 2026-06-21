@@ -25,48 +25,54 @@
         </div>
     </template>
 
-    {{-- Schedule track: neutral = open/free; colored blocks = busy. Hour
-         gridlines + the axis labels below make it read as a timeline. --}}
-    <div class="position-relative rounded border"
-         :class="(timeline && timeline.is_closed) ? 'bg-secondary-subtle' : 'bg-body-tertiary'"
-         style="height:48px;cursor:pointer;overflow:hidden"
-         x-init="const _d = $data;
-                 $nextTick(() => { _d.tlPxWidth = $el.clientWidth });
-                 new ResizeObserver(([e]) => { _d.tlPxWidth = e.contentRect.width }).observe($el)"
-         @click="onTimelineClick($event, $el)">
-
-        {{-- hour gridlines --}}
-        <template x-for="(t, i) in axisTicks" :key="'g' + i">
-            <div class="position-absolute top-0 h-100"
-                 :style="`left:${t.left}%;width:1px;background:rgba(128,128,128,.18)`"></div>
-        </template>
-
-        <template x-for="(seg, i) in (timeline ? timeline.segments : [])" :key="i">
-            <div class="position-absolute top-0 h-100 d-flex align-items-center justify-content-center text-white overflow-hidden"
-                 :class="segClass(seg)"
-                 :style="`left:${clampPct(pct(seg.start))}%;width:${Math.max(0.5, clampPct(pct(seg.end)) - clampPct(pct(seg.start)))}%`"
-                 :title="seg.label + ' · ' + seg.start_label + ' – ' + seg.end_label">
-                <span class="text-truncate px-1" style="font-size:.62rem;line-height:1" x-text="seg.label"></span>
-            </div>
-        </template>
-
-        {{-- Selected range overlay --}}
-        <div x-show="startTime" x-cloak
-             class="position-absolute top-0 h-100 border border-2 rounded"
-             :class="verdict && verdict.available ? 'border-primary' : 'border-danger'"
-             :style="`left:${clampPct(pct(startTime))}%;width:${Math.max(1, clampPct(pct(selEndHm)) - clampPct(pct(startTime)))}%;background:rgba(13,110,253,.18)`"></div>
-    </div>
-
-    {{-- Hour axis labels. First/last anchor inward so they don't clip at the edges. --}}
-    <div class="position-relative mt-1" style="height:16px"
+    {{-- Scrollable timeline wrapper --}}
+    <div class="rounded border overflow-hidden" style="overflow-x:auto!important;-webkit-overflow-scrolling:touch;scrollbar-width:none"
          x-show="!(timeline && timeline.is_closed)">
-        <template x-for="(t, i) in axisTicks" :key="'l' + i">
-            <span class="position-absolute text-muted" x-show="t.showLabel"
-                  style="font-size:.65rem;font-weight:500;top:0;white-space:nowrap;line-height:1"
-                  :style="`left:${t.left}%;transform:${i === 0 ? 'translateX(0)' : (i === axisTicks.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)')}`"
-                  x-text="t.label"></span>
-        </template>
+
+        {{-- Track: fixed 52px per hour so labels always have room; scrolls on narrow screens --}}
+        <div class="position-relative"
+             :style="`width:max(100%,${tlSpan / 60 * 52}px);height:48px;cursor:pointer;background:var(--bs-tertiary-bg)`"
+             @click="onTimelineClick($event, $el)">
+
+            {{-- hour gridlines --}}
+            <template x-for="(t, i) in axisTicks" :key="'g' + i">
+                <div class="position-absolute top-0 h-100"
+                     :style="`left:${t.left}%;width:1px;background:rgba(128,128,128,.18)`"></div>
+            </template>
+
+            <template x-for="(seg, i) in (timeline ? timeline.segments : [])" :key="i">
+                <div class="position-absolute top-0 h-100 d-flex align-items-center justify-content-center text-white overflow-hidden"
+                     :class="segClass(seg)"
+                     :style="`left:${clampPct(pct(seg.start))}%;width:${Math.max(0.5, clampPct(pct(seg.end)) - clampPct(pct(seg.start)))}%`"
+                     :title="seg.label + ' · ' + seg.start_label + ' – ' + seg.end_label">
+                    <span class="text-truncate px-1" style="font-size:.62rem;line-height:1" x-text="seg.label"></span>
+                </div>
+            </template>
+
+            {{-- Selected range overlay --}}
+            <div x-show="startTime" x-cloak
+                 class="position-absolute top-0 h-100 border border-2 rounded"
+                 :class="verdict && verdict.available ? 'border-primary' : 'border-danger'"
+                 :style="`left:${clampPct(pct(startTime))}%;width:${Math.max(1, clampPct(pct(selEndHm)) - clampPct(pct(startTime)))}%;background:rgba(13,110,253,.18)`"></div>
+
+            {{-- Hour axis labels pinned inside the scrollable track --}}
+            <template x-for="(t, i) in axisTicks" :key="'l' + i">
+                <span class="position-absolute text-muted"
+                      style="font-size:.65rem;font-weight:500;bottom:-18px;white-space:nowrap;line-height:1;pointer-events:none"
+                      :style="`left:${t.left}%;transform:${i === 0 ? 'translateX(0)' : (i === axisTicks.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)')}`"
+                      x-text="t.label"></span>
+            </template>
+        </div>
     </div>
+    {{-- Spacer for the labels that hang below the track --}}
+    <div style="height:22px" x-show="!(timeline && timeline.is_closed)"></div>
+
+    {{-- Closed-day message (outside scroll wrapper) --}}
+    <template x-if="timeline && timeline.is_closed">
+        <div class="rounded border bg-secondary-subtle d-flex align-items-center justify-content-center" style="height:48px">
+            <span class="small text-muted"><i class="bi bi-door-closed me-1"></i>Venue closed this day</span>
+        </div>
+    </template>
 
     {{-- Legend --}}
     <div class="d-flex column-gap-4 row-gap-2 mt-3 small text-muted flex-wrap">
