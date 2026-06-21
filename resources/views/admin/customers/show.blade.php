@@ -30,13 +30,7 @@
 @section('content')
 
 <x-page-header :title="$customer->name" :back="route('admin.customers.index')" backLabel="Customers"
-    subtitle="Customer profile">
-    <x-slot name="actions">
-        <a href="{{ route('admin.customers.edit', $customer) }}" class="btn btn-outline-secondary">
-            <i class="bi bi-pencil"></i>Edit
-        </a>
-    </x-slot>
-</x-page-header>
+    subtitle="Customer profile"/>
 
 {{-- Profile card --}}
 <div class="card mb-4">

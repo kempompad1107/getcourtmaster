@@ -3,7 +3,7 @@
 
 @section('content')
 
-<x-page-header title="Edit: {{ $customer->name }}" :back="route('admin.customers.show', $customer)" backLabel="Back"/>
+<x-page-header title="Edit: {{ $customer->name }}" :back="route('admin.customers.index')" backLabel="Customers"/>
 
 <div class="row justify-content-center">
 <div class="col-12 col-lg-8 col-xl-7">
@@ -93,7 +93,7 @@
 
     {{-- Footer actions --}}
     <div class="d-flex gap-2 justify-content-end border-top pt-4 mb-4">
-        <a href="{{ route('admin.customers.show', $customer) }}" class="btn btn-outline-secondary">Cancel</a>
+        <a href="{{ route('admin.customers.index') }}" class="btn btn-outline-secondary">Cancel</a>
         <button type="submit" class="btn btn-primary">
             <i class="bi bi-floppy"></i>Save Changes
         </button>
