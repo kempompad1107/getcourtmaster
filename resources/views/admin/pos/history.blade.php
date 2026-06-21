@@ -5,10 +5,14 @@
 <style>
     /* ── POS history — summary tiles + mobile card stacking ── */
     .pos-sum {
+        height: 100%;
         display: flex; align-items: center; gap: .9rem;
         padding: 1rem 1.15rem; border-radius: 1rem;
         background: var(--bs-card-bg); border: 1px solid var(--bs-border-color);
+        box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 1px 3px rgba(15,23,42,.06);
+        transition: transform .15s ease, box-shadow .15s ease;
     }
+    .pos-sum:hover { transform: translateY(-2px); box-shadow: 0 6px 18px -8px rgba(15,23,42,.25); }
     .pos-sum-ico { width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0; display: grid; place-items: center; font-size: 1.3rem; }
     .pos-sum-value { font-size: 1.5rem; font-weight: 800; line-height: 1; margin: 0; }
     .pos-sum-label { font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--bs-secondary-color); margin: .3rem 0 0; }
@@ -66,7 +70,7 @@ $voidCount = $orders->where('status', 'voided')->count();
 
 {{-- Summary tiles --}}
 <div class="row g-3 mb-4">
-    <div class="col-12 col-sm-4">
+    <div class="col-6 col-sm-4">
         <div class="pos-sum">
             <div class="pos-sum-ico bg-primary bg-opacity-10 text-primary"><i class="bi bi-receipt"></i></div>
             <div>
@@ -84,7 +88,7 @@ $voidCount = $orders->where('status', 'voided')->count();
             </div>
         </div>
     </div>
-    <div class="col-6 col-sm-4">
+    <div class="col-12 col-sm-4">
         <div class="pos-sum">
             <div class="pos-sum-ico bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-octagon"></i></div>
             <div>
