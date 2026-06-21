@@ -121,6 +121,9 @@ $voidCount = $orders->where('status', 'voided')->count();
 
 {{-- Table --}}
 <div class="card">
+    @if($orders->isEmpty())
+        <x-empty-state title="No orders found" icon="bi-receipt"/>
+    @else
     <div class="table-responsive">
         <table class="table pos-hist table-stack table-hover align-middle mb-0">
             <thead class="table-light">
@@ -135,7 +138,7 @@ $voidCount = $orders->where('status', 'voided')->count();
                 </tr>
             </thead>
             <tbody>
-                @forelse($orders as $order)
+                @foreach($orders as $order)
                 @php
                 $badge = match($order->status) {
                     'completed' => 'bg-success-subtle text-success',
@@ -160,13 +163,7 @@ $voidCount = $orders->where('status', 'voided')->count();
                         </a>
                     </td>
                 </tr>
-                @empty
-                <tr class="stack-skip">
-                    <td colspan="7" class="cell-plain">
-                        <x-empty-state title="No orders found" icon="bi-receipt"/>
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
@@ -174,6 +171,7 @@ $voidCount = $orders->where('status', 'voided')->count();
     <div class="card-footer">
         {{ $orders->withQueryString()->links() }}
     </div>
+    @endif
     @endif
 </div>
 

@@ -79,6 +79,11 @@
 
 {{-- Table --}}
 <div class="card">
+    @if($bookings->isEmpty())
+        <x-empty-state title="No bookings found"
+            description="Try adjusting your search or filter criteria."
+            icon="bi-calendar"/>
+    @else
     <div class="table-responsive">
         <table class="table bk-table table-hover align-middle mb-0 table-stack">
             <thead class="table-light">
@@ -93,7 +98,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($bookings as $booking)
+                @foreach($bookings as $booking)
                 @php
                 $paymentBadge = match($booking->payment_method) {
                     'wallet'       => 'badge bg-primary-subtle text-primary-emphasis',
@@ -162,15 +167,7 @@
                            class="btn btn-outline-primary btn-sm">View</a>
                     </td>
                 </tr>
-                @empty
-                <tr class="stack-skip">
-                    <td colspan="7" class="cell-plain">
-                        <x-empty-state title="No bookings found"
-                            description="Try adjusting your search or filter criteria."
-                            icon="bi-calendar"/>
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
@@ -178,6 +175,7 @@
     <div class="card-footer">
         {{ $bookings->withQueryString()->links() }}
     </div>
+    @endif
     @endif
 </div>
 

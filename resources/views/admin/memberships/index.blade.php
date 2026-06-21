@@ -83,6 +83,9 @@
 
 {{-- Table --}}
 <div class="card">
+    @if($memberships->isEmpty())
+        <x-empty-state title="No memberships found" icon="bi-credit-card"/>
+    @else
     <div class="table-responsive">
         <table class="table mb-table table-stack table-hover align-middle mb-0">
             <thead class="table-light">
@@ -97,7 +100,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($memberships as $membership)
+                @foreach($memberships as $membership)
                 <tr>
                     <td class="cell-plain">
                         <div class="d-flex align-items-center gap-2">
@@ -132,13 +135,7 @@
                            class="btn btn-outline-primary btn-sm">View</a>
                     </td>
                 </tr>
-                @empty
-                <tr class="stack-skip">
-                    <td colspan="7" class="cell-plain">
-                        <x-empty-state title="No memberships found" icon="bi-credit-card"/>
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
@@ -146,6 +143,7 @@
     <div class="card-footer">
         {{ $memberships->withQueryString()->links() }}
     </div>
+    @endif
     @endif
 </div>
 
