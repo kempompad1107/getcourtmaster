@@ -220,14 +220,14 @@
 
             <div class="card-body border-top">
                 {{-- Totals --}}
-                <p x-show="stockMessage" x-text="stockMessage" class="small text-danger mb-2"></p>
+                <p x-show="stockMessage" x-cloak x-text="stockMessage" class="small text-danger mb-2"></p>
                 <div class="d-flex justify-content-between small text-muted mb-1">
                     <span>Subtotal</span><span x-text="'₱' + subtotal.toFixed(2)"></span>
                 </div>
-                <div class="d-flex justify-content-between small text-muted mb-1" x-show="tax > 0">
+                <div class="d-flex justify-content-between small text-muted mb-1" x-show="tax > 0" x-cloak>
                     <span>Tax</span><span x-text="'₱' + tax.toFixed(2)"></span>
                 </div>
-                <div class="d-flex justify-content-between small text-success mb-2" x-show="discount > 0">
+                <div class="d-flex justify-content-between small text-success mb-2" x-show="discount > 0" x-cloak>
                     <span>Discount</span><span x-text="'-₱' + discount.toFixed(2)"></span>
                 </div>
                 <div class="d-flex justify-content-between fw-bold fs-5 mb-3 border-top pt-2">
@@ -246,7 +246,7 @@
                         <span x-show="promoChecking"><span class="spinner-border spinner-border-sm"></span></span>
                     </button>
                 </div>
-                <p x-show="promoMessage" class="small mb-3"
+                <p x-show="promoMessage" x-cloak class="small mb-3"
                    :class="promoValid ? 'text-success' : 'text-danger'" x-text="promoMessage"></p>
 
                 {{-- Payment method --}}
@@ -266,7 +266,7 @@
                            :placeholder="'Amount (' + total.toFixed(2) + ')'"
                            class="form-control">
                 </div>
-                <div x-show="amountTendered > 0" class="d-flex justify-content-between small text-success fw-semibold mb-3">
+                <div x-show="amountTendered > 0" x-cloak class="d-flex justify-content-between small text-success fw-semibold mb-3">
                     <span>Change</span>
                     <span x-text="'₱' + Math.max(0, amountTendered - total).toFixed(2)"></span>
                 </div>
