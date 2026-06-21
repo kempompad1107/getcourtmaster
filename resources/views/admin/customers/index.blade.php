@@ -3,32 +3,18 @@
 
 @push('styles')
 <style>
-    /* ── Customers list — polish + mobile card stacking ── */
     .cu-avatar {
         width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; object-fit: cover;
         display: grid; place-items: center; font-weight: 700; font-size: .82rem;
-        color: #fff; background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: #fff; background: linear-gradient(135deg, #10b981, #059669);
     }
+    .cu-table thead th {
+        text-transform: uppercase; font-size: .7rem; letter-spacing: .04em;
+        font-weight: 600; color: var(--bs-secondary-color);
+        padding-top: .85rem; padding-bottom: .85rem;
+    }
+    .cu-table tbody td { padding-top: .85rem; padding-bottom: .85rem; }
     .cu-table tbody tr { transition: background-color .15s; }
-    @media (max-width: 767.98px) {
-        .cu-table thead { display: none; }
-        .cu-table, .cu-table tbody, .cu-table tr, .cu-table td { display: block; width: 100%; }
-        .cu-table tr {
-            border: 1px solid var(--bs-border-color); border-radius: .85rem;
-            padding: .35rem .9rem; margin: .75rem 0; background: var(--bs-card-bg);
-        }
-        .cu-table td {
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            border: 0; padding: .5rem 0; text-align: right;
-        }
-        .cu-table td + td { border-top: 1px solid var(--bs-border-color); }
-        .cu-table td::before {
-            content: attr(data-label); text-align: left; flex-shrink: 0;
-            font-size: .68rem; font-weight: 600; letter-spacing: .05em;
-            text-transform: uppercase; color: var(--bs-secondary-color);
-        }
-        .cu-table td.bk-cell-empty::before { content: none; }
-    }
 </style>
 @endpush
 
@@ -41,18 +27,19 @@
     $subtitle = $filterBranchId
         ? $customers->total() . ' active at ' . ($filterBranch->name ?? 'this branch') . ' (last ' . $activityWindow . ' days)'
         : $customers->total() . ' total customers';
+    $showBranchFilter = isset($availableBranches) && ($availableBranches->count() > 1 || ($canSeeAllBranches ?? false));
 @endphp
 
 <x-page-header title="Customers" :subtitle="$subtitle">
     <x-slot name="actions">
         @php $customerLimit = app(\App\Services\PlanLimitGuard::class)->check(auth()->user()->tenant, 'customers'); @endphp
         @if($customerLimit['allowed'])
-            <a href="{{ route('admin.customers.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-person-plus me-1"></i>New Customer
+            <a href="{{ route('admin.customers.create') }}" class="btn btn-primary">
+                <i class="bi bi-person-plus"></i>New Customer
             </a>
         @else
-            <button class="btn btn-primary btn-sm" disabled title="Plan limit reached ({{ $customerLimit['used'] }}/{{ $customerLimit['max'] }} on {{ $customerLimit['plan'] }})">
-                <i class="bi bi-lock-fill me-1"></i>New Customer
+            <button class="btn btn-primary" disabled title="Plan limit reached ({{ $customerLimit['used'] }}/{{ $customerLimit['max'] }} on {{ $customerLimit['plan'] }})">
+                <i class="bi bi-lock-fill"></i>New Customer
             </button>
         @endif
     </x-slot>
@@ -60,45 +47,36 @@
 
 @include('admin._partials.plan-limit-banner', ['resource' => 'customers'])
 
-{{-- Unified filter bar --}}
-@isset($availableBranches)
-    @if($availableBranches->count() > 1 || ($canSeeAllBranches ?? false))
-    <x-filter-bar placeholder="Search by name, email, or phone..."
-                  :active-count="(int) request()->filled('branch_id')"
-                  :clear="route('admin.customers.index')">
-        <x-slot name="filters">
-            <div>
-                <label class="form-label small fw-semibold mb-1">Branch</label>
-                <select name="branch_id" class="form-select form-select-sm">
-                    @if($canSeeAllBranches ?? false)
-                        <option value="all" @selected($filterBranchId === null)>All branches</option>
-                    @endif
-                    @foreach($availableBranches as $b)
-                        <option value="{{ $b->id }}" @selected($filterBranchId === $b->id)>
-                            Active at {{ $b->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-        </x-slot>
-    </x-filter-bar>
-    @else
-    <x-filter-bar placeholder="Search by name, email, or phone..."
-                  :active-count="0"
-                  :clear="route('admin.customers.index')">
-    </x-filter-bar>
-    @endif
-@else
 <x-filter-bar placeholder="Search by name, email, or phone..."
-              :active-count="0"
+              :active-count="$showBranchFilter ? (int) request()->filled('branch_id') : 0"
               :clear="route('admin.customers.index')">
+    @if($showBranchFilter)
+    <x-slot name="filters">
+        <div>
+            <label class="form-label small fw-semibold mb-1">Branch</label>
+            <select name="branch_id" class="form-select form-select-sm">
+                @if($canSeeAllBranches ?? false)
+                    <option value="all" @selected($filterBranchId === null)>All branches</option>
+                @endif
+                @foreach($availableBranches as $b)
+                    <option value="{{ $b->id }}" @selected($filterBranchId === $b->id)>
+                        Active at {{ $b->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </x-slot>
+    @endif
 </x-filter-bar>
-@endisset
 
 {{-- Table --}}
 <div class="card">
+    @if($customers->isEmpty())
+        <x-empty-state title="No customers found" icon="bi-people"
+            description="Add your first customer to get started."/>
+    @else
     <div class="table-responsive">
-        <table class="table cu-table table-hover align-middle mb-0">
+        <table class="table cu-table table-stack table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
                     <th>Customer</th>
@@ -111,9 +89,9 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($customers as $customer)
+                @foreach($customers as $customer)
                 <tr>
-                    <td data-label="Customer">
+                    <td class="cell-plain">
                         <div class="d-flex align-items-center gap-2">
                             @if($customer->avatar)
                             <img src="{{ $customer->avatar_url }}" alt="{{ $customer->name }}" class="cu-avatar">
@@ -137,25 +115,17 @@
                         @if($customer->activeMembership)
                         <span class="badge rounded-pill bg-primary-subtle text-primary">{{ $customer->activeMembership->plan->name }}</span>
                         @else
-                        <span class="text-muted small">None</span>
+                        <span class="text-muted small">—</span>
                         @endif
                     </td>
-                    <td data-label="" class="bk-cell-empty text-end">
-                        <div class="d-inline-flex gap-1">
-                            <a href="{{ route('admin.customers.show', $customer) }}"
-                               class="btn btn-outline-primary btn-sm">View</a>
-                            <a href="{{ route('admin.customers.edit', $customer) }}"
-                               class="btn btn-outline-secondary btn-sm">Edit</a>
-                        </div>
+                    <td class="cell-actions text-end">
+                        <a href="{{ route('admin.customers.show', $customer) }}"
+                           class="btn btn-primary btn-sm">View</a>
+                        <a href="{{ route('admin.customers.edit', $customer) }}"
+                           class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i></a>
                     </td>
                 </tr>
-                @empty
-                <tr class="stack-skip">
-                    <td colspan="7" class="bk-cell-empty">
-                        <x-empty-state title="No customers found" icon="bi-people"/>
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
@@ -163,6 +133,7 @@
     <div class="card-footer">
         {{ $customers->withQueryString()->links() }}
     </div>
+    @endif
     @endif
 </div>
 
