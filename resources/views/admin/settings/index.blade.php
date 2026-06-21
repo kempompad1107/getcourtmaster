@@ -578,43 +578,56 @@
         {{-- Notifications --}}
         <div x-show="tab === 'notifications'" class="card" x-cloak>
             <div class="card-header set-head">
-                <span class="set-head-icon" style="--sh:#f59e0b"><i class="bi bi-bell"></i></span>
                 <div>
                     <h6 class="mb-0 fw-semibold">Notification Settings</h6>
                     <small class="text-muted">Where alerts go and which events trigger them.</small>
                 </div>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.settings.notifications') }}">
+                <form method="POST" action="{{ route('admin.settings.notifications') }}"
+                      x-data="{ emailOn: {{ ($settings['notifications']['email_enabled'] ?? true) ? 'true' : 'false' }} }">
                     @csrf @method('PUT')
                     @php $ns = $settings['notifications'] ?? []; @endphp
+
+                    {{-- Email address --}}
                     <div class="mb-4">
                         <label class="form-label">Notification email</label>
                         <input type="email" name="notification_email"
                                value="{{ $ns['notification_email'] ?? auth()->user()->email }}"
-                               class="form-control">
-                        <div class="form-text">Alerts will be sent to this address.</div>
+                               class="form-control" style="max-width:28rem">
                     </div>
-                    <div class="form-check form-switch mb-4">
+
+                    {{-- Master toggle --}}
+                    <div class="form-check form-switch mb-3">
                         <input type="hidden" name="email_enabled" value="0">
                         <input type="checkbox" name="email_enabled" value="1" id="email_enabled"
-                               class="form-check-input" @checked($ns['email_enabled'] ?? true)>
-                        <label class="form-check-label" for="email_enabled">
+                               role="switch" class="form-check-input"
+                               x-model="emailOn" @checked($ns['email_enabled'] ?? true)>
+                        <label class="form-check-label fw-medium" for="email_enabled">
                             Send email notifications
                         </label>
                     </div>
+
+                    {{-- Per-event toggles — dimmed when master is off --}}
                     <div class="set-subhead">Notify me when</div>
-                    <div class="d-flex flex-column gap-2 mb-4">
-                        @foreach(['notify_new_booking' => 'New booking created', 'notify_cancellation' => 'Booking cancelled', 'notify_low_stock' => 'Low stock alert', 'notify_membership_expiry' => 'Membership expiring'] as $key => $label)
-                        <div class="form-check">
+                    <div class="d-flex flex-column gap-3 mb-4" :class="!emailOn && 'opacity-50 pe-none'">
+                        @foreach([
+                            'notify_new_booking'      => 'New booking created',
+                            'notify_cancellation'     => 'Booking cancelled',
+                            'notify_low_stock'        => 'Low stock alert',
+                            'notify_membership_expiry'=> 'Membership expiring',
+                        ] as $key => $label)
+                        <div class="form-check form-switch mb-0">
                             <input type="hidden" name="{{ $key }}" value="0">
                             <input type="checkbox" name="{{ $key }}" value="1"
-                                   id="{{ $key }}" class="form-check-input" @checked($ns[$key] ?? true)>
+                                   id="{{ $key }}" role="switch" class="form-check-input"
+                                   @checked($ns[$key] ?? true)>
                             <label class="form-check-label" for="{{ $key }}">{{ $label }}</label>
                         </div>
                         @endforeach
                     </div>
-                    <div class="d-flex justify-content-end">
+
+                    <div class="d-grid d-sm-flex justify-content-sm-end">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>Save Changes
                         </button>
