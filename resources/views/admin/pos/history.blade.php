@@ -37,36 +37,55 @@ $dayCount  = $orders->where('status', 'completed')->count();
 $voidCount = $orders->where('status', 'voided')->count();
 @endphp
 
+<form method="GET" action="{{ route('admin.pos.history') }}" x-data="{ open: false }">
 <x-page-header title="Sales History">
     <x-slot name="actions">
-        <a href="{{ route('admin.pos.index') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>New Order
+        {{-- Filter button --}}
+        @php $activeFilters = (int) request()->filled('status') + (int) request()->filled('date'); @endphp
+        <div class="position-relative" @click.outside="open = false">
+            <button type="button" @click="open = !open"
+                    class="btn {{ $activeFilters > 0 ? 'btn-primary' : 'btn-outline-secondary' }} d-flex align-items-center gap-2"
+                    :aria-expanded="open.toString()">
+                <i class="bi bi-sliders2"></i>
+                @if($activeFilters > 0)
+                <span class="badge rounded-pill text-bg-light text-dark">{{ $activeFilters }}</span>
+                @endif
+            </button>
+            <div x-show="open" x-cloak x-transition.origin.top.right
+                 class="card shadow position-absolute end-0 mt-2"
+                 style="width:clamp(240px,80vw,300px);max-width:calc(100vw - 1.5rem);z-index:1050">
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-3">
+                        <div>
+                            <label class="form-label small fw-semibold mb-1">Date</label>
+                            <input type="date" name="date" value="{{ request('date', today()->toDateString()) }}"
+                                   class="form-control form-control-sm">
+                        </div>
+                        <div>
+                            <label class="form-label small fw-semibold mb-1">Status</label>
+                            <select name="status" class="form-select form-select-sm">
+                                <option value="">All</option>
+                                <option value="completed" @selected(request('status') === 'completed')>Completed</option>
+                                <option value="voided" @selected(request('status') === 'voided')>Voided</option>
+                                <option value="refunded" @selected(request('status') === 'refunded')>Refunded</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary btn-sm flex-grow-1">Apply</button>
+                        <a href="{{ route('admin.pos.history') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a href="{{ route('admin.pos.index') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i>New Order
         </a>
     </x-slot>
 </x-page-header>
-
-{{-- Filters — shared filter bar (filters-only, no search) --}}
-<x-filter-bar :searchable="false"
-              :active-count="(int) request()->filled('status') + (int) request()->filled('date')"
-              :action="route('admin.pos.history')"
-              :clear="route('admin.pos.history')">
-    <x-slot name="filters">
-        <div>
-            <label class="form-label small fw-semibold mb-1">Date</label>
-            <input type="date" name="date" value="{{ request('date', today()->toDateString()) }}"
-                   class="form-control form-control-sm">
-        </div>
-        <div>
-            <label class="form-label small fw-semibold mb-1">Status</label>
-            <select name="status" class="form-select form-select-sm">
-                <option value="">All</option>
-                <option value="completed" @selected(request('status') === 'completed')>Completed</option>
-                <option value="voided" @selected(request('status') === 'voided')>Voided</option>
-                <option value="refunded" @selected(request('status') === 'refunded')>Refunded</option>
-            </select>
-        </div>
-    </x-slot>
-</x-filter-bar>
+<button type="submit" class="visually-hidden">Search</button>
+</form>
 
 {{-- Summary tiles --}}
 <div class="row g-3 mb-4">
