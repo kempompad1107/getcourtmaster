@@ -95,7 +95,7 @@
                         </x-badge>
                     </td>
                     <td data-label="" class="cell-actions text-end">
-                        <a href="{{ route('admin.tournaments.show', [$team->tournament_id, 'tab' => 'teams']) }}" class="btn btn-outline-primary btn-sm">Manage</a>
+                        <a href="{{ route('admin.tournaments.show', [$team->tournament_id, 'tab' => 'teams']) }}" class="btn btn-primary btn-sm">Manage</a>
                     </td>
                 </tr>
                 @empty
@@ -111,7 +111,7 @@
         </table>
     </div>
     @if($teams->hasPages())
-    <div class="card-footer">
+    <div class="px-4 py-3 border-top">
         {{ $teams->withQueryString()->links() }}
     </div>
     @endif

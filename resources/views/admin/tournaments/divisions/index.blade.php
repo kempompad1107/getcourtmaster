@@ -61,7 +61,7 @@
                         @endif
                     </td>
                     <td data-label="" class="cell-actions text-end">
-                        <a href="{{ route('admin.tournaments.brackets.show', $division) }}" class="btn btn-outline-primary btn-sm">Bracket</a>
+                        <a href="{{ route('admin.tournaments.brackets.show', $division) }}" class="btn btn-primary btn-sm">Bracket</a>
                         <a href="{{ route('admin.tournaments.show', [$division->tournament_id, 'tab' => 'divisions']) }}" class="btn btn-outline-secondary btn-sm">Manage</a>
                     </td>
                 </tr>
@@ -80,7 +80,7 @@
         </table>
     </div>
     @if($divisions->hasPages())
-    <div class="card-footer">
+    <div class="px-4 py-3 border-top">
         {{ $divisions->withQueryString()->links() }}
     </div>
     @endif

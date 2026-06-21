@@ -103,13 +103,13 @@
                                 <form method="POST" action="{{ route('admin.tournaments.matches.status', $match) }}" class="d-inline">
                                     @csrf
                                     <input type="hidden" name="status" value="called">
-                                    <button type="submit" class="btn btn-outline-warning btn-sm">Call</button>
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Call</button>
                                 </form>
                                 @elseif($match->status === 'called')
                                 <form method="POST" action="{{ route('admin.tournaments.matches.status', $match) }}" class="d-inline">
                                     @csrf
                                     <input type="hidden" name="status" value="playing">
-                                    <button type="submit" class="btn btn-outline-success btn-sm">Start</button>
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">Start</button>
                                 </form>
                                 @endif
                             @elseif(in_array($match->status, ['finished', 'walkover'], true))
@@ -140,7 +140,7 @@
         </table>
     </div>
     @if($matches->hasPages())
-    <div class="card-footer">
+    <div class="px-4 py-3 border-top">
         {{ $matches->withQueryString()->links() }}
     </div>
     @endif

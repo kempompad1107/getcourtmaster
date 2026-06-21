@@ -49,7 +49,7 @@
                         @endif
                     </td>
                     <td data-label="" class="cell-actions text-end">
-                        <a href="{{ route('admin.tournaments.brackets.show', $division) }}" class="btn btn-outline-primary btn-sm">
+                        <a href="{{ route('admin.tournaments.brackets.show', $division) }}" class="btn btn-primary btn-sm">
                             {{ $division->bracketLocked() ? 'View Bracket' : 'Set Up' }}
                         </a>
                     </td>
@@ -69,7 +69,7 @@
         </table>
     </div>
     @if($divisions->hasPages())
-    <div class="card-footer">
+    <div class="px-4 py-3 border-top">
         {{ $divisions->withQueryString()->links() }}
     </div>
     @endif
