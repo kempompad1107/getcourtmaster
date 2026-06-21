@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\BranchContext;
 use App\Services\CashDrawerService;
 use App\Services\PosService;
+use App\Services\Payments\GatewayManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -78,7 +79,7 @@ class PosController extends Controller
         abort_unless($order->tenant_id === $this->authTenant()->id, 403);
         $data = $request->validate([
             'payments'              => ['required', 'array', 'min:1'],
-            'payments.*.method'     => ['required', 'in:cash,card,gcash,maya,wallet,bank'],
+            'payments.*.method'     => ['required', 'in:cash,card,gcash,paymaya,maya,qrph,wallet,bank,stripe_card'],
             'payments.*.amount'     => ['required', 'numeric', 'min:0'],
             'payments.*.reference'  => ['nullable', 'string', 'max:120'],
             'amount_tendered'       => ['required', 'numeric', 'min:0'],
@@ -96,15 +97,12 @@ class PosController extends Controller
     }
 
 
-    public function index()
+    public function index(GatewayManager $gateways)
     {
         $this->authorize('pos.access');
         $tenant = $this->authTenant();
         $tenantId = $tenant->id;
 
-        // Prefer the active branch context (session-set via the topbar
-        // switcher). Owners with "All branches" selected fall back to the
-        // tenant's main branch so the POS still has somewhere to post the order.
         $activeBranchId = $this->branchContext->current()
             ?? $tenant->branches()->where('is_main', true)->value('id')
             ?? $tenant->branches()->value('id');
@@ -114,7 +112,14 @@ class PosController extends Controller
 
         $recentOrders = PosOrder::where('tenant_id', $tenantId)->latest()->limit(5)->with('cashier')->get();
 
-        return view('admin.pos.index', compact('categories', 'recentOrders', 'activeBranchId'));
+        $availableGateways = $gateways->availableForTenant($tenant);
+        $paymongoMethods   = [];
+        if (in_array('paymongo', $availableGateways)) {
+            $paymongoMethods = $tenant->payment_credentials['paymongo']['methods'] ?? [];
+        }
+        $hasStripe = in_array('stripe', $availableGateways);
+
+        return view('admin.pos.index', compact('categories', 'recentOrders', 'activeBranchId', 'paymongoMethods', 'hasStripe'));
     }
 
     public function store(Request $request)

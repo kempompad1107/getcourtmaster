@@ -270,14 +270,22 @@
                 <p x-show="promoMessage" x-cloak class="small mb-3"
                    :class="promoValid ? 'text-success' : 'text-danger'" x-text="promoMessage"></p>
 
-                {{-- Payment method --}}
+                {{-- Payment method — driven by gateway settings --}}
+                @php
+                    $pmLabels = ['gcash'=>'GCash','paymaya'=>'Maya','card'=>'Card','qrph'=>'QR Ph'];
+                    $posMethods = [['value'=>'cash','label'=>'Cash'],['value'=>'wallet','label'=>'Wallet']];
+                    foreach($paymongoMethods as $m) {
+                        $posMethods[] = ['value'=>$m, 'label'=>$pmLabels[$m] ?? ucfirst($m)];
+                    }
+                    if($hasStripe) $posMethods[] = ['value'=>'stripe_card','label'=>'Intl Card'];
+                @endphp
                 <p class="form-label small fw-semibold mb-1">Payment Method</p>
                 <div class="d-flex flex-wrap gap-1 mb-3">
-                    <template x-for="method in ['cash','gcash','maya','card','qr']" :key="method">
-                        <button @click="paymentMethod = method"
-                                :class="paymentMethod === method ? 'btn-primary' : 'btn-outline-secondary'"
-                                class="btn btn-sm text-capitalize flex-fill" x-text="method"></button>
-                    </template>
+                    @foreach($posMethods as $pm)
+                    <button @click="paymentMethod = '{{ $pm['value'] }}'"
+                            :class="paymentMethod === '{{ $pm['value'] }}' ? 'btn-primary' : 'btn-outline-secondary'"
+                            class="btn btn-sm flex-fill">{{ $pm['label'] }}</button>
+                    @endforeach
                 </div>
 
                 {{-- Amount tendered --}}

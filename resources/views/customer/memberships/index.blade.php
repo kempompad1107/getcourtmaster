@@ -342,9 +342,13 @@
                         <select name="payment_method" class="form-select" required>
                             <option value="wallet">Wallet (₱{{ number_format(auth()->user()->wallet_balance ?? 0, 2) }} available)</option>
                             <option value="cash">Cash at the desk</option>
-                            <option value="gcash">GCash</option>
-                            <option value="maya">Maya</option>
-                            <option value="card">Credit / Debit Card</option>
+                            @php $pmLabels = ['gcash'=>'GCash','paymaya'=>'Maya','card'=>'Credit / Debit Card','qrph'=>'QR Ph']; @endphp
+                            @foreach($paymongoMethods as $m)
+                                <option value="{{ $m }}">{{ $pmLabels[$m] ?? ucfirst($m) }}</option>
+                            @endforeach
+                            @if($hasStripe)
+                                <option value="stripe_card">International Card (Stripe)</option>
+                            @endif
                         </select>
                     </div>
                     @if(auth()->user()->wallet_balance < $plan->price)

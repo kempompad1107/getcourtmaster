@@ -8,6 +8,7 @@ use App\Models\MembershipPlan;
 use App\Models\MembershipTransaction;
 use App\Repositories\Contracts\MembershipRepositoryInterface;
 use App\Services\MembershipService;
+use App\Services\Payments\GatewayManager;
 use App\Services\WalletService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -22,13 +23,12 @@ class MembershipController extends Controller
         private readonly WalletService $wallet,
     ) {}
 
-    public function index(Request $request): View
+    public function index(Request $request, GatewayManager $gateways): View
     {
         $user   = $request->user();
+        $tenant = $user->tenant;
         $active = $this->memberships->activeForCustomer($user->id);
 
-        // Eager-load the plan + recent transactions so the active card has
-        // everything to render in a single query each.
         if ($active) {
             $active->load('plan', 'transactions');
         }
@@ -45,7 +45,14 @@ class MembershipController extends Controller
             ->limit(10)
             ->get();
 
-        return view('customer.memberships.index', compact('user', 'active', 'plans', 'history'));
+        $availableGateways = $tenant ? $gateways->availableForTenant($tenant) : [];
+        $paymongoMethods   = [];
+        if (in_array('paymongo', $availableGateways)) {
+            $paymongoMethods = $tenant->payment_credentials['paymongo']['methods'] ?? [];
+        }
+        $hasStripe = in_array('stripe', $availableGateways);
+
+        return view('customer.memberships.index', compact('user', 'active', 'plans', 'history', 'paymongoMethods', 'hasStripe'));
     }
 
     public function subscribe(Request $request, MembershipPlan $plan): RedirectResponse
@@ -62,7 +69,7 @@ class MembershipController extends Controller
         }
 
         $request->validate([
-            'payment_method' => 'required|in:wallet,cash,gcash,maya,card',
+            'payment_method' => 'required|in:wallet,cash,gcash,paymaya,maya,card,qrph,stripe_card',
         ]);
 
         // MembershipService::subscribe() now handles wallet debiting atomically
@@ -83,7 +90,7 @@ class MembershipController extends Controller
         $this->authorizeOwnership($membership, $request->user()->id);
 
         $request->validate([
-            'payment_method' => 'required|in:wallet,cash,gcash,maya,card',
+            'payment_method' => 'required|in:wallet,cash,gcash,paymaya,maya,card,qrph,stripe_card',
         ]);
 
         try {
