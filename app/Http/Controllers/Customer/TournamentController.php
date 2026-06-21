@@ -23,18 +23,23 @@ class TournamentController extends Controller
         private readonly PaymentService $payments,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $user = $this->authUser();
+        $tab  = $request->get('tab', 'all');
 
-        // TenantScope already limits to the member's venue; show only published events.
-        $tournaments = Tournament::publicVisible()
+        $q = Tournament::publicVisible()
             ->notArchived()
             ->whereIn('status', ['registration_open', 'registration_closed', 'ongoing', 'completed'])
             ->withCount(['teams' => fn ($q) => $q->whereIn('status', ['pending', 'confirmed'])])
             ->orderByRaw("FIELD(status, 'registration_open', 'ongoing', 'registration_closed', 'completed')")
-            ->orderByRaw('starts_at IS NULL, starts_at ASC')
-            ->get();
+            ->orderByRaw('starts_at IS NULL, starts_at ASC');
+
+        if ($tab === 'open')    $q->where('status', 'registration_open');
+        if ($tab === 'ongoing') $q->whereIn('status', ['ongoing', 'registration_closed']);
+        if ($tab === 'past')    $q->where('status', 'completed');
+
+        $tournaments = $q->get();
 
         $myTeams = TournamentTeam::whereIn('status', ['pending', 'confirmed'])
             ->whereHas('members', fn ($q) => $q->where('user_id', $user->id))
@@ -42,7 +47,7 @@ class TournamentController extends Controller
             ->latest('id')
             ->get();
 
-        return view('customer.tournaments.index', compact('tournaments', 'myTeams'));
+        return view('customer.tournaments.index', compact('tournaments', 'myTeams', 'tab'));
     }
 
     public function show(Tournament $tournament)
