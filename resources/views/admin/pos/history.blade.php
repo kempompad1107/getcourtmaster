@@ -41,35 +41,28 @@ $voidCount = $orders->where('status', 'voided')->count();
     </x-slot>
 </x-page-header>
 
-{{-- Filters --}}
-<div class="card mb-4">
-    <div class="card-body py-3">
-        <form method="GET" action="{{ route('admin.pos.history') }}" class="row g-2 align-items-end">
-            <div class="col-6 col-sm-auto">
-                <label class="form-label small mb-1">Date</label>
-                <input type="date" name="date" value="{{ request('date', today()->toDateString()) }}"
-                       class="form-control form-control-sm">
-            </div>
-            <div class="col-6 col-sm-auto">
-                <label class="form-label small mb-1">Status</label>
-                <select name="status" class="form-select form-select-sm">
-                    <option value="">All</option>
-                    <option value="completed" @selected(request('status') === 'completed')>Completed</option>
-                    <option value="voided" @selected(request('status') === 'voided')>Voided</option>
-                    <option value="refunded" @selected(request('status') === 'refunded')>Refunded</option>
-                </select>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-funnel me-1"></i>Filter
-                </button>
-                @if(request()->anyFilled(['date','status']))
-                <a href="{{ route('admin.pos.history') }}" class="btn btn-link btn-sm text-muted">Clear</a>
-                @endif
-            </div>
-        </form>
-    </div>
-</div>
+{{-- Filters — shared filter bar (filters-only, no search) --}}
+<x-filter-bar :searchable="false"
+              :active-count="(int) request()->filled('status') + (int) request()->filled('date')"
+              :action="route('admin.pos.history')"
+              :clear="route('admin.pos.history')">
+    <x-slot name="filters">
+        <div>
+            <label class="form-label small fw-semibold mb-1">Date</label>
+            <input type="date" name="date" value="{{ request('date', today()->toDateString()) }}"
+                   class="form-control form-control-sm">
+        </div>
+        <div>
+            <label class="form-label small fw-semibold mb-1">Status</label>
+            <select name="status" class="form-select form-select-sm">
+                <option value="">All</option>
+                <option value="completed" @selected(request('status') === 'completed')>Completed</option>
+                <option value="voided" @selected(request('status') === 'voided')>Voided</option>
+                <option value="refunded" @selected(request('status') === 'refunded')>Refunded</option>
+            </select>
+        </div>
+    </x-slot>
+</x-filter-bar>
 
 {{-- Summary tiles --}}
 <div class="row g-3 mb-4">
