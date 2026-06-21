@@ -5,7 +5,11 @@
 
 <x-page-header title="Membership Detail" :back="route('admin.memberships.index')">
     <x-slot name="actions">
-        <x-badge :status="$membership->status">{{ ucfirst($membership->status) }}</x-badge>
+        @if($membership->cancelled_at && $membership->status === 'active')
+            <x-badge status="cancelled">Pending Cancellation</x-badge>
+        @else
+            <x-badge :status="$membership->status">{{ ucfirst($membership->status) }}</x-badge>
+        @endif
     </x-slot>
 </x-page-header>
 
@@ -40,9 +44,14 @@
             </div>
             <div class="col-6 col-sm-4">
                 <p class="text-muted small mb-0">
-                    {{ $membership->status === 'cancelled' ? 'Cancelled' : 'Expires' }}
+                    {{ $membership->status === 'cancelled' ? 'Cancelled' : ($membership->cancelled_at ? 'Access Until' : 'Expires') }}
                 </p>
-                <p class="fw-semibold mb-0">{{ $membership->expires_at?->format('M j, Y') ?? '—' }}</p>
+                <p class="fw-semibold mb-0">
+                    {{ $membership->expires_at?->format('M j, Y') ?? '—' }}
+                    @if($membership->cancelled_at && $membership->status === 'active')
+                        <span class="badge bg-warning-subtle text-warning-emphasis ms-1 small">Cancels then</span>
+                    @endif
+                </p>
             </div>
             <div class="col-6 col-sm-4">
                 <p class="text-muted small mb-0">Court Time Left</p>
@@ -101,9 +110,9 @@
                 </div>
             </form>
             @endif
-            @if($membership->status === 'active')
+            @if($membership->status === 'active' && !$membership->cancelled_at)
             <form method="POST" action="{{ route('admin.memberships.cancel', $membership) }}"
-                  onsubmit="return confirm('Cancel this membership? The member will lose access at the end of the billing period.')">
+                  onsubmit="return confirm('Cancel this membership? The member will keep access until their expiry date.')">
                 @csrf
                 <button type="submit" class="btn btn-outline-danger btn-sm">
                     <i class="bi bi-x-circle me-1"></i>Cancel Membership
