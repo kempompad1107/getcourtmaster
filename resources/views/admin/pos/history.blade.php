@@ -70,7 +70,7 @@ $voidCount = $orders->where('status', 'voided')->count();
 
 {{-- Summary tiles --}}
 <div class="row g-3 mb-4">
-    <div class="col-6 col-sm-4">
+    <div class="col-12 col-sm-4">
         <div class="pos-sum">
             <div class="pos-sum-ico bg-primary bg-opacity-10 text-primary"><i class="bi bi-receipt"></i></div>
             <div>
@@ -79,7 +79,7 @@ $voidCount = $orders->where('status', 'voided')->count();
             </div>
         </div>
     </div>
-    <div class="col-6 col-sm-4">
+    <div class="col-12 col-sm-4">
         <div class="pos-sum">
             <div class="pos-sum-ico bg-success bg-opacity-10 text-success"><i class="bi bi-cash-coin"></i></div>
             <div>
