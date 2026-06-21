@@ -156,6 +156,10 @@ body {
     --bs-btn-font-size: .8125rem;
     border-radius: $border-radius-sm;
 }
+// Inside a btn-group the group manages border-radius per-side — don't override it
+.ph-actions .btn-group .btn { border-radius: 0; }
+.ph-actions .btn-group .btn:first-child { border-radius: $border-radius-sm 0 0 $border-radius-sm; }
+.ph-actions .btn-group .btn:last-child  { border-radius: 0 $border-radius-sm $border-radius-sm 0; }
 .btn-lg { --bs-btn-padding-x: 1.5rem; --bs-btn-padding-y: .8125rem; border-radius: $border-radius-lg; }
 
 .btn-primary {

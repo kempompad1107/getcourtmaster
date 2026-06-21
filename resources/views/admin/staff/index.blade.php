@@ -30,7 +30,7 @@
             </a>
             <a href="{{ route('admin.staff.shifts') }}"
                class="btn {{ request()->routeIs('admin.staff.shifts') ? 'btn-primary' : 'btn-outline-secondary' }}">
-                Shifts &amp; Attendance
+                Shifts & Attendance
             </a>
         </div>
         @php $staffLimit = app(\App\Services\PlanLimitGuard::class)->check(auth()->user()->tenant, 'staff'); @endphp

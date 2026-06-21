@@ -21,7 +21,7 @@
 
 @section('content')
 
-<x-page-header title="Shifts &amp; Attendance">
+<x-page-header title="Shifts & Attendance">
     <x-slot name="actions">
         <div class="btn-group" role="group">
             <a href="{{ route('admin.staff.index') }}"
@@ -30,7 +30,7 @@
             </a>
             <a href="{{ route('admin.staff.shifts') }}"
                class="btn {{ request()->routeIs('admin.staff.shifts') ? 'btn-primary' : 'btn-outline-secondary' }}">
-                Shifts &amp; Attendance
+                Shifts & Attendance
             </a>
         </div>
         <button type="button" class="btn btn-primary"
