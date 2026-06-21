@@ -12,11 +12,13 @@
         <div class="card-body py-3">
 
             {{-- Row 1: quick ranges (scrollable on mobile) --}}
-            <div class="d-flex gap-1 mb-2 overflow-x-auto pb-1" style="white-space:nowrap">
-                <button type="button" class="settings-tab-btn flex-shrink-0" @click="setRange('today')" :class="activeRange === 'today' && 'active'">Today</button>
-                <button type="button" class="settings-tab-btn flex-shrink-0" @click="setRange('week')"  :class="activeRange === 'week'  && 'active'">This Week</button>
-                <button type="button" class="settings-tab-btn flex-shrink-0" @click="setRange('month')" :class="activeRange === 'month' && 'active'">This Month</button>
-                <button type="button" class="settings-tab-btn flex-shrink-0" @click="setRange('year')"  :class="activeRange === 'year'  && 'active'">This Year</button>
+            <div class="overflow-x-auto mb-2 pb-1">
+                <div class="settings-tabs" style="white-space:nowrap;min-width:0">
+                    <button type="button" class="settings-tab-btn" @click="setRange('today')" :class="activeRange === 'today' && 'active'">Today</button>
+                    <button type="button" class="settings-tab-btn" @click="setRange('week')"  :class="activeRange === 'week'  && 'active'">This Week</button>
+                    <button type="button" class="settings-tab-btn" @click="setRange('month')" :class="activeRange === 'month' && 'active'">This Month</button>
+                    <button type="button" class="settings-tab-btn" @click="setRange('year')"  :class="activeRange === 'year'  && 'active'">This Year</button>
+                </div>
             </div>
 
             {{-- Row 2: date pickers --}}
