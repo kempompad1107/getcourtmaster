@@ -21,6 +21,9 @@
 
 @section('content')
 
+@php $activeFilters = (int) request()->filled('status') + (int) request()->filled('date') + (int) request()->filled('staff_id'); @endphp
+
+<form method="GET" action="{{ route('admin.staff.shifts') }}" x-data="{ open: false }">
 <x-page-header title="Shifts & Attendance">
     <x-slot name="actions">
         <div class="btn-group" role="group">
@@ -33,44 +36,63 @@
                 Shifts & Attendance
             </a>
         </div>
+
+        {{-- Filter icon --}}
+        <div class="position-relative" @click.outside="open = false">
+            <button type="button" @click="open = !open"
+                    class="btn {{ $activeFilters ? 'btn-primary' : 'btn-outline-secondary' }} position-relative">
+                <i class="bi bi-sliders2"></i>
+                @if($activeFilters)
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      style="font-size:.55rem">{{ $activeFilters }}</span>
+                @endif
+            </button>
+            <div x-show="open" x-cloak
+                 class="position-absolute end-0 mt-1 p-3 rounded-3 shadow-lg border bg-body z-3"
+                 style="min-width:260px">
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All statuses</option>
+                            <option value="scheduled"  @selected(request('status') === 'scheduled')>Scheduled</option>
+                            <option value="active"     @selected(request('status') === 'active')>Active</option>
+                            <option value="completed"  @selected(request('status') === 'completed')>Completed</option>
+                            <option value="absent"     @selected(request('status') === 'absent')>Absent</option>
+                            <option value="late"       @selected(request('status') === 'late')>Late</option>
+                            <option value="cancelled"  @selected(request('status') === 'cancelled')>Cancelled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Date</label>
+                        <input type="date" name="date" value="{{ request('date') }}" class="form-control">
+                    </div>
+                    <div>
+                        <label class="form-label">Staff</label>
+                        <select name="staff_id" class="form-select">
+                            <option value="">All staff</option>
+                            @foreach($staffList as $s)
+                            <option value="{{ $s->id }}" @selected(request('staff_id') == $s->id)>{{ $s->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">Apply</button>
+                        @if($activeFilters)
+                        <a href="{{ route('admin.staff.shifts') }}" class="btn btn-outline-secondary">Clear</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <button type="button" class="btn btn-primary"
                 data-bs-toggle="modal" data-bs-target="#newShiftModal">
             <i class="bi bi-plus-lg"></i>New Shift
         </button>
     </x-slot>
 </x-page-header>
-
-<x-filter-bar :searchable="false"
-              :active-count="(int) request()->filled('status') + (int) request()->filled('date') + (int) request()->filled('staff_id')"
-              :clear="route('admin.staff.shifts')">
-    <x-slot name="filters">
-        <div>
-            <label class="form-label">Status</label>
-            <select name="status" class="form-select">
-                <option value="">All statuses</option>
-                <option value="scheduled"  @selected(request('status') === 'scheduled')>Scheduled</option>
-                <option value="active"     @selected(request('status') === 'active')>Active</option>
-                <option value="completed"  @selected(request('status') === 'completed')>Completed</option>
-                <option value="absent"     @selected(request('status') === 'absent')>Absent</option>
-                <option value="late"       @selected(request('status') === 'late')>Late</option>
-                <option value="cancelled"  @selected(request('status') === 'cancelled')>Cancelled</option>
-            </select>
-        </div>
-        <div>
-            <label class="form-label">Date</label>
-            <input type="date" name="date" value="{{ request('date') }}" class="form-control">
-        </div>
-        <div>
-            <label class="form-label">Staff</label>
-            <select name="staff_id" class="form-select">
-                <option value="">All staff</option>
-                @foreach($staffList as $s)
-                <option value="{{ $s->id }}" @selected(request('staff_id') == $s->id)>{{ $s->name }}</option>
-                @endforeach
-            </select>
-        </div>
-    </x-slot>
-</x-filter-bar>
+</form>
 
 <div class="card">
     <div class="card-body pb-2 d-flex align-items-center justify-content-between gap-3">
