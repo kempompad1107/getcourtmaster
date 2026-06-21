@@ -137,8 +137,9 @@
                 </button>
             @endif
             @if(!$active->cancelled_at)
+                @php $cancelConfirm = "Cancel your membership? You will keep full access until {$active->expires_at->format('M j, Y')}."; @endphp
                 <form method="POST" action="{{ route('customer.memberships.cancel', $active) }}"
-                      onsubmit="return confirm('Cancel your membership? You will keep full access until {{ $active->expires_at->format(\'M j, Y\') }}.');">
+                      onsubmit="return confirm('{{ $cancelConfirm }}');">
                     @csrf
                     <button class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle me-1"></i>Cancel</button>
                 </form>
