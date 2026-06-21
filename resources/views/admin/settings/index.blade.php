@@ -69,9 +69,9 @@
                             <input type="text" name="name" value="{{ $tenant->name }}" required class="form-control">
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Contact email <span class="badge bg-secondary fw-normal ms-1" style="font-size:.7em">Display only</span></label>
+                            <label class="form-label">Contact email</label>
                             <input type="email" name="email" value="{{ $tenant->email }}" required class="form-control">
-                            <div class="form-text"><i class="bi bi-info-circle me-1"></i>Shown on your public profile. To receive notification emails, set your address under the <a href="?tab=notifications">Notifications tab</a>.</div>
+                            <div class="form-text">Shown on your public profile (display only). To receive notification emails, set your address under the <a href="#" @click.prevent="tab='notifications'; history.replaceState(null,'','?tab=notifications')">Notifications tab</a>.</div>
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label">Phone number</label>
@@ -118,26 +118,29 @@
 
                     <div class="set-subhead">Media &amp; identity</div>
                     <div class="row g-3 mb-2">
-                        <div class="col-12 col-sm-3">
+                        {{-- Logo --}}
+                        <div class="col-12 col-sm-4">
                             <label class="form-label">Logo</label>
                             @if($logoUrl)
-                                <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-3 mb-2">
                                     <img src="{{ $logoUrl }}" alt="Logo"
-                                         class="border rounded" style="width:64px;height:64px;object-fit:contain;background:#fff;padding:4px">
-                                    <div class="form-check form-check-inline small">
+                                         class="border rounded flex-shrink-0"
+                                         style="width:56px;height:56px;object-fit:contain;background:#fff;padding:4px">
+                                    <div class="form-check small">
                                         <input class="form-check-input" type="checkbox" name="remove_logo" value="1" id="remove_logo">
-                                        <label class="form-check-label" for="remove_logo">Remove</label>
+                                        <label class="form-check-label" for="remove_logo">Remove logo</label>
                                     </div>
                                 </div>
                             @endif
                             <input type="file" name="logo" accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                                   class="form-control form-control-sm @error('logo') is-invalid @enderror">
+                                   class="form-control @error('logo') is-invalid @enderror">
                             @error('logo')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">PNG/JPG/SVG, square works best, max 2MB.</div>
+                            <div class="form-text">PNG/JPG/SVG · square · max 2 MB</div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
-                            <label class="form-label">Tagline <span class="text-muted small">(under the hero name)</span></label>
+                        {{-- Tagline --}}
+                        <div class="col-12 col-sm-8">
+                            <label class="form-label">Tagline <span class="text-muted small fw-normal">— shown under the club name on your public page</span></label>
                             <input type="text" name="tagline" maxlength="200"
                                    value="{{ $brandingSettings['tagline'] ?? '' }}"
                                    placeholder="e.g. The friendliest pickleball club in town."
@@ -145,29 +148,35 @@
                             @error('tagline')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        <div class="col-12 col-sm-3">
+                        {{-- Brand color --}}
+                        <div class="col-12 col-sm-4">
                             <label class="form-label">Brand color</label>
-                            <input type="color" name="brand_color"
-                                   value="{{ $brandingSettings['brand_color'] ?? '#10b981' }}"
-                                   class="form-control form-control-color w-100" style="height:38px">
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" name="brand_color"
+                                       value="{{ $brandingSettings['brand_color'] ?? '#10b981' }}"
+                                       class="form-control form-control-color flex-shrink-0" style="width:48px;height:38px;padding:.25rem">
+                                <span class="small text-muted">Used on your public page and customer emails.</span>
+                            </div>
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label">Hero image <span class="text-muted small">(big photo below the hero)</span></label>
+                        {{-- Hero image --}}
+                        <div class="col-12 col-sm-8">
+                            <label class="form-label">Hero image <span class="text-muted small fw-normal">— large photo shown below the club name</span></label>
                             @if($heroImageUrl)
                                 <div class="d-flex align-items-start gap-3 mb-2">
                                     <img src="{{ $heroImageUrl }}" alt="Hero"
-                                         class="border rounded" style="max-width:280px;height:120px;object-fit:cover">
+                                         class="border rounded"
+                                         style="width:100%;max-width:240px;height:100px;object-fit:cover">
                                     <div class="form-check small mt-1">
                                         <input class="form-check-input" type="checkbox" name="remove_hero_image" value="1" id="remove_hero">
-                                        <label class="form-check-label" for="remove_hero">Remove current</label>
+                                        <label class="form-check-label" for="remove_hero">Remove</label>
                                     </div>
                                 </div>
                             @endif
                             <input type="file" name="hero_image" accept="image/png,image/jpeg,image/webp"
-                                   class="form-control form-control-sm @error('hero_image') is-invalid @enderror">
+                                   class="form-control @error('hero_image') is-invalid @enderror">
                             @error('hero_image')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">Landscape orientation works best. PNG/JPG/WEBP, max 5MB.</div>
+                            <div class="form-text">Landscape · PNG/JPG/WEBP · max 5 MB</div>
                         </div>
                     </div>
 
@@ -218,7 +227,7 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end">
+            <div class="d-grid d-sm-flex justify-content-sm-end">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-check-lg me-1"></i>Save Changes
                 </button>
