@@ -23,7 +23,7 @@
         </div>
     </div>
     @isset($actions)
-    <div class="ph-actions d-flex align-items-center gap-2 flex-shrink-0">
+    <div class="ph-actions d-flex align-items-center gap-2 flex-wrap">
         {{ $actions }}
     </div>
     @endisset
