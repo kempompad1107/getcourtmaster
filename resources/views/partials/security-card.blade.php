@@ -18,8 +18,8 @@
 
 {{-- ── Two-Factor Authentication ─────────────────────────────── --}}
 <div class="card mb-4">
-    <div class="card-header set-head">
-        <div class="flex-grow-1">
+    <div class="card-header d-flex align-items-center justify-content-between gap-3">
+        <div>
             <h6 class="mb-0 fw-semibold">Two-Factor Authentication</h6>
             <small class="text-muted">Add a one-time code to your sign-in for extra security.</small>
         </div>
@@ -104,8 +104,8 @@
 
 {{-- ── Signed-in Devices ──────────────────────────────────────── --}}
 <div class="card">
-    <div class="card-header set-head">
-        <div class="flex-grow-1">
+    <div class="card-header d-flex align-items-center justify-content-between gap-3">
+        <div>
             <h6 class="mb-0 fw-semibold">Signed-in Devices</h6>
             <small class="text-muted">All sessions currently logged in to your account.</small>
         </div>
