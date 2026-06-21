@@ -55,7 +55,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="6" class="cell-plain">
                         <x-empty-state title="No divisions yet"
                             description="Create a tournament with divisions first, then generate brackets here."

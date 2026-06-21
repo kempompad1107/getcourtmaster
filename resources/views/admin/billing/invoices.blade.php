@@ -101,7 +101,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7" class="bk-cell-empty">
                         <x-empty-state title="No invoices yet"
                                        message="Subscription invoices will appear here once billed."

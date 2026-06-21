@@ -34,7 +34,7 @@
                 </td>
             </tr>
             @empty
-            <tr>
+            <tr class="stack-skip">
                 <td colspan="8" class="cell-plain">
                     <x-empty-state title="No standings yet" description="Standings appear once matches are recorded." icon="bi-list-ol"/>
                 </td>

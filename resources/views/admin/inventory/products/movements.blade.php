@@ -55,7 +55,7 @@
                     <td class="small text-muted">{{ $mv->createdBy->name ?? 'System' }}</td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7">
                         <x-empty-state title="No movements recorded" icon="bi-arrow-left-right"/>
                     </td>

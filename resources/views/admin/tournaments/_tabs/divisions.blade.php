@@ -68,7 +68,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7" class="cell-plain">
                         <x-empty-state title="No divisions yet"
                             description="Add divisions like Men's Doubles or Open Singles so players can register."

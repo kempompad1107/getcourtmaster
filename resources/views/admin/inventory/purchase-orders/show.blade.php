@@ -93,7 +93,7 @@
                                 <td class="text-end small fw-medium">₱{{ number_format($item->line_total, 2) }}</td>
                             </tr>
                             @empty
-                            <tr>
+                            <tr class="stack-skip">
                                 <td colspan="{{ $canReceive ? 6 : 5 }}">
                                     <x-empty-state title="No items" icon="bi-box-seam"/>
                                 </td>

@@ -99,7 +99,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="6" class="cell-plain">
                         <x-empty-state title="No teams found"
                             description="Try adjusting your filters, or register teams from a tournament page."

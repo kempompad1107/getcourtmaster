@@ -133,7 +133,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7">
                         <x-empty-state title="No records found" icon="bi-clock-history"
                             description="Try adjusting your filters."/>

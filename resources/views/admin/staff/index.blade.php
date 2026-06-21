@@ -129,7 +129,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="5" class="bk-cell-empty">
                         <x-empty-state title="No staff members found" icon="bi-person-badge"/>
                     </td>

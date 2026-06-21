@@ -161,7 +161,7 @@ $voidCount = $orders->where('status', 'voided')->count();
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7" class="cell-plain">
                         <x-empty-state title="No orders found" icon="bi-receipt"/>
                     </td>

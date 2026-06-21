@@ -115,7 +115,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr>
+                        <tr class="stack-skip">
                             <td colspan="4">
                                 <x-empty-state title="No attendance records" icon="bi-calendar-x"/>
                             </td>

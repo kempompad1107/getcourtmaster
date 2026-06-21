@@ -139,7 +139,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="8" class="bk-cell-empty">
                         <x-empty-state title="No shifts yet" icon="bi-clock-history"/>
                     </td>

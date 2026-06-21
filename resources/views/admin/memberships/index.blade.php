@@ -133,7 +133,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7" class="cell-plain">
                         <x-empty-state title="No memberships found" icon="bi-credit-card"/>
                     </td>

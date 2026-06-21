@@ -1141,16 +1141,21 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
         // Inside a .card, render each stacked row as a soft-tinted "chip" with a
         // gap between them — clearly separate records without the heavy white
         // card-in-card look (no border, no shadow; fill differs from the parent).
-        .card .table-responsive & tr,
-        .card > & tr {
+        .card .table-responsive & tr:not(.stack-skip),
+        .card > & tr:not(.stack-skip) {
             border: 0; box-shadow: none;
             background: var(--bs-body-bg-alt);
             border-radius: .6rem;
             margin: 0 0 .6rem;
             padding: .5rem 1rem;
         }
-        .card .table-responsive & tr:last-child,
-        .card > & tr:last-child { margin-bottom: 0; }
+        .card .table-responsive & tr:not(.stack-skip):last-child,
+        .card > & tr:not(.stack-skip):last-child { margin-bottom: 0; }
+        .card .table-responsive & tr.stack-skip,
+        .card > & tr.stack-skip {
+            border: 0; box-shadow: none; background: transparent;
+            border-radius: 0; margin: 0; padding: 0;
+        }
 
         td {
             display: flex; align-items: center; justify-content: space-between;

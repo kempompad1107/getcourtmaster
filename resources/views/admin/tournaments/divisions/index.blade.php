@@ -66,7 +66,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7" class="cell-plain">
                         <x-empty-state title="No divisions yet"
                             description="Open a tournament and add divisions from its Divisions tab."

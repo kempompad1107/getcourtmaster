@@ -150,7 +150,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7" class="bk-cell-empty">
                         <x-empty-state title="No customers found" icon="bi-people"/>
                     </td>

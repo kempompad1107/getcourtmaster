@@ -126,7 +126,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="7" class="cell-plain">
                         <x-empty-state title="No matches found"
                             description="Generate a bracket for a division to create its matches."

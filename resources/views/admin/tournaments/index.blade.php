@@ -117,7 +117,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr class="stack-skip">
                     <td colspan="8" class="cell-plain">
                         <x-empty-state title="No tournaments found"
                             description="Create your first tournament to start taking registrations."
