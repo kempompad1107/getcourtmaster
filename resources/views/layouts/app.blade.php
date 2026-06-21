@@ -228,6 +228,7 @@
     <span class="topbar-title d-lg-none">{{ config('app.name') }}</span>
 
     @include('partials.topbar-actions', [
+        'profileRoute'   => 'admin.account',
         'settingsRoute'  => $isOwner ? 'admin.settings.index' : null,
         'twoFactorRoute' => '2fa.show',
         'devicesRoute'   => 'devices.index',
