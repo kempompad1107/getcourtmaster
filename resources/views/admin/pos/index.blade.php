@@ -256,7 +256,7 @@
                 </div>
 
                 {{-- Promo code --}}
-                <div class="input-group mb-1">
+                <div class="input-group mb-3">
                     <input x-model="promoCode" type="text" placeholder="Promo Code"
                            @keydown.enter.prevent="applyPromo()"
                            class="form-control">
