@@ -256,7 +256,6 @@
         {{-- Booking --}}
         <div x-show="tab === 'booking'" class="card" x-cloak>
             <div class="card-header set-head">
-                <span class="set-head-icon" style="--sh:#8b5cf6"><i class="bi bi-calendar-check"></i></span>
                 <div>
                     <h6 class="mb-0 fw-semibold">Booking Settings</h6>
                     <small class="text-muted">Tax, grace periods, pricing windows and confirmation rules.</small>
@@ -267,8 +266,10 @@
                     @csrf @method('PUT')
                     @php $bs = $settings; @endphp
                     <div class="row g-3">
+
+                        {{-- ── Numeric fields ─────────────────────────── --}}
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Tax rate (%)</label>
+                            <label class="form-label">Tax rate</label>
                             <div class="input-group">
                                 <input type="number" name="tax_rate" value="{{ $bs['tax_rate'] ?? 12 }}"
                                        min="0" max="100" step="0.5" class="form-control">
@@ -276,24 +277,49 @@
                             </div>
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Grace period (minutes)</label>
-                            <input type="number" name="grace_period_minutes" value="{{ $bs['grace_period_minutes'] ?? 5 }}"
-                                   min="0" max="60" class="form-control">
+                            <label class="form-label d-flex align-items-center gap-1">Grace period
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="How many minutes after the booking start time a session is still allowed to begin late."></i>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" name="grace_period_minutes" value="{{ $bs['grace_period_minutes'] ?? 5 }}"
+                                       min="0" max="60" class="form-control">
+                                <span class="input-group-text">min</span>
+                            </div>
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Cancellation window (hours)</label>
-                            <input type="number" name="cancellation_hours" value="{{ $bs['cancellation_hours'] ?? 24 }}"
-                                   min="0" class="form-control">
+                            <label class="form-label d-flex align-items-center gap-1">Cancellation window
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="Customers can cancel for free up to this many hours before the booking start time."></i>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" name="cancellation_hours" value="{{ $bs['cancellation_hours'] ?? 24 }}"
+                                       min="0" class="form-control">
+                                <span class="input-group-text">hrs</span>
+                            </div>
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label">Max advance booking (days)</label>
-                            <input type="number" name="advance_booking_days" value="{{ $bs['advance_booking_days'] ?? 30 }}"
-                                   min="1" max="365" class="form-control">
+                            <label class="form-label d-flex align-items-center gap-1">Max advance booking
+                                <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                   data-bs-toggle="tooltip"
+                                   title="How far in advance a customer can book a court slot."></i>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" name="advance_booking_days" value="{{ $bs['advance_booking_days'] ?? 30 }}"
+                                       min="1" max="365" class="form-control">
+                                <span class="input-group-text">days</span>
+                            </div>
                         </div>
 
+                        {{-- ── Pricing hours ───────────────────────────── --}}
                         <div class="col-12">
-                            <div class="set-subhead mt-2">Pricing hours</div>
-                            <div class="form-text">Evening hours use the court's Evening rate; all other daytime hours use the Daylight rate. Saturday &amp; Sunday always use the Weekend rate.</div>
+                            <div class="set-subhead mt-2 d-flex align-items-center gap-1">Pricing hours
+                                <i class="bi bi-info-circle text-muted" style="font-size:.75rem;cursor:default;text-transform:none;letter-spacing:0"
+                                   data-bs-toggle="tooltip"
+                                   title="Evening hours use the Evening rate; daytime uses the Daylight rate. Sat &amp; Sun always use the Weekend rate."></i>
+                            </div>
                         </div>
                         <div class="col-6 col-sm-3">
                             <label class="form-label">Evening starts</label>
@@ -310,49 +336,70 @@
                             @error('evening_end')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
+                        {{-- ── Behaviour toggles ──────────────────────── --}}
                         <div class="col-12">
-                            <div class="form-check mb-2">
-                                <input type="hidden" name="require_payment" value="0">
-                                <input type="checkbox" name="require_payment" value="1" id="require_payment"
-                                       class="form-check-input" @checked($bs['require_payment'] ?? false)>
-                                <label class="form-check-label" for="require_payment">Require payment to confirm booking</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input type="hidden" name="auto_confirm" value="0">
-                                <input type="checkbox" name="auto_confirm" value="1" id="auto_confirm"
-                                       class="form-check-input" @checked($bs['auto_confirm'] ?? false)>
-                                <label class="form-check-label" for="auto_confirm">Auto-confirm bookings</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="hidden" name="auto_stop_after_grace" value="0">
-                                <input type="checkbox" name="auto_stop_after_grace" value="1" id="auto_stop_after_grace"
-                                       class="form-check-input" @checked($bs['auto_stop_after_grace'] ?? false)>
-                                <label class="form-check-label" for="auto_stop_after_grace">
-                                    Auto-stop session when grace period expires
-                                </label>
-                                <div class="form-text">
-                                    When <strong>ON</strong>: the booking ends automatically the moment the grace period runs out — no overtime is ever charged.
-                                    When <strong>OFF</strong> (default): the timer keeps running past grace and accumulates overtime at the court's live rate until staff clicks Stop.
+                            <div class="set-subhead mt-2">Behaviour</div>
+                            <div class="d-flex flex-column gap-3">
+
+                                <div class="form-check form-switch mb-0">
+                                    <input type="hidden" name="require_payment" value="0">
+                                    <input type="checkbox" name="require_payment" value="1" id="require_payment"
+                                           role="switch" class="form-check-input" @checked($bs['require_payment'] ?? false)>
+                                    <label class="form-check-label d-flex align-items-center gap-1" for="require_payment">
+                                        Require payment to confirm booking
+                                        <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                           data-bs-toggle="tooltip"
+                                           title="When ON, a booking stays pending until payment is received. When OFF, staff can confirm bookings without payment."></i>
+                                    </label>
                                 </div>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input type="hidden" name="shift_auto_clockout" value="0">
-                                <input type="checkbox" name="shift_auto_clockout" value="1" id="shift_auto_clockout"
-                                       class="form-check-input" @checked($bs['shift_auto_clockout'] ?? true)>
-                                <label class="form-check-label" for="shift_auto_clockout">
-                                    Auto clock-out staff at end of shift
-                                </label>
-                                <div class="form-text">
-                                    When <strong>ON</strong> (default): staff still clocked in are automatically clocked out at their shift's scheduled end time. Schedule a longer shift to extend it past the usual 8 hours.
-                                    When <strong>OFF</strong>: staff stay on the clock until they (or an owner) clock out manually.
+
+                                <div class="form-check form-switch mb-0">
+                                    <input type="hidden" name="auto_confirm" value="0">
+                                    <input type="checkbox" name="auto_confirm" value="1" id="auto_confirm"
+                                           role="switch" class="form-check-input" @checked($bs['auto_confirm'] ?? false)>
+                                    <label class="form-check-label d-flex align-items-center gap-1" for="auto_confirm">
+                                        Auto-confirm bookings
+                                        <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                           data-bs-toggle="tooltip"
+                                           title="When ON, new bookings are confirmed immediately without staff approval."></i>
+                                    </label>
                                 </div>
+
+                                <div class="form-check form-switch mb-0">
+                                    <input type="hidden" name="auto_stop_after_grace" value="0">
+                                    <input type="checkbox" name="auto_stop_after_grace" value="1" id="auto_stop_after_grace"
+                                           role="switch" class="form-check-input" @checked($bs['auto_stop_after_grace'] ?? false)>
+                                    <label class="form-check-label d-flex align-items-center gap-1" for="auto_stop_after_grace">
+                                        Auto-stop session when grace period expires
+                                        <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                           data-bs-toggle="tooltip"
+                                           title="ON: booking ends automatically when grace period runs out — no overtime charged. OFF (default): timer keeps running and overtime accumulates until staff clicks Stop."></i>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-0">
+                                    <input type="hidden" name="shift_auto_clockout" value="0">
+                                    <input type="checkbox" name="shift_auto_clockout" value="1" id="shift_auto_clockout"
+                                           role="switch" class="form-check-input" @checked($bs['shift_auto_clockout'] ?? true)>
+                                    <label class="form-check-label d-flex align-items-center gap-1" for="shift_auto_clockout">
+                                        Auto clock-out staff at end of shift
+                                        <i class="bi bi-info-circle text-muted" style="font-size:.8rem;cursor:default"
+                                           data-bs-toggle="tooltip"
+                                           title="ON (default): staff still clocked in are automatically clocked out at their shift&#39;s scheduled end time. OFF: staff stay on the clock until manually clocked out."></i>
+                                    </label>
+                                </div>
+
                             </div>
                         </div>
-                        <div class="col-12 d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i>Save Changes
-                            </button>
+
+                        <div class="col-12">
+                            <div class="d-grid d-sm-flex justify-content-sm-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>Save Changes
+                                </button>
+                            </div>
                         </div>
+
                     </div>
                 </form>
             </div>
