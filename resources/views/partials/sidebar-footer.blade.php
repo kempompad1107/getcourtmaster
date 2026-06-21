@@ -5,7 +5,7 @@
 <div class="sidebar-footer">
     @php
         $accountUrl = auth()->user()->isCustomer()
-            ? route('profile.edit')
+            ? route('customer.profile.edit')
             : (auth()->user()->isSuperAdmin() ? '#' : route('admin.account'));
     @endphp
     <a href="{{ $accountUrl }}" class="user-info text-decoration-none" @if($accountUrl === '#') aria-disabled="true" @endif>
