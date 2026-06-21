@@ -5,7 +5,7 @@
     'backLabel'=> 'Back',
 ])
 
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pb-3 mb-4 border-bottom">
+<div class="d-flex align-items-start justify-content-between gap-3 pb-3 mb-4 border-bottom">
     <div class="d-flex align-items-center gap-3 min-w-0">
         @if($back)
         <a href="{{ $back }}" class="d-inline-flex align-items-center gap-1 text-muted text-decoration-none flex-shrink-0"
