@@ -3,32 +3,19 @@
 
 @push('styles')
 <style>
-    /* ── Memberships list — polish + mobile card stacking ── */
     .mb-avatar {
         width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
         display: grid; place-items: center; font-weight: 700; font-size: .82rem;
-        color: #fff; background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+        color: #fff; background: linear-gradient(135deg, #10b981, #059669);
     }
+    /* TailAdmin table header */
+    .mb-table thead th {
+        text-transform: uppercase; font-size: .7rem; letter-spacing: .04em;
+        font-weight: 600; color: var(--bs-secondary-color);
+        padding-top: .85rem; padding-bottom: .85rem;
+    }
+    .mb-table tbody td { padding-top: .85rem; padding-bottom: .85rem; }
     .mb-table tbody tr { transition: background-color .15s; }
-    @media (max-width: 767.98px) {
-        .mb-table thead { display: none; }
-        .mb-table, .mb-table tbody, .mb-table tr, .mb-table td { display: block; width: 100%; }
-        .mb-table tr {
-            border: 1px solid var(--bs-border-color); border-radius: .85rem;
-            padding: .35rem .9rem; margin: .75rem 0; background: var(--bs-card-bg);
-        }
-        .mb-table td {
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            border: 0; padding: .5rem 0; text-align: right;
-        }
-        .mb-table td + td { border-top: 1px solid var(--bs-border-color); }
-        .mb-table td::before {
-            content: attr(data-label); text-align: left; flex-shrink: 0;
-            font-size: .68rem; font-weight: 600; letter-spacing: .05em;
-            text-transform: uppercase; color: var(--bs-secondary-color);
-        }
-        .mb-table td.bk-cell-empty::before { content: none; }
-    }
 </style>
 @endpush
 
@@ -38,19 +25,16 @@
     <x-slot name="actions">
         <div class="btn-group" role="group">
             <a href="{{ route('admin.memberships.index') }}"
-               class="btn btn-sm {{ !request('view') ? 'btn-secondary' : 'btn-outline-secondary' }}">
-                Active Members
+               class="btn {{ !request('view') ? 'btn-primary' : 'btn-outline-secondary' }}">
+                Members
             </a>
             <a href="{{ route('admin.memberships.plans') }}"
-               class="btn btn-sm btn-outline-secondary">Plans</a>
+               class="btn btn-outline-secondary">Plans</a>
         </div>
-        <button type="button" class="btn btn-primary btn-sm"
+        <button type="button" class="btn btn-primary"
                 data-bs-toggle="modal" data-bs-target="#assign-membership">
-            <i class="bi bi-plus-lg me-1"></i>Assign Membership
+            <i class="bi bi-plus-lg"></i>Assign
         </button>
-        <a href="{{ route('admin.memberships.plans') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-grid me-1"></i>Manage Plans
-        </a>
     </x-slot>
 </x-page-header>
 
@@ -100,7 +84,7 @@
 {{-- Table --}}
 <div class="card">
     <div class="table-responsive">
-        <table class="table mb-table table-hover align-middle mb-0">
+        <table class="table mb-table table-stack table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
                     <th>Member</th>
@@ -115,7 +99,7 @@
             <tbody>
                 @forelse($memberships as $membership)
                 <tr>
-                    <td data-label="Member">
+                    <td class="cell-plain">
                         <div class="d-flex align-items-center gap-2">
                             <div class="mb-avatar">{{ strtoupper(substr($membership->user->name, 0, 1)) }}</div>
                             <div class="min-w-0">
@@ -143,14 +127,14 @@
                     </td>
                     <td data-label="Credits" class="small">{{ $membership->credits_label }}</td>
                     <td data-label="Status"><x-badge :status="$membership->status">{{ ucfirst($membership->status) }}</x-badge></td>
-                    <td data-label="" class="bk-cell-empty text-end">
+                    <td class="cell-actions text-end">
                         <a href="{{ route('admin.memberships.show', $membership) }}"
                            class="btn btn-outline-primary btn-sm">View</a>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="bk-cell-empty">
+                    <td colspan="7" class="cell-plain">
                         <x-empty-state title="No memberships found" icon="bi-credit-card"/>
                     </td>
                 </tr>
