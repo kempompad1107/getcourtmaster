@@ -11,6 +11,18 @@
     }
     .bk-table tbody tr { transition: background-color .15s; }
 
+    /* TailAdmin-style table: uppercase muted headers + airier rows */
+    .bk-table thead th {
+        text-transform: uppercase;
+        font-size: .7rem;
+        letter-spacing: .04em;
+        font-weight: 600;
+        color: var(--bs-secondary-color);
+        padding-top: .85rem;
+        padding-bottom: .85rem;
+    }
+    .bk-table tbody td { padding-top: .85rem; padding-bottom: .85rem; }
+
     /* Mobile stacked cells: customer name beside the avatar with the avatar on the
        far right; status badges aligned to the right (flex-end). Desktop untouched. */
     @media (max-width: 767.98px) {
