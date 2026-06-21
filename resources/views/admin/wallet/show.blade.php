@@ -37,13 +37,7 @@
 
 @section('content')
 
-<x-page-header :title="$customer->name . ' — Wallet'" :back="route('admin.wallet.index')" backLabel="Wallets">
-    <x-slot name="actions">
-        <a href="{{ route('admin.customers.show', $customer) }}" class="btn btn-outline-secondary">
-            <i class="bi bi-person"></i>Profile
-        </a>
-    </x-slot>
-</x-page-header>
+<x-page-header :title="$customer->name . ' — Wallet'" :back="route('admin.wallet.index')" backLabel="Wallets"/>
 
 {{-- Balance hero --}}
 <div class="card wallet-show-hero mb-4">
