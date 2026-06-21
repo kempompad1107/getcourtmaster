@@ -121,6 +121,10 @@
     @media (prefers-reduced-motion: reduce) {
         .perm-group, .perm-meter__fill, .perm-box .bi { animation: none !important; transition: none !important; }
     }
+    /* Push save bar above mobile bottom nav (58px) */
+    @media (max-width: 991.98px) {
+        .perm-savebar { bottom: calc(58px + env(safe-area-inset-bottom) + .5rem); }
+    }
 </style>
 @endpush
 
