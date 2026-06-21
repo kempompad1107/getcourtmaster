@@ -178,16 +178,17 @@ class MembershipService
 
     public function cancel(Membership $membership): Membership
     {
+        // Keep status active so the member retains access until expires_at.
+        // The daily processExpired job will flip it to 'cancelled' when it expires.
         $membership->update([
-            'status' => 'cancelled',
             'cancelled_at' => now(),
-            'auto_renew' => false,
+            'auto_renew'   => false,
         ]);
 
         MembershipTransaction::create([
             'membership_id' => $membership->id,
-            'type' => 'cancel',
-            'description' => 'Membership cancelled',
+            'type'          => 'cancel',
+            'description'   => 'Membership cancellation scheduled — access until ' . $membership->expires_at->toDateString(),
         ]);
 
         return $membership;
@@ -215,7 +216,7 @@ class MembershipService
     {
         $count = 0;
         Membership::active()->where('expires_at', '<', now())->each(function (Membership $m) use (&$count) {
-            $m->update(['status' => 'expired']);
+            $m->update(['status' => $m->cancelled_at ? 'cancelled' : 'expired']);
             $count++;
         });
         return $count;

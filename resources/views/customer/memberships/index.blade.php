@@ -25,7 +25,11 @@
         <p class="text-muted small mb-0">Unlock perks, discounts, and priority bookings.</p>
     </div>
     @if($active)
-        <x-badge :status="$active->status">{{ ucfirst($active->status) }}</x-badge>
+        @if($active->cancelled_at && $active->status === 'active')
+            <x-badge status="cancelled">Cancels {{ $active->expires_at->format('M j') }}</x-badge>
+        @else
+            <x-badge :status="$active->status">{{ ucfirst($active->status) }}</x-badge>
+        @endif
     @endif
 </div>
 
@@ -82,7 +86,12 @@
     </div>
 
     <div class="card-body">
-        @if($expiresSoon)
+        @if($active->cancelled_at)
+            <div class="alert alert-warning small mb-3">
+                <i class="bi bi-calendar-x me-1"></i>
+                Your membership is <strong>scheduled for cancellation</strong>. You still have full access until <strong>{{ $active->expires_at->format('M j, Y') }}</strong>.
+            </div>
+        @elseif($expiresSoon)
             <div class="alert alert-warning small mb-3">
                 <i class="bi bi-clock-history me-1"></i>
                 Your membership expires in {{ $daysLeft }} day{{ $daysLeft === 1 ? '' : 's' }}. Renew now to keep your credits and perks.
@@ -127,11 +136,13 @@
                     <i class="bi bi-snow me-1"></i>Freeze
                 </button>
             @endif
-            <form method="POST" action="{{ route('customer.memberships.cancel', $active) }}"
-                  onsubmit="return confirm('Cancel your membership? You can still book until the end of your current cycle.');">
-                @csrf
-                <button class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle me-1"></i>Cancel</button>
-            </form>
+            @if(!$active->cancelled_at)
+                <form method="POST" action="{{ route('customer.memberships.cancel', $active) }}"
+                      onsubmit="return confirm('Cancel your membership? You will keep full access until {{ $active->expires_at->format(\'M j, Y\') }}.');">
+                    @csrf
+                    <button class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle me-1"></i>Cancel</button>
+                </form>
+            @endif
         </div>
     </div>
 </div>
