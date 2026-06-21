@@ -44,8 +44,18 @@ class NotificationController extends Controller
 
     public function index(Request $request): View
     {
-        $notifications = $request->user()->notifications()->paginate(20);
-        return view('notifications.index', compact('notifications'));
+        $user   = $request->user();
+        $filter = $request->get('filter', 'all');
+
+        $q = $user->notifications();
+        if ($filter === 'unread') {
+            $q->whereNull('read_at');
+        }
+
+        $notifications  = $q->paginate(20)->withQueryString();
+        $unreadCount    = $user->unreadNotifications()->count();
+
+        return view('notifications.index', compact('notifications', 'unreadCount', 'filter'));
     }
 
     public function dropdown(Request $request): JsonResponse
