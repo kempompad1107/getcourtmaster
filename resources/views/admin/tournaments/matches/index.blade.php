@@ -3,56 +3,81 @@
 
 @section('content')
 
-<x-page-header title="Matches" subtitle="Schedule courts and referees, call matches, record scores."/>
+@php
+    $activeFilters = collect(['tournament_id','division_id','status','court_id','date'])->filter(fn ($k) => request()->filled($k))->count();
+@endphp
 
-<x-filter-bar :searchable="false"
-              :active-count="collect(['tournament_id','division_id','status','court_id','date'])->filter(fn ($k) => request()->filled($k))->count()"
-              :clear="route('admin.tournaments.matches.index')">
-    <x-slot name="filters">
-        <div>
-            <label class="form-label small fw-semibold mb-1">Tournament</label>
-            <select name="tournament_id" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="">All tournaments</option>
-                @foreach($tournaments as $t)
-                <option value="{{ $t->id }}" @selected((int) request('tournament_id') === $t->id)>{{ $t->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        @if($divisions->isNotEmpty())
-        <div>
-            <label class="form-label small fw-semibold mb-1">Division</label>
-            <select name="division_id" class="form-select form-select-sm">
-                <option value="">All divisions</option>
-                @foreach($divisions as $d)
-                <option value="{{ $d->id }}" @selected((int) request('division_id') === $d->id)>{{ $d->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        @endif
-        <div>
-            <label class="form-label small fw-semibold mb-1">Status</label>
-            <select name="status" class="form-select form-select-sm">
-                <option value="">Active (default)</option>
-                @foreach(['pending','scheduled','called','playing','finished','walkover','bye','cancelled'] as $status)
-                <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="form-label small fw-semibold mb-1">Court</label>
-            <select name="court_id" class="form-select form-select-sm">
-                <option value="">All courts</option>
-                @foreach($courts as $court)
-                <option value="{{ $court->id }}" @selected((int) request('court_id') === $court->id)>{{ $court->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="form-label small fw-semibold mb-1">Date</label>
-            <input type="date" name="date" value="{{ request('date') }}" class="form-control form-control-sm">
+<form method="GET" action="{{ route('admin.tournaments.matches.index') }}" x-data="{ open: false }">
+<x-page-header title="Matches" subtitle="Schedule courts and referees, call matches, record scores.">
+    <x-slot name="actions">
+        <div class="position-relative" @click.outside="open = false">
+            <button type="button" @click="open = !open"
+                    class="btn {{ $activeFilters ? 'btn-primary' : 'btn-outline-secondary' }} position-relative d-flex align-items-center gap-2">
+                <i class="bi bi-sliders2"></i>
+                <span class="d-none d-md-inline fw-medium" style="font-size:.875rem">Filters</span>
+                @if($activeFilters)
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          style="font-size:.55rem">{{ $activeFilters }}</span>
+                @endif
+            </button>
+            <div x-show="open" x-cloak
+                 class="position-absolute end-0 mt-1 p-3 rounded-3 shadow-lg border bg-body z-3"
+                 style="min-width:240px">
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label small fw-semibold mb-1">Tournament</label>
+                        <select name="tournament_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All tournaments</option>
+                            @foreach($tournaments as $t)
+                                <option value="{{ $t->id }}" @selected((int) request('tournament_id') === $t->id)>{{ $t->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @if($divisions->isNotEmpty())
+                    <div>
+                        <label class="form-label small fw-semibold mb-1">Division</label>
+                        <select name="division_id" class="form-select form-select-sm">
+                            <option value="">All divisions</option>
+                            @foreach($divisions as $d)
+                                <option value="{{ $d->id }}" @selected((int) request('division_id') === $d->id)>{{ $d->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+                    <div>
+                        <label class="form-label small fw-semibold mb-1">Status</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Active (default)</option>
+                            @foreach(['pending','scheduled','called','playing','finished','walkover','bye','cancelled'] as $status)
+                                <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold mb-1">Court</label>
+                        <select name="court_id" class="form-select form-select-sm">
+                            <option value="">All courts</option>
+                            @foreach($courts as $court)
+                                <option value="{{ $court->id }}" @selected((int) request('court_id') === $court->id)>{{ $court->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold mb-1">Date</label>
+                        <input type="date" name="date" value="{{ request('date') }}" class="form-control form-control-sm">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm flex-grow-1">Apply</button>
+                        @if($activeFilters)
+                            <a href="{{ route('admin.tournaments.matches.index') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
     </x-slot>
-</x-filter-bar>
+</x-page-header>
+</form>
 
 <div class="card">
     <div class="table-responsive">
