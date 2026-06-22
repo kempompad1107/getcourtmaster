@@ -103,7 +103,7 @@
         </table>
     </div>
     @if($users->hasPages())
-    <div class="card-footer d-flex justify-content-end">{{ $users->links() }}</div>
+    <div class="px-4 py-3 border-top">{{ $users->links() }}</div>
     @endif
 </div>
 

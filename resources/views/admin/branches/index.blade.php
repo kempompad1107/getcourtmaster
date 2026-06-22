@@ -234,9 +234,7 @@
 </div>
 
 @if($branches->hasPages())
-<div class="d-flex justify-content-center mt-4">
-    {{ $branches->links() }}
-</div>
+<div class="px-4 py-3 border-top">{{ $branches->links() }}</div>
 @endif
 @endif
 

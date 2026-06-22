@@ -132,7 +132,7 @@
         </table>
     </div>
     @if($orders->hasPages())
-    <div class="card-footer">{{ $orders->withQueryString()->links() }}</div>
+    <div class="px-4 py-3 border-top">{{ $orders->withQueryString()->links() }}</div>
     @endif
     @endif
 </div>

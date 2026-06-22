@@ -172,9 +172,7 @@
         </table>
     </div>
     @if($bookings->hasPages())
-    <div class="card-footer">
-        {{ $bookings->withQueryString()->links() }}
-    </div>
+    <div class="px-4 py-3 border-top">{{ $bookings->withQueryString()->links() }}</div>
     @endif
     @endif
 </div>

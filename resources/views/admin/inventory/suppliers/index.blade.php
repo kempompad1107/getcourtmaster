@@ -211,7 +211,7 @@
                 @endforeach
             </div>
             @if($suppliers->hasPages())
-            <div class="card-footer">{{ $suppliers->withQueryString()->links() }}</div>
+            <div class="px-4 py-3 border-top">{{ $suppliers->withQueryString()->links() }}</div>
             @endif
             @endif
         </div>

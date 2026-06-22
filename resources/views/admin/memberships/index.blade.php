@@ -146,9 +146,7 @@
         </table>
     </div>
     @if($memberships->hasPages())
-    <div class="card-footer">
-        {{ $memberships->withQueryString()->links() }}
-    </div>
+    <div class="px-4 py-3 border-top">{{ $memberships->withQueryString()->links() }}</div>
     @endif
     @endif
 </div>

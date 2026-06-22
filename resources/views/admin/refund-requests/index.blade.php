@@ -142,7 +142,7 @@
         </table>
     </div>
     @if($refunds->hasPages())
-    <div class="card-footer">{{ $refunds->withQueryString()->links() }}</div>
+    <div class="px-4 py-3 border-top">{{ $refunds->withQueryString()->links() }}</div>
     @endif
     @endif
 </div>

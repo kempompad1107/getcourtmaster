@@ -144,10 +144,7 @@
         </table>
     </div>
     @if($history->hasPages())
-    <div class="card-footer d-flex justify-content-between align-items-center gap-3 flex-wrap">
-        <small class="text-muted">Showing {{ $history->firstItem() }}–{{ $history->lastItem() }} of {{ $history->total() }}</small>
-        {{ $history->links() }}
-    </div>
+    <div class="px-4 py-3 border-top">{{ $history->links() }}</div>
     @endif
 </div>
 
@@ -195,10 +192,7 @@
     @endforelse
 
     @if($history->hasPages())
-    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-        <small class="text-muted">{{ $history->firstItem() }}–{{ $history->lastItem() }} of {{ $history->total() }}</small>
-        {{ $history->links() }}
-    </div>
+    <div class="px-4 py-3 border-top">{{ $history->links() }}</div>
     @endif
 </div>
 

@@ -151,7 +151,7 @@
 </div>
 
 @if($promotions->hasPages())
-<div class="mt-4">{{ $promotions->withQueryString()->links() }}</div>
+<div class="px-4 py-3 border-top">{{ $promotions->withQueryString()->links() }}</div>
 @endif
 @endif
 

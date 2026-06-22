@@ -176,7 +176,7 @@
         </table>
     </div>
     @if($shifts->hasPages())
-    <div class="card-footer">{{ $shifts->withQueryString()->links() }}</div>
+    <div class="px-4 py-3 border-top">{{ $shifts->withQueryString()->links() }}</div>
     @endif
     @endif
 </div>

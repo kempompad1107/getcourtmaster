@@ -65,9 +65,7 @@
         </table>
     </div>
     @if($movements->hasPages())
-    <div class="card-footer">
-        {{ $movements->links() }}
-    </div>
+    <div class="px-4 py-3 border-top">{{ $movements->links() }}</div>
     @endif
 </div>
 
