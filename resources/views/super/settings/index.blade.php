@@ -305,12 +305,12 @@
                     description="The first backup will run tonight at 2:00 AM."/>
             @else
             <table class="table table-hover mb-0 align-middle">
-                <thead class="table-light">
+                <thead class="table-light" style="text-transform:none;font-size:.8125rem;letter-spacing:0;">
                     <tr>
-                        <th class="ps-4">Backup File</th>
-                        <th class="d-none d-sm-table-cell">Created</th>
-                        <th class="d-none d-sm-table-cell">Size</th>
-                        <th class="text-end pe-4">Download</th>
+                        <th class="ps-4 fw-semibold">Backup File</th>
+                        <th class="d-none d-sm-table-cell fw-semibold">Created</th>
+                        <th class="d-none d-sm-table-cell fw-semibold">Size</th>
+                        <th class="text-end pe-4 fw-semibold">Download</th>
                     </tr>
                 </thead>
                 <tbody>
