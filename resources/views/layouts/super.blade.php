@@ -102,7 +102,29 @@
 @stack('modals')
 @stack('scripts')
 
+{{-- PWA service worker + persistent install button --}}
 <script>
+    let _pwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        _pwaPrompt = e;
+        const wrap = document.getElementById('pwa-install-wrap');
+        if (wrap) wrap.style.display = 'block';
+    });
+    window.addEventListener('appinstalled', () => {
+        _pwaPrompt = null;
+        const wrap = document.getElementById('pwa-install-wrap');
+        if (wrap) wrap.style.display = 'none';
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('pwa-install-btn');
+        if (btn) btn.addEventListener('click', async () => {
+            if (!_pwaPrompt) return;
+            _pwaPrompt.prompt();
+            const { outcome } = await _pwaPrompt.userChoice;
+            if (outcome === 'accepted') _pwaPrompt = null;
+        });
+    });
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register(@json(asset('sw.js'))).catch(err => console.warn('SW register failed', err));
