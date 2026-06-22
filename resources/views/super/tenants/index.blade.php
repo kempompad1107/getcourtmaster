@@ -36,7 +36,7 @@
 <div class="card">
     <div class="card-header d-flex flex-column flex-sm-row align-items-sm-center gap-2 py-3">
         <form method="GET" action="{{ route('super.tenants.index') }}"
-              class="d-flex align-items-center gap-2 flex-grow-1 flex-nowrap"
+              class="d-flex align-items-center gap-2 flex-grow-1 flex-wrap"
               id="tenant-filter-form">
 
             <input type="text" name="search" value="{{ request('search') }}"
