@@ -25,7 +25,7 @@ class ProductController extends Controller
             ->when($request->category, fn($q) => $q->where('category_id', $request->category))
             ->when($request->low_stock, fn($q) => $q->whereColumn('stock_quantity', '<=', 'low_stock_threshold'))
             ->orderBy('name')
-            ->paginate(30);
+            ->paginate(30)->withQueryString();
 
         $categories = ProductCategory::where('tenant_id', $tenant->id)->get();
 

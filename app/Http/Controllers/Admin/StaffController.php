@@ -283,7 +283,7 @@ class StaffController extends Controller
             ->when($request->status, fn ($q, $v) => $q->where('status', $v))
             ->orderByDesc('shift_date')
             ->orderBy('scheduled_start')
-            ->paginate(30);
+            ->paginate(30)->withQueryString();
 
         $staffList = User::where('tenant_id', $tenant->id)
             ->whereIn('user_type', ['staff', 'manager'])

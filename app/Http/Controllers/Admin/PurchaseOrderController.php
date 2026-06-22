@@ -23,7 +23,7 @@ class PurchaseOrderController extends Controller
             ->with('supplier')
             ->when($request->status, fn ($q, $v) => $q->where('status', $v))
             ->latest()
-            ->paginate(25);
+            ->paginate(25)->withQueryString();
         return view('admin.inventory.purchase-orders.index', compact('orders'));
     }
 

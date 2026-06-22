@@ -15,7 +15,7 @@ class SupplierController extends Controller
         $suppliers = Supplier::where('tenant_id', $this->authTenant()->id)
             ->when($request->search, fn ($q, $v) => $q->where('name', 'like', "%{$v}%"))
             ->orderBy('name')
-            ->paginate(25);
+            ->paginate(25)->withQueryString();
         return view('admin.inventory.suppliers.index', compact('suppliers'));
     }
 

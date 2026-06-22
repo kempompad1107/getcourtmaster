@@ -18,7 +18,7 @@ class PromotionController extends Controller
             ->when(request('status') === 'active',   fn($q) => $q->where('is_active', true))
             ->when(request('status') === 'inactive', fn($q) => $q->where('is_active', false))
             ->latest()
-            ->paginate(20);
+            ->paginate(20)->withQueryString();
 
         return view('admin.promotions.index', compact('promotions'));
     }
