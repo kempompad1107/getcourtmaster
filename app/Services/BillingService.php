@@ -86,14 +86,20 @@ class BillingService
     {
         $driver = $this->gateways->platform($gateway);
 
-        $result = $driver->createGenericCheckout((float) $invoice->total, [
+        $platformCreds = \App\Models\PlatformSetting::paymentCredentials();
+        $checkoutOptions = [
             'description' => "Subscription {$invoice->invoice_number}",
             'line_name'   => "Subscription {$invoice->invoice_number}",
             'currency'    => 'PHP',
             'success_url' => $urls['success_url'] ?? null,
             'cancel_url'  => $urls['cancel_url'] ?? null,
             'reference'   => $invoice->invoice_number,
-        ]);
+        ];
+        if ($gateway === 'paymongo' && !empty($platformCreds['paymongo']['methods'])) {
+            $checkoutOptions['methods'] = $platformCreds['paymongo']['methods'];
+        }
+
+        $result = $driver->createGenericCheckout((float) $invoice->total, $checkoutOptions);
 
         if (empty($result['checkout_url'])) {
             throw new \RuntimeException('Gateway did not return a checkout URL.');

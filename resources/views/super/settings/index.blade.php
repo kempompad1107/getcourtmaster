@@ -162,6 +162,21 @@
                                 <small class="text-muted">Optional. Leave blank to keep what's saved.</small>
                             </div>
                             <div class="col-12">
+                                <label class="form-label small"><i class="bi bi-grid me-1 text-muted"></i>Payment methods <small class="text-muted">— must match what you've enabled in your PayMongo dashboard</small></label>
+                                @php $pmMethods = $pm['methods'] ?? ['gcash','paymaya','card','qrph']; @endphp
+                                <div class="d-flex flex-wrap gap-2 mt-1">
+                                    @foreach(['gcash' => 'GCash', 'paymaya' => 'Maya', 'card' => 'Card', 'qrph' => 'QR Ph'] as $val => $label)
+                                    <div class="form-check form-check-inline border rounded px-3 py-2 mb-0">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="paymongo_methods[]" value="{{ $val }}"
+                                               id="pm_method_{{ $val }}"
+                                               @checked(in_array($val, $pmMethods))>
+                                        <label class="form-check-label small" for="pm_method_{{ $val }}">{{ $label }}</label>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <div class="col-12">
                                 <label class="form-label small"><i class="bi bi-globe me-1 text-muted"></i>Webhook URL <small class="text-muted">— paste into PayMongo dashboard</small></label>
                                 <div class="gw-webhook-url" x-data="{ copied: false }">
                                     <code x-ref="pmUrl">{{ route('api.v1.webhooks.platform.paymongo') }}</code>

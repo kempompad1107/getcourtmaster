@@ -8,7 +8,9 @@ use App\Services\FileStorageService;
 use App\Services\ImageProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SettingsController extends Controller
 {
@@ -16,8 +18,42 @@ class SettingsController extends Controller
     {
         $credentials = PlatformSetting::paymentCredentials();
         $branding    = PlatformSetting::branding();
+        $backups     = $this->getBackupFiles();
 
-        return view('super.settings.index', compact('credentials', 'branding'));
+        return view('super.settings.index', compact('credentials', 'branding', 'backups'));
+    }
+
+    public function downloadBackup(string $filename): StreamedResponse
+    {
+        $appName = config('app.name');
+        $path    = "{$appName}/{$filename}";
+
+        abort_unless(Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->download($path, $filename);
+    }
+
+    private function getBackupFiles(): array
+    {
+        $appName = config('app.name');
+        $files   = Storage::disk('local')->files($appName);
+
+        return collect($files)
+            ->filter(fn ($f) => str_ends_with($f, '.zip'))
+            ->map(function ($path) {
+                $name = basename($path);
+                return [
+                    'name'       => $name,
+                    'size'       => Storage::disk('local')->size($path),
+                    'created_at' => \Carbon\Carbon::createFromTimestamp(
+                        Storage::disk('local')->lastModified($path)
+                    )->timezone(config('app.timezone')),
+                    'download_url' => route('super.settings.backup.download', ['filename' => $name]),
+                ];
+            })
+            ->sortByDesc('created_at')
+            ->values()
+            ->toArray();
     }
 
     /**
@@ -84,6 +120,8 @@ class SettingsController extends Controller
             'paymongo_enabled'        => 'boolean',
             'paymongo_secret_key'     => 'nullable|string|max:255',
             'paymongo_webhook_secret' => 'nullable|string|max:255',
+            'paymongo_methods'        => 'nullable|array',
+            'paymongo_methods.*'      => 'in:gcash,paymaya,card,qrph',
             'stripe_enabled'          => 'boolean',
             'stripe_secret'           => 'nullable|string|max:255',
             'stripe_webhook_secret'   => 'nullable|string|max:255',
@@ -93,6 +131,7 @@ class SettingsController extends Controller
 
         $paymongo = array_merge($existing['paymongo'] ?? [], [
             'enabled' => (bool) ($data['paymongo_enabled'] ?? false),
+            'methods' => array_values(array_unique($data['paymongo_methods'] ?? [])),
         ]);
         if (!empty($data['paymongo_secret_key'])) {
             $paymongo['secret_key'] = $data['paymongo_secret_key'];
