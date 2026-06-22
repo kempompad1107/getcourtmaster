@@ -145,9 +145,9 @@ class BillingService
         return false;
     }
 
-    public function createInvoice(TenantSubscription $sub): SubscriptionInvoice
+    public function createInvoice(TenantSubscription $sub, ?float $overrideAmount = null): SubscriptionInvoice
     {
-        $amount = (float) ($sub->amount ?? $sub->plan?->price ?? 0);
+        $amount = $overrideAmount ?? (float) ($sub->amount ?? $sub->plan?->price ?? 0);
         $tax    = round($amount * 0.12, 2);
         return SubscriptionInvoice::create([
             'tenant_id'       => $sub->tenant_id,

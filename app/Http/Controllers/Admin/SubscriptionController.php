@@ -70,17 +70,33 @@ class SubscriptionController extends Controller
                 ->with('error', 'You have an outstanding invoice — please settle it before changing your plan.');
         }
 
-        $plan   = SubscriptionPlan::findOrFail($data['plan_id']);
-        $amount = $data['billing_cycle'] === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
+        $plan        = SubscriptionPlan::findOrFail($data['plan_id']);
+        $fullAmount  = $data['billing_cycle'] === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
+        $totalDays   = $data['billing_cycle'] === 'yearly' ? 365 : 30;
+        $newRenewsAt = $data['billing_cycle'] === 'yearly'
+            ? now()->addYear()->toDateString()
+            : now()->addMonth()->toDateString();
 
-        $subscription = $tenant->activeSubscription;
+        $subscription   = $tenant->activeSubscription;
+        $proRataAmount  = null;
+        $remainingDays  = 0;
+
         if ($subscription) {
-            // Keep the existing renews_at — the new plan takes effect now but the
-            // tenant rides out the remainder of their current period before paying again.
+            // Calculate remaining days in the current period for pro-rata billing.
+            if ($subscription->renews_at && $subscription->renews_at->isFuture()) {
+                $remainingDays = (int) ceil(now()->diffInDays($subscription->renews_at, false));
+                $remainingDays = max(0, $remainingDays);
+            }
+
+            if ($remainingDays > 0 && $remainingDays < $totalDays) {
+                $proRataAmount = round(($fullAmount / $totalDays) * $remainingDays, 2);
+            }
+
             $subscription->update([
                 'plan_id'       => $plan->id,
                 'billing_cycle' => $data['billing_cycle'],
-                'amount'        => $amount,
+                'amount'        => $fullAmount,
+                'renews_at'     => $newRenewsAt,
             ]);
         } else {
             $subscription = TenantSubscription::create([
@@ -88,11 +104,9 @@ class SubscriptionController extends Controller
                 'plan_id'       => $plan->id,
                 'billing_cycle' => $data['billing_cycle'],
                 'status'        => 'active',
-                'amount'        => $amount,
+                'amount'        => $fullAmount,
                 'starts_at'     => now(),
-                'renews_at'     => $data['billing_cycle'] === 'yearly'
-                    ? now()->addYear()->toDateString()
-                    : now()->addMonth()->toDateString(),
+                'renews_at'     => $newRenewsAt,
             ]);
         }
 
@@ -104,13 +118,17 @@ class SubscriptionController extends Controller
         }
         $tenant->update($tenantUpdate);
 
-        // Generate the invoice the owner now needs to settle for this change.
-        $invoice = $this->billing->createInvoice($subscription->fresh('plan'));
+        // Invoice: pro-rata for remaining days when switching mid-period, else full price.
+        $invoice = $this->billing->createInvoice($subscription->fresh('plan'), $proRataAmount);
 
         activity()->on($tenant)->log("Owner changed plan to '{$plan->name}' ({$data['billing_cycle']})");
 
+        $invoiceNote = $proRataAmount
+            ? "Pro-rata charge of ₱" . number_format($proRataAmount, 2) . " for {$remainingDays} remaining days."
+            : "Full period charge.";
+
         return redirect()->route('admin.subscription')
-            ->with('success', "Plan changed to {$plan->name}. Your current billing period stays the same — the new rate applies from your next renewal. Invoice {$invoice->invoice_number} is ready.");
+            ->with('success', "Plan changed to {$plan->name}. {$invoiceNote} Invoice {$invoice->invoice_number} is ready.");
     }
 
     /** Generate a renewal invoice for the current plan right now. */
