@@ -2,7 +2,6 @@
 @section('title', 'Subscription Plans')
 
 @push('styles')
-@include('super._partials.premium-ui')
 <style>
     /* ── Premium pricing cards ── */
     .plan-card {
@@ -52,22 +51,35 @@
 
 <x-page-header title="Subscription Plans" :subtitle="$plans->count() . ' plans'">
     <x-slot name="actions">
-        <a href="{{ route('super.plans.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('super.plans.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>New Plan
         </a>
     </x-slot>
 </x-page-header>
 
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
 @if($plans->isEmpty())
 <div class="card">
-    <div class="card-body text-center py-5">
-        <div class="plan-icon mx-auto mb-3"><i class="bi bi-box-seam"></i></div>
-        <p class="fw-semibold mb-1">No plans yet</p>
-        <p class="text-muted small mb-3">Create your first subscription plan to start onboarding paying tenants.</p>
-        <a href="{{ route('super.plans.create') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>New Plan
-        </a>
-    </div>
+    <x-empty-state title="No plans yet" icon="bi-collection"
+        description="Create your first subscription plan to start onboarding paying tenants.">
+        <x-slot name="actions">
+            <a href="{{ route('super.plans.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>New Plan
+            </a>
+        </x-slot>
+    </x-empty-state>
 </div>
 @else
 
@@ -107,7 +119,7 @@
             ['bi-people',      'Customers', $plan->max_customers ?? null],
         ];
     @endphp
-    <div class="col-12 col-sm-6 col-lg-4">
+    <div class="col-12 col-md-6 col-xl-4">
         <div class="card plan-card {{ $isFeatured ? 'is-featured' : '' }}">
             @if($isFeatured)<span class="plan-ribbon">Popular</span>@endif
 
@@ -166,9 +178,13 @@
                 </div>
 
                 <div class="mt-auto d-flex gap-2">
+                    <a href="{{ route('super.plans.show', $plan) }}"
+                       class="btn btn-primary btn-sm flex-fill">
+                        <i class="bi bi-eye me-1"></i>View
+                    </a>
                     <a href="{{ route('super.plans.edit', $plan) }}"
-                       class="btn btn-outline-secondary btn-sm flex-fill">
-                        <i class="bi bi-pencil me-1"></i>Edit
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil"></i>
                     </a>
                     <form method="POST" action="{{ route('super.plans.destroy', $plan) }}"
                           onsubmit="return confirm('Delete this plan?')">
