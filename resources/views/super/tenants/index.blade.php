@@ -132,8 +132,8 @@
                                class="btn btn-primary btn-sm">View</a>
                             <div class="dropdown">
                                 <button class="btn btn-outline-secondary btn-sm"
-                                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                        title="More actions">
+                                        type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed"
+                                        aria-expanded="false" title="More actions">
                                     <i class="bi bi-three-dots-vertical"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
