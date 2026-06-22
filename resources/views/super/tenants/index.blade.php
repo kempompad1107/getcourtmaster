@@ -40,12 +40,12 @@
               id="tenant-filter-form">
 
             <input type="text" name="search" value="{{ request('search') }}"
-                   class="form-control form-control-sm flex-shrink-1"
-                   style="min-width:120px;max-width:240px;"
+                   class="form-control flex-shrink-1"
+                   style="min-width:120px;max-width:240px;font-size:.875rem;"
                    placeholder="Search name or email…"
                    autocomplete="off">
 
-            <select name="status" class="form-select form-select-sm flex-shrink-0" style="width:150px;"
+            <select name="status" class="form-select flex-shrink-0" style="width:150px;font-size:.875rem;"
                     onchange="this.form.submit()">
                 <option value="">All Statuses</option>
                 <option value="active"    @selected(request('status') === 'active')>Active</option>
@@ -54,10 +54,10 @@
                 <option value="cancelled" @selected(request('status') === 'cancelled')>Cancelled</option>
             </select>
 
-            <button type="submit" class="btn btn-primary btn-sm flex-shrink-0">Filter</button>
+            <button type="submit" class="btn btn-primary flex-shrink-0" style="font-size:.875rem;">Filter</button>
 
             @if(request('search') || request('status'))
-            <a href="{{ route('super.tenants.index') }}" class="btn btn-outline-secondary btn-sm flex-shrink-0">Clear</a>
+            <a href="{{ route('super.tenants.index') }}" class="btn btn-outline-secondary flex-shrink-0" style="font-size:.875rem;">Clear</a>
             @endif
         </form>
 
