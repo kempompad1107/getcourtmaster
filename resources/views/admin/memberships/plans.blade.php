@@ -163,7 +163,7 @@
                 <label class="form-label">Price (₱)</label>
                 <div class="input-group">
                     <span class="input-group-text">₱</span>
-                    <input type="number" name="price" min="0" step="100" required class="form-control">
+                    <input type="number" name="price" min="0" step="any" required class="form-control">
                 </div>
             </div>
             <div class="col-12 col-sm-6">
@@ -220,7 +220,7 @@
                 <label class="form-label">Price (₱)</label>
                 <div class="input-group">
                     <span class="input-group-text">₱</span>
-                    <input type="number" name="price" min="0" step="100" required class="form-control" data-field="price">
+                    <input type="number" name="price" min="0" step="any" required class="form-control" data-field="price">
                 </div>
             </div>
             <div class="col-12 col-sm-6">
