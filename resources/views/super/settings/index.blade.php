@@ -96,7 +96,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-header step-head">
                 <span class="head-icon"><i class="bi bi-credit-card-2-front"></i></span>
                 <div>
@@ -199,6 +199,69 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        {{-- Database Backups --}}
+        <div class="card mb-4">
+            <div class="card-header step-head">
+                <span class="head-icon"><i class="bi bi-database-down"></i></span>
+                <div>
+                    <h6 class="mb-0 fw-semibold">Database Backups</h6>
+                    <small class="text-muted">
+                        Automated daily backups at 2:00 AM (Asia/Manila). Only the last 3 backups are kept.
+                    </small>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if(count($backups) === 0)
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-database-x fs-2 d-block mb-2"></i>
+                        No backups found yet. The first backup will run tonight at 2:00 AM.
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Backup File</th>
+                                    <th>Created</th>
+                                    <th>Size</th>
+                                    <th class="text-end pe-4">Download</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($backups as $i => $backup)
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-file-earmark-zip text-primary"></i>
+                                            <span class="font-monospace small">{{ $backup['name'] }}</span>
+                                            @if($i === 0)
+                                                <span class="badge bg-success-subtle text-success ms-1">Latest</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span title="{{ $backup['created_at']->format('Y-m-d H:i:s T') }}">
+                                            {{ $backup['created_at']->format('M d, Y h:i A') }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ number_format($backup['size'] / 1024, 1) }} KB
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a href="{{ $backup['download_url'] }}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-download me-1"></i>Download
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </div>
         </div>
 
