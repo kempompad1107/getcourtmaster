@@ -74,7 +74,7 @@
         <x-empty-state title="No tenants found" icon="bi-buildings"
             description="{{ request('search') || request('status') ? 'No tenants match your current filters.' : 'Add your first tenant to get started.' }}"/>
     @else
-    <div class="table-responsive">
+    <div>
         <table class="table table-hover mb-0 align-middle table-stack">
             <thead class="table-light">
                 <tr>
