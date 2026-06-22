@@ -29,11 +29,12 @@
     .gw-copy-btn:hover { color: #10b981; }
 
     /* Settings tabs */
-    .stg-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--bs-border-color); margin-bottom: 1.5rem; }
+    .stg-tabs { display: flex; border-bottom: 1px solid var(--bs-border-color); margin-bottom: 1.5rem; gap: 0; }
     .stg-tab {
-        padding: .6rem 1.1rem; font-size: .875rem; font-weight: 500; cursor: pointer;
-        border: 0; background: none; color: var(--bs-secondary-color);
-        border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s, border-color .15s;
+        padding: .7rem 1.25rem; font-size: .875rem; font-weight: 500;
+        border: 0; background: none; color: var(--bs-secondary-color); text-decoration: none;
+        border-bottom: 2px solid transparent; margin-bottom: -1px;
+        transition: color .15s ease, border-color .15s ease; white-space: nowrap;
     }
     .stg-tab:hover { color: var(--bs-body-color); }
     .stg-tab.active { color: #10b981; border-bottom-color: #10b981; font-weight: 600; }
@@ -64,17 +65,11 @@
         @php $activeTab = request('tab', 'branding'); @endphp
         <div class="stg-tabs">
             <a href="{{ route('super.settings.index') }}?tab=branding"
-               class="stg-tab {{ $activeTab === 'branding' ? 'active' : '' }}">
-                <i class="bi bi-palette me-1"></i>Branding
-            </a>
+               class="stg-tab {{ $activeTab === 'branding' ? 'active' : '' }}">Branding</a>
             <a href="{{ route('super.settings.index') }}?tab=gateways"
-               class="stg-tab {{ $activeTab === 'gateways' ? 'active' : '' }}">
-                <i class="bi bi-credit-card-2-front me-1"></i>Payment Gateways
-            </a>
+               class="stg-tab {{ $activeTab === 'gateways' ? 'active' : '' }}">Payment Gateways</a>
             <a href="{{ route('super.settings.index') }}?tab=backups"
-               class="stg-tab {{ $activeTab === 'backups' ? 'active' : '' }}">
-                <i class="bi bi-database-down me-1"></i>Backups
-            </a>
+               class="stg-tab {{ $activeTab === 'backups' ? 'active' : '' }}">Backups</a>
         </div>
 
         {{-- ── Branding ── --}}
