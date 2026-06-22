@@ -230,9 +230,52 @@
                 </button>
             </form>
 
+            {{-- PWA install banner --}}
+            <div id="pwa-install-wrap" style="display:none;" class="mt-4">
+                <button id="pwa-install-btn" type="button"
+                        class="w-100 d-flex align-items-center justify-content-center gap-2"
+                        style="background:rgba(16,185,129,.08);color:#059669;border:1.5px solid rgba(16,185,129,.3);
+                               border-radius:.7rem;padding:.65rem 1rem;font-weight:700;font-size:.85rem;cursor:pointer;
+                               transition:background .15s,border-color .15s;">
+                    <i class="bi bi-download"></i>
+                    Install CourtMaster App
+                </button>
+                <p class="text-center text-muted mt-2 mb-0" style="font-size:.75rem;">
+                    Add to your home screen for the full app experience
+                </p>
+            </div>
+
         </div>
     </div>
 </div>
 
+<link rel="manifest" href="{{ asset('manifest.json') }}">
+<meta name="theme-color" content="#059669">
+<script>
+    let _pwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        _pwaPrompt = e;
+        const wrap = document.getElementById('pwa-install-wrap');
+        if (wrap) wrap.style.display = 'block';
+    });
+    window.addEventListener('appinstalled', () => {
+        _pwaPrompt = null;
+        const wrap = document.getElementById('pwa-install-wrap');
+        if (wrap) wrap.style.display = 'none';
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('pwa-install-btn');
+        if (btn) btn.addEventListener('click', async () => {
+            if (!_pwaPrompt) return;
+            _pwaPrompt.prompt();
+            const { outcome } = await _pwaPrompt.userChoice;
+            if (outcome === 'accepted') _pwaPrompt = null;
+        });
+    });
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register(@json(asset('sw.js'))).catch(() => {});
+    }
+</script>
 </body>
 </html>

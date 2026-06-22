@@ -2,16 +2,6 @@
     Shared sidebar footer: avatar + name + email + desktop collapse button.
     Used by admin, super, and customer layouts.
 --}}
-{{-- PWA install button — shown only when the browser fires beforeinstallprompt --}}
-<div id="pwa-install-wrap" style="display:none;padding:.5rem .75rem;">
-    <button id="pwa-install-btn"
-            class="btn btn-sm w-100 d-flex align-items-center gap-2"
-            style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);border-radius:.6rem;font-size:.8rem;font-weight:600;">
-        <i class="bi bi-download"></i>
-        <span>Install App</span>
-    </button>
-</div>
-
 <div class="sidebar-footer">
     @php
         $accountUrl = auth()->user()->isCustomer()
