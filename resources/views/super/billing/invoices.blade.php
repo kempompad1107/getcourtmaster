@@ -56,6 +56,7 @@
                     <th>Status</th>
                     <th>Due</th>
                     <th>Paid</th>
+                    <th class="tcell-hide">Reference</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -76,6 +77,21 @@
                     </td>
                     <td class="small text-muted tcell-hide" data-label="Due">{{ $inv->due_at?->format('M j, Y') ?? '—' }}</td>
                     <td class="small text-muted tcell-hide" data-label="Paid">{{ $inv->paid_at?->format('M j, Y') ?? '—' }}</td>
+                    <td class="small tcell-hide" data-label="Reference">
+                        @if($inv->payment_reference)
+                            <code class="small">{{ $inv->payment_reference }}</code>
+                            @if($inv->payment_gateway)
+                                <span class="text-muted ms-1">({{ $inv->payment_gateway }})</span>
+                            @endif
+                        @elseif($inv->failed_attempts > 0)
+                            <span class="text-danger"><i class="bi bi-x-circle me-1"></i>{{ $inv->failed_attempts }} failed attempt{{ $inv->failed_attempts > 1 ? 's' : '' }}</span>
+                            @if($inv->next_retry_at)
+                                <span class="text-muted d-block" style="font-size:.75rem">Retry {{ $inv->next_retry_at->format('M j, H:i') }}</span>
+                            @endif
+                        @else
+                            <span class="text-muted">—</span>
+                        @endif
+                    </td>
                     <td class="text-end">
                         <div class="d-inline-flex gap-1">
                             <a href="{{ route('admin.subscription-invoices.pdf', $inv) }}" class="btn btn-sm btn-link p-1" title="PDF">
@@ -96,7 +112,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="text-center text-muted py-5 small">No invoices yet.</td></tr>
+                <tr><td colspan="9" class="text-center text-muted py-5 small">No invoices yet.</td></tr>
                 @endforelse
             </tbody>
         </table>
