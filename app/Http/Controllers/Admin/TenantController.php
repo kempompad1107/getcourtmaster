@@ -17,13 +17,31 @@ use Illuminate\Validation\Rule;
 
 class TenantController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tenants = Tenant::withCount(['users', 'courts', 'bookings'])
-            ->latest()
-            ->paginate(20);
+        $stats = [
+            'total'     => Tenant::count(),
+            'active'    => Tenant::where('status', 'active')->count(),
+            'suspended' => Tenant::where('status', 'suspended')->count(),
+            'trial'     => Tenant::whereNotNull('trial_ends_at')->where('trial_ends_at', '>=', now())->count(),
+        ];
 
-        return view('super.tenants.index', compact('tenants'));
+        $tenants = Tenant::withCount(['users', 'courts', 'bookings'])
+            ->when($request->search, fn ($q, $v) =>
+                $q->where(fn ($q2) =>
+                    $q2->where('name', 'like', "%$v%")->orWhere('email', 'like', "%$v%")
+                )
+            )
+            ->when($request->status, fn ($q, $v) =>
+                $v === 'trial'
+                    ? $q->whereNotNull('trial_ends_at')->where('trial_ends_at', '>=', now())
+                    : $q->where('status', $v)
+            )
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('super.tenants.index', compact('tenants', 'stats'));
     }
 
     public function create()
