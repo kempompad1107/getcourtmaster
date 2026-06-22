@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\MembershipApiController;
 use App\Http\Controllers\Api\V1\NotificationApiController;
 use App\Http\Controllers\Api\V1\PaymentApiController;
 use App\Http\Controllers\Api\V1\PaymentWebhookController;
+use App\Http\Controllers\Api\V1\PlatformWebhookController;
 use App\Http\Controllers\Api\V1\WalletApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         ->middleware('throttle:payment-webhook')
         ->where('token', '[A-Za-z0-9]+')
         ->name('webhooks.stripe');
+
+    // Platform-level webhooks — used by PayMongo/Stripe to confirm subscription
+    // invoice payments made through the platform's own gateway account.
+    Route::post('/webhooks/paymongo/platform', [PlatformWebhookController::class, 'paymongo'])
+        ->middleware('throttle:payment-webhook')
+        ->name('webhooks.platform.paymongo');
+    Route::post('/webhooks/stripe/platform', [PlatformWebhookController::class, 'stripe'])
+        ->middleware('throttle:payment-webhook')
+        ->name('webhooks.platform.stripe');
 
     // TV display data (public with ?tenant=slug)
     Route::get('/display', [\App\Http\Controllers\Admin\DisplayController::class, 'data'])->name('display.data');

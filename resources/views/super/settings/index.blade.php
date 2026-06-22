@@ -17,6 +17,17 @@
     }
     .gw-paymongo .gw-logo { background: linear-gradient(135deg, #2563eb, #1e3a8a); }
     .gw-stripe   .gw-logo { background: linear-gradient(135deg, #635bff, #4338ca); }
+    .gw-webhook-url {
+        display: flex; align-items: center; gap: .5rem;
+        background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color);
+        border-radius: .5rem; padding: .45rem .75rem; font-size: .8rem;
+    }
+    .gw-webhook-url code { flex: 1; word-break: break-all; background: none; padding: 0; font-size: inherit; }
+    .gw-copy-btn {
+        flex-shrink: 0; background: none; border: none; padding: 0 .25rem;
+        color: var(--bs-secondary-color); cursor: pointer; font-size: .8rem;
+    }
+    .gw-copy-btn:hover { color: var(--bs-body-color); }
 </style>
 @endpush
 
@@ -150,6 +161,17 @@
                                        class="form-control font-monospace">
                                 <small class="text-muted">Optional. Leave blank to keep what's saved.</small>
                             </div>
+                            <div class="col-12">
+                                <label class="form-label small"><i class="bi bi-globe me-1 text-muted"></i>Webhook URL <small class="text-muted">— paste into PayMongo dashboard</small></label>
+                                <div class="gw-webhook-url" x-data="{ copied: false }">
+                                    <code x-ref="pmUrl">{{ route('api.v1.webhooks.platform.paymongo') }}</code>
+                                    <button type="button" class="gw-copy-btn"
+                                            @click="navigator.clipboard.writeText($refs.pmUrl.textContent.trim()); copied=true; setTimeout(()=>copied=false,1500)">
+                                        <span x-show="!copied"><i class="bi bi-clipboard"></i></span>
+                                        <span x-show="copied" x-cloak><i class="bi bi-check2 text-success"></i></span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -183,6 +205,17 @@
                                        placeholder="{{ $mask($sp['webhook_secret'] ?? null) ?: 'whsec_…' }}"
                                        class="form-control font-monospace">
                                 <small class="text-muted">Optional. Leave blank to keep what's saved.</small>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small"><i class="bi bi-globe me-1 text-muted"></i>Webhook URL <small class="text-muted">— paste into Stripe dashboard</small></label>
+                                <div class="gw-webhook-url" x-data="{ copied: false }">
+                                    <code x-ref="spUrl">{{ route('api.v1.webhooks.platform.stripe') }}</code>
+                                    <button type="button" class="gw-copy-btn"
+                                            @click="navigator.clipboard.writeText($refs.spUrl.textContent.trim()); copied=true; setTimeout(()=>copied=false,1500)">
+                                        <span x-show="!copied"><i class="bi bi-clipboard"></i></span>
+                                        <span x-show="copied" x-cloak><i class="bi bi-check2 text-success"></i></span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
