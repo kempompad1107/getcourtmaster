@@ -54,44 +54,50 @@ class DemoTenantSeeder extends Seeder
 
     private function seedUsers(Tenant $tenant): void
     {
-        $owner = User::firstOrCreate(
-            ['email' => 'owner@demo.courtmaster.app'],
-            [
-                'name' => 'Demo Owner',
-                'password' => Hash::make('password'),
-                'tenant_id' => $tenant->id,
-                'user_type' => 'business_owner',
+        $tid = $tenant->id;
+
+        // Owner already exists (preserved by reset); ensure email is canonical.
+        $owner = User::where('tenant_id', $tid)->where('user_type', 'business_owner')->first();
+        if ($owner) {
+            $owner->update(['email' => 'demo@getcourtmaster.com']);
+        } else {
+            $owner = User::create([
+                'name'              => 'Demo Owner',
+                'email'             => 'demo@getcourtmaster.com',
+                'password'          => Hash::make('password'),
+                'tenant_id'         => $tid,
+                'user_type'         => 'business_owner',
                 'email_verified_at' => now(),
-                'is_active' => true,
-                'referral_code' => 'DEMO001',
-            ]
-        );
+                'is_active'         => true,
+                'referral_code'     => "DMO{$tid}",
+            ]);
+        }
         try { $owner->assignRole('business_owner'); } catch (\Throwable) {}
 
         $staff = User::firstOrCreate(
-            ['email' => 'staff@demo.courtmaster.app'],
+            ['email' => "staff.t{$tid}@demo.courtmaster.app"],
             [
-                'name' => 'Demo Staff',
-                'password' => Hash::make('password'),
-                'tenant_id' => $tenant->id,
-                'user_type' => 'staff',
+                'name'              => 'Demo Staff',
+                'password'          => Hash::make('password'),
+                'tenant_id'         => $tid,
+                'user_type'         => 'staff',
                 'email_verified_at' => now(),
-                'is_active' => true,
-                'referral_code' => 'STAFF01',
+                'is_active'         => true,
+                'referral_code'     => "STF{$tid}",
             ]
         );
         try { $staff->assignRole('front_desk'); } catch (\Throwable) {}
 
         $customer = User::firstOrCreate(
-            ['email' => 'player@demo.courtmaster.app'],
+            ['email' => "player.t{$tid}@demo.courtmaster.app"],
             [
-                'name' => 'Demo Player',
-                'password' => Hash::make('password'),
-                'tenant_id' => $tenant->id,
-                'user_type' => 'customer',
+                'name'              => 'Demo Player',
+                'password'          => Hash::make('password'),
+                'tenant_id'         => $tid,
+                'user_type'         => 'customer',
                 'email_verified_at' => now(),
-                'is_active' => true,
-                'referral_code' => 'PLAY001',
+                'is_active'         => true,
+                'referral_code'     => "PLY{$tid}",
             ]
         );
 

@@ -22,10 +22,10 @@ class TruncateNonDemoData extends Command
             }
         }
 
-        $demoTenantId = DB::table('tenants')->where('slug', 'demo-pickleball')->value('id');
+        $demoTenantId = DB::table('users')->where('email', 'demo@getcourtmaster.com')->value('tenant_id');
 
         if (! $demoTenantId) {
-            $this->error('Demo pickleball tenant not found. Run seeders first.');
+            $this->error('Demo tenant (demo@getcourtmaster.com) not found. Run seeders first.');
             return self::FAILURE;
         }
 
@@ -35,7 +35,7 @@ class TruncateNonDemoData extends Command
 
         // Collect IDs to keep before deletion
         $demoUserIds = DB::table('users')->where('tenant_id', $demoTenantId)->pluck('id');
-        $superAdminId = DB::table('users')->where('email', 'admin@courtmaster.app')->value('id');
+        $superAdminId = DB::table('users')->where('email', 'getcourtmaster@gmail.com')->value('id');
         $keepUserIds = $demoUserIds->push($superAdminId)->filter()->unique()->values();
 
         $demoPosOrderIds = DB::table('pos_orders')->where('tenant_id', $demoTenantId)->pluck('id');
