@@ -28,6 +28,7 @@
 @php
     $currentPlan = $subscription?->plan;
     $cycle       = $subscription?->billing_cycle ?? 'monthly';
+    $pendingPlan = $subscription?->pendingPlan;
 @endphp
 
 <x-page-header title="My Subscription" subtitle="Manage your plan, renew, or upgrade"/>
@@ -53,6 +54,17 @@
                     <p class="text-muted small mb-4">
                         ₱{{ number_format($subscription->amount, 2) }} / {{ $cycle === 'yearly' ? 'year' : 'month' }}
                     </p>
+
+                    @if($pendingPlan)
+                    <div class="alert alert-info d-flex gap-2 small mb-4">
+                        <i class="bi bi-hourglass-split flex-shrink-0 mt-1"></i>
+                        <span>
+                            <strong>Pending plan change:</strong> switching to <strong>{{ $pendingPlan->name }}</strong>
+                            ({{ $subscription->pending_billing_cycle }}).
+                            Pay the invoice below to activate it.
+                        </span>
+                    </div>
+                    @endif
 
                     <div class="mb-4">
                         <div class="billing-row">
@@ -182,15 +194,20 @@
 
         <div class="row g-3">
             @forelse($plans as $plan)
-                @php $isCurrent = $currentPlan && $currentPlan->id === $plan->id; @endphp
+                @php
+                    $isCurrent = $currentPlan && $currentPlan->id === $plan->id && !$pendingPlan;
+                    $isPending = $pendingPlan && $pendingPlan->id === $plan->id;
+                @endphp
                 <div class="col-12 col-md-6 col-xl-4">
-                    <div class="sub-plan p-4 d-flex flex-column {{ $isCurrent ? 'is-current' : '' }}">
+                    <div class="sub-plan p-4 d-flex flex-column {{ $isCurrent ? 'is-current' : ($isPending ? 'is-current' : '') }}">
 
                         {{-- Plan name + badge --}}
                         <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
                             <span class="fw-bold fs-6">{{ $plan->name }}</span>
                             @if($isCurrent)
                                 <x-badge status="active">Current</x-badge>
+                            @elseif($isPending)
+                                <x-badge status="pending">Pending payment</x-badge>
                             @endif
                         </div>
 
@@ -238,11 +255,17 @@
                         @if($outstandingInvoice)
                             <button type="button" class="btn w-100 btn-outline-secondary" disabled
                                     title="Settle your outstanding invoice before changing plans.">
-                                @if($isCurrent)
+                                @if($isPending)
+                                    <i class="bi bi-hourglass-split me-1"></i>Awaiting payment
+                                @elseif($isCurrent)
                                     <i class="bi bi-arrow-repeat me-1"></i>Switch cycle / re-confirm
                                 @else
                                     <i class="bi bi-arrow-up-circle me-1"></i>Choose {{ $plan->name }}
                                 @endif
+                            </button>
+                        @elseif($isPending)
+                            <button type="button" class="btn w-100 btn-outline-warning" disabled>
+                                <i class="bi bi-hourglass-split me-1"></i>Awaiting payment
                             </button>
                         @else
                             <form method="POST" action="{{ route('admin.subscription.change-plan') }}">
@@ -251,7 +274,7 @@
                                 <input type="hidden" name="billing_cycle" :value="cycle">
                                 <button type="submit"
                                         class="btn w-100 {{ $isCurrent ? 'btn-outline-secondary' : 'btn-primary' }}"
-                                        onclick="return confirm('Change to the {{ $plan->name }} plan? This takes effect immediately and generates an invoice.')">
+                                        onclick="return confirm('Choose {{ $plan->name }}? An invoice will be generated — your plan activates once paid.')">
                                     @if($isCurrent)
                                         <i class="bi bi-arrow-repeat me-1"></i>Switch cycle / re-confirm
                                     @else

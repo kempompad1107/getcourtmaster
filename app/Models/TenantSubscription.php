@@ -16,6 +16,7 @@ class TenantSubscription extends Model
         'starts_at', 'ends_at', 'trial_ends_at', 'cancelled_at',
         'payment_gateway', 'external_subscription_id',
         'renews_at', 'payment_method_token', 'last_charge_at',
+        'pending_plan_id', 'pending_billing_cycle',
     ];
 
     protected $hidden = ['payment_method_token'];
@@ -38,6 +39,11 @@ class TenantSubscription extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(SubscriptionPlan::class);
+    }
+
+    public function pendingPlan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'pending_plan_id');
     }
 
     public function invoices(): HasMany

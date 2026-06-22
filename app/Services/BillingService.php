@@ -60,14 +60,34 @@ class BillingService
             ]);
 
             // Move the subscription's renewal date forward so the next billing sweep
-            // doesn't immediately regenerate an invoice.
+            // doesn't immediately regenerate an invoice. Also apply any pending plan
+            // change that was waiting for this payment to confirm.
             $sub = $invoice->subscription()->with('plan')->first();
             if ($sub) {
-                $sub->update([
+                $update = [
                     'last_charge_at' => $invoice->paid_at,
                     'renews_at'      => $this->nextRenewalDate($sub)->toDateString(),
                     'status'         => 'active',
-                ]);
+                ];
+
+                if ($sub->pending_plan_id) {
+                    $newCycle         = $sub->pending_billing_cycle ?? $sub->billing_cycle;
+                    $pendingPlan      = \App\Models\SubscriptionPlan::find($sub->pending_plan_id);
+                    $update['plan_id']               = $sub->pending_plan_id;
+                    $update['billing_cycle']         = $newCycle;
+                    $update['amount']                = $newCycle === 'yearly'
+                        ? $pendingPlan?->price_yearly
+                        : $pendingPlan?->price_monthly;
+                    $update['pending_plan_id']       = null;
+                    $update['pending_billing_cycle'] = null;
+                }
+
+                $sub->update($update);
+
+                // Keep tenants.plan denormalised column in sync.
+                if (isset($update['plan_id']) && $sub->tenant) {
+                    $sub->tenant->update(['plan' => $pendingPlan?->slug ?? $sub->tenant->plan, 'status' => 'active']);
+                }
             }
 
             // Lift any non-payment suspension on the tenant.

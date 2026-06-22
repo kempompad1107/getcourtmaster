@@ -22,7 +22,7 @@ class SubscriptionController extends Controller
         $this->authorizeOwner();
         $tenant = $this->authTenant();
 
-        $subscription = $tenant->activeSubscription()->with('plan')->first();
+        $subscription = $tenant->activeSubscription()->with('plan', 'pendingPlan')->first();
 
         $plans = SubscriptionPlan::where('is_active', true)
             ->orderBy('sort_order')
@@ -30,7 +30,7 @@ class SubscriptionController extends Controller
             ->get();
 
         $outstandingInvoice = SubscriptionInvoice::where('tenant_id', $tenant->id)
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'cancelled'])
             ->orderByDesc('created_at')
             ->first();
 
@@ -70,65 +70,57 @@ class SubscriptionController extends Controller
                 ->with('error', 'You have an outstanding invoice — please settle it before changing your plan.');
         }
 
-        $plan        = SubscriptionPlan::findOrFail($data['plan_id']);
-        $fullAmount  = $data['billing_cycle'] === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
-        $totalDays   = $data['billing_cycle'] === 'yearly' ? 365 : 30;
-        $newRenewsAt = $data['billing_cycle'] === 'yearly'
-            ? now()->addYear()->toDateString()
-            : now()->addMonth()->toDateString();
+        $plan       = SubscriptionPlan::findOrFail($data['plan_id']);
+        $fullAmount = $data['billing_cycle'] === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
+        $totalDays  = $data['billing_cycle'] === 'yearly' ? 365 : 30;
 
-        $subscription   = $tenant->activeSubscription;
-        $proRataAmount  = null;
-        $remainingDays  = 0;
+        $subscription  = $tenant->activeSubscription;
+        $proRataAmount = null;
+        $remainingDays = 0;
 
         if ($subscription) {
-            // Calculate remaining days in the current period for pro-rata billing.
-            if ($subscription->renews_at && $subscription->renews_at->isFuture()) {
-                $remainingDays = (int) ceil(now()->diffInDays($subscription->renews_at, false));
-                $remainingDays = max(0, $remainingDays);
+            // Block if they're trying to pick the same plan + cycle they already have pending.
+            if ((int) $subscription->pending_plan_id === $plan->id
+                && $subscription->pending_billing_cycle === $data['billing_cycle']) {
+                return redirect()->route('admin.subscription')
+                    ->with('info', 'That plan change is already pending — pay the invoice below to activate it.');
             }
 
+            // Pro-rata: charge only the remaining days of the current period at the new rate.
+            if ($subscription->renews_at && $subscription->renews_at->isFuture()) {
+                $remainingDays = max(0, (int) ceil(now()->diffInDays($subscription->renews_at, false)));
+            }
             if ($remainingDays > 0 && $remainingDays < $totalDays) {
                 $proRataAmount = round(($fullAmount / $totalDays) * $remainingDays, 2);
             }
 
+            // Store the intended plan as pending — the plan only activates after payment.
             $subscription->update([
-                'plan_id'       => $plan->id,
-                'billing_cycle' => $data['billing_cycle'],
-                'amount'        => $fullAmount,
-                'renews_at'     => $newRenewsAt,
+                'pending_plan_id'       => $plan->id,
+                'pending_billing_cycle' => $data['billing_cycle'],
             ]);
         } else {
+            // No existing subscription — create one in pending state awaiting first payment.
             $subscription = TenantSubscription::create([
-                'tenant_id'     => $tenant->id,
-                'plan_id'       => $plan->id,
-                'billing_cycle' => $data['billing_cycle'],
-                'status'        => 'active',
-                'amount'        => $fullAmount,
-                'starts_at'     => now(),
-                'renews_at'     => $newRenewsAt,
+                'tenant_id'             => $tenant->id,
+                'plan_id'               => $plan->id,
+                'billing_cycle'         => $data['billing_cycle'],
+                'status'                => 'pending',
+                'amount'                => $fullAmount,
+                'starts_at'             => now(),
+                'renews_at'             => $data['billing_cycle'] === 'yearly'
+                    ? now()->addYear()->toDateString()
+                    : now()->addMonth()->toDateString(),
             ]);
         }
 
-        // Keep the denormalised tenants.plan column in sync.
-        // Promote trial tenants to active now that they have a subscription.
-        $tenantUpdate = ['plan' => $plan->slug];
-        if ($tenant->status === 'trial') {
-            $tenantUpdate['status'] = 'active';
-        }
-        $tenant->update($tenantUpdate);
+        // Generate the invoice for the pending plan amount.
+        $invoice = $this->billing->createInvoice($subscription->fresh('plan'), $proRataAmount ?? $fullAmount);
 
-        // Invoice: pro-rata for remaining days when switching mid-period, else full price.
-        $invoice = $this->billing->createInvoice($subscription->fresh('plan'), $proRataAmount);
-
-        activity()->on($tenant)->log("Owner changed plan to '{$plan->name}' ({$data['billing_cycle']})");
-
-        $invoiceNote = $proRataAmount
-            ? "Pro-rata charge of ₱" . number_format($proRataAmount, 2) . " for {$remainingDays} remaining days."
-            : "Full period charge.";
+        activity()->on($tenant)->log("Owner requested plan change to '{$plan->name}' ({$data['billing_cycle']}) — awaiting payment");
 
         return redirect()->route('admin.subscription')
-            ->with('success', "Plan changed to {$plan->name}. {$invoiceNote} Invoice {$invoice->invoice_number} is ready.");
+            ->with('info', "Invoice {$invoice->invoice_number} generated for {$plan->name}. Pay it below to activate the plan.");
     }
 
     /** Generate a renewal invoice for the current plan right now. */
