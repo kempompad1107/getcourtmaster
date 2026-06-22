@@ -36,20 +36,16 @@
 <div class="card">
     <div class="card-header d-flex flex-column flex-sm-row align-items-sm-center gap-2 py-3">
         <form method="GET" action="{{ route('super.tenants.index') }}"
-              class="d-flex align-items-center gap-2 flex-grow-1 flex-nowrap overflow-auto"
+              class="d-flex align-items-center gap-2 flex-grow-1 flex-nowrap"
               id="tenant-filter-form">
 
-            <div class="input-group input-group-sm flex-shrink-1" style="min-width:140px;max-width:260px;">
-                <span class="input-group-text bg-transparent border-end-0">
-                    <i class="bi bi-search text-muted" style="font-size:.8rem;"></i>
-                </span>
-                <input type="text" name="search" value="{{ request('search') }}"
-                       class="form-control border-start-0 ps-0"
-                       placeholder="Search name or email…"
-                       autocomplete="off">
-            </div>
+            <input type="text" name="search" value="{{ request('search') }}"
+                   class="form-control form-control-sm flex-shrink-1"
+                   style="min-width:120px;max-width:240px;"
+                   placeholder="Search name or email…"
+                   autocomplete="off">
 
-            <select name="status" class="form-select form-select-sm flex-shrink-0" style="width:140px;"
+            <select name="status" class="form-select form-select-sm flex-shrink-0" style="width:150px;"
                     onchange="this.form.submit()">
                 <option value="">All Statuses</option>
                 <option value="active"    @selected(request('status') === 'active')>Active</option>
