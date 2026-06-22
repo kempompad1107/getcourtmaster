@@ -72,17 +72,15 @@ class SubscriptionController extends Controller
 
         $plan   = SubscriptionPlan::findOrFail($data['plan_id']);
         $amount = $data['billing_cycle'] === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
-        $renewsAt = $data['billing_cycle'] === 'yearly'
-            ? now()->addYear()->toDateString()
-            : now()->addMonth()->toDateString();
 
         $subscription = $tenant->activeSubscription;
         if ($subscription) {
+            // Keep the existing renews_at — the new plan takes effect now but the
+            // tenant rides out the remainder of their current period before paying again.
             $subscription->update([
                 'plan_id'       => $plan->id,
                 'billing_cycle' => $data['billing_cycle'],
                 'amount'        => $amount,
-                'renews_at'     => $renewsAt,
             ]);
         } else {
             $subscription = TenantSubscription::create([
@@ -92,7 +90,9 @@ class SubscriptionController extends Controller
                 'status'        => 'active',
                 'amount'        => $amount,
                 'starts_at'     => now(),
-                'renews_at'     => $renewsAt,
+                'renews_at'     => $data['billing_cycle'] === 'yearly'
+                    ? now()->addYear()->toDateString()
+                    : now()->addMonth()->toDateString(),
             ]);
         }
 
@@ -110,7 +110,7 @@ class SubscriptionController extends Controller
         activity()->on($tenant)->log("Owner changed plan to '{$plan->name}' ({$data['billing_cycle']})");
 
         return redirect()->route('admin.subscription')
-            ->with('success', "Plan changed to {$plan->name}. Invoice {$invoice->invoice_number} is ready — pay online or settle it from your invoices.");
+            ->with('success', "Plan changed to {$plan->name}. Your current billing period stays the same — the new rate applies from your next renewal. Invoice {$invoice->invoice_number} is ready.");
     }
 
     /** Generate a renewal invoice for the current plan right now. */
