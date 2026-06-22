@@ -131,7 +131,13 @@ class BillingController extends Controller
             'renews_at'    => null,
         ]);
 
+        // Void any pending invoices tied to this subscription so they no longer
+        // show as outstanding on the billing page.
+        SubscriptionInvoice::where('subscription_id', $subscription->id)
+            ->where('status', '!=', 'paid')
+            ->update(['status' => 'cancelled']);
+
         activity()->on($subscription)->log("Subscription #{$subscription->id} cancelled by super admin");
-        return back()->with('success', "Subscription cancelled.");
+        return back()->with('success', "Subscription cancelled and outstanding invoices voided.");
     }
 }

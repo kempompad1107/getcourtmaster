@@ -23,7 +23,7 @@
             <label class="form-label small mb-0">Status</label>
             <select name="status" class="form-select form-select-sm" style="width:auto">
                 <option value="">All</option>
-                @foreach(['pending','paid','failed','refunded','draft'] as $s)
+                @foreach(['pending','paid','failed','refunded','cancelled','draft'] as $s)
                     <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
                 @endforeach
             </select>
