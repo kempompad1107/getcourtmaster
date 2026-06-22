@@ -164,6 +164,12 @@
 {{-- ── Plan Picker ── --}}
 <div class="card mt-4" x-data="{ cycle: '{{ $cycle }}' }">
     <div class="card-body">
+        @if($outstandingInvoice)
+        <div class="alert alert-warning d-flex gap-2 small mb-4">
+            <i class="bi bi-lock flex-shrink-0 mt-1"></i>
+            <span>Plan changes are locked until your outstanding invoice is paid.</span>
+        </div>
+        @endif
         <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
             <p class="mb-0" style="font-size:.68rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--bs-secondary-color)">Available Plans</p>
             <div class="settings-tabs">
@@ -229,20 +235,31 @@
                         </ul>
 
                         {{-- CTA --}}
-                        <form method="POST" action="{{ route('admin.subscription.change-plan') }}">
-                            @csrf
-                            <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                            <input type="hidden" name="billing_cycle" :value="cycle">
-                            <button type="submit"
-                                    class="btn w-100 {{ $isCurrent ? 'btn-outline-secondary' : 'btn-primary' }}"
-                                    onclick="return confirm('Change to the {{ $plan->name }} plan? This takes effect immediately and generates an invoice.')">
+                        @if($outstandingInvoice)
+                            <button type="button" class="btn w-100 btn-outline-secondary" disabled
+                                    title="Settle your outstanding invoice before changing plans.">
                                 @if($isCurrent)
                                     <i class="bi bi-arrow-repeat me-1"></i>Switch cycle / re-confirm
                                 @else
                                     <i class="bi bi-arrow-up-circle me-1"></i>Choose {{ $plan->name }}
                                 @endif
                             </button>
-                        </form>
+                        @else
+                            <form method="POST" action="{{ route('admin.subscription.change-plan') }}">
+                                @csrf
+                                <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                                <input type="hidden" name="billing_cycle" :value="cycle">
+                                <button type="submit"
+                                        class="btn w-100 {{ $isCurrent ? 'btn-outline-secondary' : 'btn-primary' }}"
+                                        onclick="return confirm('Change to the {{ $plan->name }} plan? This takes effect immediately and generates an invoice.')">
+                                    @if($isCurrent)
+                                        <i class="bi bi-arrow-repeat me-1"></i>Switch cycle / re-confirm
+                                    @else
+                                        <i class="bi bi-arrow-up-circle me-1"></i>Choose {{ $plan->name }}
+                                    @endif
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
             @empty

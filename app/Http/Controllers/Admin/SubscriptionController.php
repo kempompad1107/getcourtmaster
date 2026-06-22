@@ -62,6 +62,14 @@ class SubscriptionController extends Controller
             'billing_cycle' => 'required|in:monthly,yearly',
         ]);
 
+        $hasOutstanding = SubscriptionInvoice::where('tenant_id', $tenant->id)
+            ->where('status', '!=', 'paid')
+            ->exists();
+        if ($hasOutstanding) {
+            return redirect()->route('admin.subscription')
+                ->with('error', 'You have an outstanding invoice — please settle it before changing your plan.');
+        }
+
         $plan   = SubscriptionPlan::findOrFail($data['plan_id']);
         $amount = $data['billing_cycle'] === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
         $renewsAt = $data['billing_cycle'] === 'yearly'
