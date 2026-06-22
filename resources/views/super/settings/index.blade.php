@@ -304,41 +304,34 @@
                 <x-empty-state title="No backups yet" icon="bi-database-x"
                     description="The first backup will run tonight at 2:00 AM."/>
             @else
-            <table class="table table-hover mb-0 align-middle">
+            <table class="table table-hover mb-0 align-middle table-stack">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-4 fw-semibold" style="text-transform:none;letter-spacing:0;font-size:.8125rem;">Backup File</th>
-                        <th class="d-none d-sm-table-cell fw-semibold" style="text-transform:none;letter-spacing:0;font-size:.8125rem;">Created</th>
-                        <th class="d-none d-sm-table-cell fw-semibold" style="text-transform:none;letter-spacing:0;font-size:.8125rem;">Size</th>
-                        <th class="text-end pe-4 fw-semibold" style="text-transform:none;letter-spacing:0;font-size:.8125rem;">Download</th>
+                        <th style="text-transform:none;letter-spacing:0;">Backup File</th>
+                        <th style="text-transform:none;letter-spacing:0;">Created</th>
+                        <th style="text-transform:none;letter-spacing:0;">Size</th>
+                        <th class="cell-actions"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($backups as $i => $backup)
                     <tr>
-                        <td class="ps-4">
+                        <td data-label="File" class="cell-plain">
                             <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-file-earmark-zip text-primary fs-5"></i>
-                                <div>
-                                    <div class="font-monospace small text-truncate" style="max-width:260px;">{{ $backup['name'] }}</div>
-                                    {{-- Mobile: show date + size inline --}}
-                                    <div class="d-sm-none small text-muted">
-                                        {{ $backup['created_at']->format('M d, Y h:i A') }}
-                                        · {{ number_format($backup['size'] / 1024, 1) }} KB
-                                    </div>
-                                </div>
+                                <i class="bi bi-file-earmark-zip text-primary flex-shrink-0" style="font-size:1.1rem;"></i>
+                                <span class="font-monospace small">{{ $backup['name'] }}</span>
                                 @if($i === 0)
-                                    <span class="badge bg-success-subtle text-success-emphasis ms-1">Latest</span>
+                                    <span class="badge bg-success-subtle text-success-emphasis">Latest</span>
                                 @endif
                             </div>
                         </td>
-                        <td class="small text-muted d-none d-sm-table-cell text-nowrap">
+                        <td data-label="Created" class="small text-muted text-nowrap">
                             {{ $backup['created_at']->format('M d, Y h:i A') }}
                         </td>
-                        <td class="small text-muted d-none d-sm-table-cell">
+                        <td data-label="Size" class="small text-muted">
                             {{ number_format($backup['size'] / 1024, 1) }} KB
                         </td>
-                        <td class="text-end pe-4">
+                        <td class="cell-actions">
                             <a href="{{ $backup['download_url'] }}" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-download me-1"></i>Download
                             </a>
