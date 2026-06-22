@@ -236,25 +236,24 @@
                     Install App
                 </p>
 
-                {{-- Android: button active when prompt available, otherwise shows instructions --}}
+                {{-- Android --}}
                 <div id="pwa-android">
-                    <button id="pwa-install-btn" type="button" disabled
+                    <button id="pwa-install-btn" type="button"
                             class="w-100 d-flex align-items-center justify-content-center gap-2 mb-2"
-                            style="background:rgba(16,185,129,.08);color:#059669;border:1.5px solid rgba(16,185,129,.25);
-                                   border-radius:.7rem;padding:.65rem 1rem;font-weight:700;font-size:.875rem;cursor:pointer;
-                                   opacity:.5;transition:opacity .2s,background .2s;">
+                            style="background:rgba(16,185,129,.1);color:#059669;border:1.5px solid rgba(16,185,129,.3);
+                                   border-radius:.7rem;padding:.65rem 1rem;font-weight:700;font-size:.875rem;cursor:pointer;">
                         <i class="bi bi-android2"></i>
                         <span>Add to Home Screen</span>
                     </button>
-                    <p id="pwa-android-hint" class="text-center text-muted mb-0" style="font-size:.75rem;">
-                        Open in Chrome · tap <strong>⋮</strong> → <strong>Add to Home Screen</strong>
+                    <p id="pwa-android-hint" class="text-center text-muted mb-0" style="font-size:.75rem;display:none;">
+                        Tap <strong>⋮</strong> in Chrome → <strong>Add to Home Screen</strong>
                     </p>
                 </div>
 
-                {{-- iOS instructions --}}
+                {{-- iOS --}}
                 <p class="text-center text-muted mt-3 mb-0" style="font-size:.75rem;">
                     <i class="bi bi-apple me-1"></i>
-                    On iPhone: tap <i class="bi bi-box-arrow-up"></i> Share → <strong>Add to Home Screen</strong>
+                    iPhone: tap <i class="bi bi-box-arrow-up"></i> → <strong>Add to Home Screen</strong>
                 </p>
             </div>
 
@@ -269,23 +268,25 @@
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         _pwaPrompt = e;
-        const btn = document.getElementById('pwa-install-btn');
-        const hint = document.getElementById('pwa-android-hint');
-        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
-        if (hint) hint.style.display = 'none';
     });
     window.addEventListener('appinstalled', () => {
         _pwaPrompt = null;
         const wrap = document.getElementById('pwa-android');
-        if (wrap) wrap.innerHTML = '<p class="text-center text-success fw-semibold" style="font-size:.85rem;"><i class="bi bi-check-circle-fill me-1"></i>App installed!</p>';
+        if (wrap) wrap.innerHTML = '<p class="text-center text-success fw-semibold" style="font-size:.875rem;"><i class="bi bi-check-circle-fill me-1"></i>App installed!</p>';
     });
     document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('pwa-install-btn');
+        const hint = document.getElementById('pwa-android-hint');
         if (btn) btn.addEventListener('click', async () => {
-            if (!_pwaPrompt) return;
-            _pwaPrompt.prompt();
-            const { outcome } = await _pwaPrompt.userChoice;
-            if (outcome === 'accepted') _pwaPrompt = null;
+            if (_pwaPrompt) {
+                // Native prompt available — trigger it directly
+                _pwaPrompt.prompt();
+                const { outcome } = await _pwaPrompt.userChoice;
+                if (outcome === 'accepted') _pwaPrompt = null;
+            } else {
+                // Prompt not available — show manual instructions
+                if (hint) hint.style.display = hint.style.display === 'none' ? 'block' : 'none';
+            }
         });
     });
     if ('serviceWorker' in navigator) {
