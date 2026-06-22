@@ -4,15 +4,14 @@
 @push('styles')
 @include('super._partials.premium-ui')
 <style>
-    /* Payment gateway integration tiles */
     .gateway-tile {
-        border: 1px solid var(--bs-border-color); border-radius: .9rem; padding: 1.1rem;
+        border: 1px solid var(--bs-border-color); border-radius: .9rem; padding: 1.25rem;
         transition: border-color .18s ease, box-shadow .18s ease;
     }
-    .gateway-tile:hover { border-color: rgba(16,185,129,.35); box-shadow: 0 12px 26px -20px rgba(0,0,0,.5); }
+    .gateway-tile:hover { border-color: rgba(16,185,129,.35); box-shadow: 0 12px 26px -20px rgba(0,0,0,.4); }
     .gw-logo {
         width: 46px; height: 46px; flex-shrink: 0; border-radius: 12px;
-        display: grid; place-items: center; font-size: 1.5rem; color: #fff;
+        display: grid; place-items: center; font-size: 1.4rem; color: #fff;
         box-shadow: 0 8px 18px -10px rgba(0,0,0,.5);
     }
     .gw-paymongo .gw-logo { background: linear-gradient(135deg, #2563eb, #1e3a8a); }
@@ -25,9 +24,19 @@
     .gw-webhook-url code { flex: 1; word-break: break-all; background: none; padding: 0; font-size: inherit; }
     .gw-copy-btn {
         flex-shrink: 0; background: none; border: none; padding: 0 .25rem;
-        color: var(--bs-secondary-color); cursor: pointer; font-size: .8rem;
+        color: var(--bs-secondary-color); cursor: pointer; font-size: .85rem;
     }
-    .gw-copy-btn:hover { color: var(--bs-body-color); }
+    .gw-copy-btn:hover { color: #10b981; }
+
+    /* Settings tabs */
+    .stg-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--bs-border-color); margin-bottom: 1.5rem; }
+    .stg-tab {
+        padding: .6rem 1.1rem; font-size: .875rem; font-weight: 500; cursor: pointer;
+        border: 0; background: none; color: var(--bs-secondary-color);
+        border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s, border-color .15s;
+    }
+    .stg-tab:hover { color: var(--bs-body-color); }
+    .stg-tab.active { color: #10b981; border-bottom-color: #10b981; font-weight: 600; }
 </style>
 @endpush
 
@@ -35,23 +44,53 @@
 
 <x-page-header title="Platform Settings" subtitle="Branding and platform-level subscription billing"/>
 
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
 <div class="row justify-content-center">
     <div class="col-12 col-lg-9">
 
-        {{-- Branding --}}
+        {{-- Tab bar --}}
+        @php $activeTab = request('tab', 'branding'); @endphp
+        <div class="stg-tabs">
+            <a href="{{ route('super.settings.index') }}?tab=branding"
+               class="stg-tab {{ $activeTab === 'branding' ? 'active' : '' }}">
+                <i class="bi bi-palette me-1"></i>Branding
+            </a>
+            <a href="{{ route('super.settings.index') }}?tab=gateways"
+               class="stg-tab {{ $activeTab === 'gateways' ? 'active' : '' }}">
+                <i class="bi bi-credit-card-2-front me-1"></i>Payment Gateways
+            </a>
+            <a href="{{ route('super.settings.index') }}?tab=backups"
+               class="stg-tab {{ $activeTab === 'backups' ? 'active' : '' }}">
+                <i class="bi bi-database-down me-1"></i>Backups
+            </a>
+        </div>
+
+        {{-- ── Branding ── --}}
+        @if($activeTab === 'branding')
         @php
             $logoUrl    = file_url($branding['logo'] ?? null);
             $faviconUrl = file_url($branding['favicon'] ?? null);
         @endphp
-        <div class="card mb-4">
+        <div class="card">
             <div class="card-header step-head">
                 <span class="head-icon"><i class="bi bi-palette"></i></span>
                 <div>
                     <h6 class="mb-0 fw-semibold">Platform Branding</h6>
                     <small class="text-muted">
-                        Your logo appears in the Super Admin sidebar; the favicon is the small icon
-                        shown in the browser tab across the whole product. These are separate from
-                        each tenant's own logo.
+                        Your logo appears in the Super Admin sidebar; the favicon shows in the browser tab across the whole product.
+                        These are separate from each tenant's own logo.
                     </small>
                 </div>
             </div>
@@ -61,43 +100,43 @@
                     <div class="row g-4">
                         {{-- Logo --}}
                         <div class="col-12 col-sm-6">
-                            <label class="form-label"><i class="bi bi-image me-1 text-muted"></i>Logo</label>
+                            <label class="form-label fw-medium">Logo</label>
                             @if($logoUrl)
-                                <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-3 mb-2">
                                     <img src="{{ $logoUrl }}" alt="Logo"
                                          class="border rounded" style="width:64px;height:64px;object-fit:contain;background:#fff;padding:4px">
-                                    <div class="form-check form-check-inline small">
+                                    <div class="form-check small">
                                         <input class="form-check-input" type="checkbox" name="remove_logo" value="1" id="remove_logo">
-                                        <label class="form-check-label" for="remove_logo">Remove</label>
+                                        <label class="form-check-label text-danger" for="remove_logo">Remove logo</label>
                                     </div>
                                 </div>
                             @endif
                             <input type="file" name="logo" accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                                   class="form-control form-control-sm @error('logo') is-invalid @enderror">
+                                   class="form-control @error('logo') is-invalid @enderror">
                             @error('logo')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">PNG/JPG/SVG, square works best, max 2MB.</div>
+                            <div class="form-text">PNG / JPG / SVG · square works best · max 2 MB</div>
                         </div>
 
                         {{-- Favicon --}}
                         <div class="col-12 col-sm-6">
-                            <label class="form-label"><i class="bi bi-star me-1 text-muted"></i>Favicon</label>
+                            <label class="form-label fw-medium">Favicon</label>
                             @if($faviconUrl)
-                                <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-3 mb-2">
                                     <img src="{{ $faviconUrl }}" alt="Favicon"
                                          class="border rounded" style="width:32px;height:32px;object-fit:contain;background:#fff;padding:2px">
-                                    <div class="form-check form-check-inline small">
+                                    <div class="form-check small">
                                         <input class="form-check-input" type="checkbox" name="remove_favicon" value="1" id="remove_favicon">
-                                        <label class="form-check-label" for="remove_favicon">Remove</label>
+                                        <label class="form-check-label text-danger" for="remove_favicon">Remove favicon</label>
                                     </div>
                                 </div>
                             @endif
                             <input type="file" name="favicon" accept="image/png,image/svg+xml,image/webp,.ico"
-                                   class="form-control form-control-sm @error('favicon') is-invalid @enderror">
+                                   class="form-control @error('favicon') is-invalid @enderror">
                             @error('favicon')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="form-text">ICO/PNG/SVG, 32&times;32 or larger, max 512KB.</div>
+                            <div class="form-text">ICO / PNG / SVG · 32×32 or larger · max 512 KB</div>
                         </div>
 
-                        <div class="col-12 d-flex justify-content-end">
+                        <div class="col-12 d-flex justify-content-end border-top pt-3 mt-1">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-check-lg me-1"></i>Save Branding
                             </button>
@@ -106,27 +145,27 @@
                 </form>
             </div>
         </div>
+        @endif
 
-        <div class="card mb-4">
+        {{-- ── Payment Gateways ── --}}
+        @if($activeTab === 'gateways')
+        @php
+            $pm   = $credentials['paymongo'] ?? [];
+            $sp   = $credentials['stripe']   ?? [];
+            $mask = fn ($v) => $v ? str_repeat('•', 6) . substr($v, -4) : '';
+        @endphp
+        <div class="card">
             <div class="card-header step-head">
                 <span class="head-icon"><i class="bi bi-credit-card-2-front"></i></span>
                 <div>
                     <h6 class="mb-0 fw-semibold">Subscription Billing — Payment Gateways</h6>
                     <small class="text-muted">
-                        Connect the platform's own PayMongo or Stripe account here. These keys are
-                        used to collect monthly/yearly subscription dues from your tenants. They are
-                        separate from each tenant's own gateway keys (which settle the tenant's
-                        booking/POS revenue to the tenant's bank).
+                        Connect the platform's PayMongo or Stripe account to collect subscription dues from tenants.
+                        These are separate from each tenant's own gateway keys.
                     </small>
                 </div>
             </div>
             <div class="card-body">
-                @php
-                    $pm   = $credentials['paymongo'] ?? [];
-                    $sp   = $credentials['stripe']   ?? [];
-                    $mask = fn ($v) => $v ? str_repeat('•', 6) . substr($v, -4) : '';
-                @endphp
-
                 <form method="POST" action="{{ route('super.settings.gateways') }}">
                     @csrf @method('PUT')
 
@@ -136,8 +175,10 @@
                             <span class="gw-logo"><i class="bi bi-wallet2"></i></span>
                             <div class="flex-grow-1 min-w-0">
                                 <h6 class="mb-0 fw-semibold">PayMongo</h6>
-                                <small class="text-muted d-block">GCash, Maya, QR Ph, cards (Philippines)</small>
-                                <small class="text-muted">Sign up at <a href="https://dashboard.paymongo.com/signup" target="_blank" rel="noopener">dashboard.paymongo.com</a></small>
+                                <small class="text-muted d-block">GCash · Maya · QR Ph · Cards (Philippines)</small>
+                                <small class="text-muted">
+                                    Sign up at <a href="https://dashboard.paymongo.com/signup" target="_blank" rel="noopener">dashboard.paymongo.com</a>
+                                </small>
                             </div>
                             <div class="form-check form-switch flex-shrink-0">
                                 <input type="hidden" name="paymongo_enabled" value="0">
@@ -148,25 +189,26 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
-                                <label class="form-label small"><i class="bi bi-key me-1 text-muted"></i>Secret key <small class="text-muted">(starts with sk_live_…)</small></label>
+                                <label class="form-label fw-medium small">Secret key <span class="text-muted fw-normal">(sk_live_…)</span></label>
                                 <input type="password" name="paymongo_secret_key" autocomplete="off"
                                        placeholder="{{ $mask($pm['secret_key'] ?? null) ?: 'sk_live_…' }}"
                                        class="form-control font-monospace">
-                                <small class="text-muted">From PayMongo dashboard → Developers → API Keys. Leave blank to keep what's saved.</small>
+                                <div class="form-text">From PayMongo → Developers → API Keys. Leave blank to keep current.</div>
                             </div>
                             <div class="col-12 col-md-6">
-                                <label class="form-label small"><i class="bi bi-link-45deg me-1 text-muted"></i>Webhook secret <small class="text-muted">(starts with whsk_…)</small></label>
+                                <label class="form-label fw-medium small">Webhook secret <span class="text-muted fw-normal">(whsk_…)</span></label>
                                 <input type="password" name="paymongo_webhook_secret" autocomplete="off"
                                        placeholder="{{ $mask($pm['webhook_secret'] ?? null) ?: 'whsk_…' }}"
                                        class="form-control font-monospace">
-                                <small class="text-muted">Optional. Leave blank to keep what's saved.</small>
+                                <div class="form-text">Optional. Leave blank to keep current.</div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small"><i class="bi bi-grid me-1 text-muted"></i>Payment methods <small class="text-muted">— must match what you've enabled in your PayMongo dashboard</small></label>
+                                <label class="form-label fw-medium small">Payment methods</label>
+                                <div class="form-text mb-2">Must match what's enabled in your PayMongo dashboard.</div>
                                 @php $pmMethods = $pm['methods'] ?? ['gcash','paymaya','card','qrph']; @endphp
-                                <div class="d-flex flex-wrap gap-2 mt-1">
+                                <div class="d-flex flex-wrap gap-2">
                                     @foreach(['gcash' => 'GCash', 'paymaya' => 'Maya', 'card' => 'Card', 'qrph' => 'QR Ph'] as $val => $label)
-                                    <div class="form-check form-check-inline border rounded px-3 py-2 mb-0">
+                                    <div class="form-check border rounded px-3 py-2 mb-0">
                                         <input class="form-check-input" type="checkbox"
                                                name="paymongo_methods[]" value="{{ $val }}"
                                                id="pm_method_{{ $val }}"
@@ -177,7 +219,7 @@
                                 </div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small"><i class="bi bi-globe me-1 text-muted"></i>Webhook URL <small class="text-muted">— paste into PayMongo dashboard</small></label>
+                                <label class="form-label fw-medium small">Webhook URL <span class="text-muted fw-normal">— paste into PayMongo dashboard</span></label>
                                 <div class="gw-webhook-url" x-data="{ copied: false }">
                                     <code x-ref="pmUrl">{{ route('api.v1.webhooks.platform.paymongo') }}</code>
                                     <button type="button" class="gw-copy-btn"
@@ -197,7 +239,9 @@
                             <div class="flex-grow-1 min-w-0">
                                 <h6 class="mb-0 fw-semibold">Stripe</h6>
                                 <small class="text-muted d-block">International cards</small>
-                                <small class="text-muted">Sign up at <a href="https://dashboard.stripe.com/register" target="_blank" rel="noopener">dashboard.stripe.com</a></small>
+                                <small class="text-muted">
+                                    Sign up at <a href="https://dashboard.stripe.com/register" target="_blank" rel="noopener">dashboard.stripe.com</a>
+                                </small>
                             </div>
                             <div class="form-check form-switch flex-shrink-0">
                                 <input type="hidden" name="stripe_enabled" value="0">
@@ -208,21 +252,21 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
-                                <label class="form-label small"><i class="bi bi-key me-1 text-muted"></i>Secret key <small class="text-muted">(starts with sk_live_…)</small></label>
+                                <label class="form-label fw-medium small">Secret key <span class="text-muted fw-normal">(sk_live_…)</span></label>
                                 <input type="password" name="stripe_secret" autocomplete="off"
                                        placeholder="{{ $mask($sp['secret'] ?? null) ?: 'sk_live_…' }}"
                                        class="form-control font-monospace">
-                                <small class="text-muted">From Stripe dashboard → Developers → API Keys. Leave blank to keep what's saved.</small>
+                                <div class="form-text">From Stripe → Developers → API Keys. Leave blank to keep current.</div>
                             </div>
                             <div class="col-12 col-md-6">
-                                <label class="form-label small"><i class="bi bi-link-45deg me-1 text-muted"></i>Webhook signing secret <small class="text-muted">(starts with whsec_…)</small></label>
+                                <label class="form-label fw-medium small">Webhook signing secret <span class="text-muted fw-normal">(whsec_…)</span></label>
                                 <input type="password" name="stripe_webhook_secret" autocomplete="off"
                                        placeholder="{{ $mask($sp['webhook_secret'] ?? null) ?: 'whsec_…' }}"
                                        class="form-control font-monospace">
-                                <small class="text-muted">Optional. Leave blank to keep what's saved.</small>
+                                <div class="form-text">Optional. Leave blank to keep current.</div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small"><i class="bi bi-globe me-1 text-muted"></i>Webhook URL <small class="text-muted">— paste into Stripe dashboard</small></label>
+                                <label class="form-label fw-medium small">Webhook URL <span class="text-muted fw-normal">— paste into Stripe dashboard</span></label>
                                 <div class="gw-webhook-url" x-data="{ copied: false }">
                                     <code x-ref="spUrl">{{ route('api.v1.webhooks.platform.stripe') }}</code>
                                     <button type="button" class="gw-copy-btn"
@@ -235,83 +279,82 @@
                         </div>
                     </div>
 
-                    <div class="alert alert-warning small mb-3">
+                    <div class="alert alert-info small mb-4">
                         <i class="bi bi-shield-lock me-1"></i>
-                        Keys are encrypted at rest and never shown back after saving. If you lose a
-                        key, create a new one in your PayMongo or Stripe dashboard and paste it here.
+                        Keys are encrypted at rest and never shown back after saving. If you lose a key, generate a new one in your gateway dashboard and paste it here.
                     </div>
 
-                    <div class="d-flex justify-content-end">
+                    <div class="d-flex justify-content-end border-top pt-3">
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg me-1"></i>Save Platform Payment Settings
+                            <i class="bi bi-check-lg me-1"></i>Save Payment Settings
                         </button>
                     </div>
                 </form>
             </div>
         </div>
+        @endif
 
-        {{-- Database Backups --}}
-        <div class="card mb-4">
+        {{-- ── Database Backups ── --}}
+        @if($activeTab === 'backups')
+        <div class="card">
             <div class="card-header step-head">
                 <span class="head-icon"><i class="bi bi-database-down"></i></span>
                 <div>
                     <h6 class="mb-0 fw-semibold">Database Backups</h6>
-                    <small class="text-muted">
-                        Automated daily backups at 2:00 AM (Asia/Manila). Only the last 3 backups are kept.
-                    </small>
+                    <small class="text-muted">Automated daily backups at 2:00 AM (Asia/Manila). Only the last 3 backups are kept.</small>
                 </div>
             </div>
-            <div class="card-body p-0">
-                @if(count($backups) === 0)
-                    <div class="p-4 text-center text-muted">
-                        <i class="bi bi-database-x fs-2 d-block mb-2"></i>
-                        No backups found yet. The first backup will run tonight at 2:00 AM.
-                    </div>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0 align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Backup File</th>
-                                    <th>Created</th>
-                                    <th>Size</th>
-                                    <th class="text-end pe-4">Download</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($backups as $i => $backup)
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="bi bi-file-earmark-zip text-primary"></i>
-                                            <span class="font-monospace small">{{ $backup['name'] }}</span>
-                                            @if($i === 0)
-                                                <span class="badge bg-success-subtle text-success ms-1">Latest</span>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span title="{{ $backup['created_at']->format('Y-m-d H:i:s T') }}">
-                                            {{ $backup['created_at']->format('M d, Y h:i A') }}
-                                        </span>
-                                    </td>
-                                    <td class="text-muted small">
-                                        {{ number_format($backup['size'] / 1024, 1) }} KB
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <a href="{{ $backup['download_url'] }}"
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-download me-1"></i>Download
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-            </div>
+
+            @if(count($backups) === 0)
+                <x-empty-state title="No backups yet" icon="bi-database-x"
+                    description="The first backup will run tonight at 2:00 AM."/>
+            @else
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Backup File</th>
+                        <th class="d-none d-sm-table-cell">Created</th>
+                        <th class="d-none d-sm-table-cell">Size</th>
+                        <th class="text-end pe-4">Download</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($backups as $i => $backup)
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-file-earmark-zip text-primary fs-5"></i>
+                                <div>
+                                    <div class="font-monospace small text-truncate" style="max-width:260px;">{{ $backup['name'] }}</div>
+                                    {{-- Mobile: show date + size inline --}}
+                                    <div class="d-sm-none small text-muted">
+                                        {{ $backup['created_at']->format('M d, Y h:i A') }}
+                                        · {{ number_format($backup['size'] / 1024, 1) }} KB
+                                    </div>
+                                </div>
+                                @if($i === 0)
+                                    <span class="badge bg-success-subtle text-success-emphasis ms-1">Latest</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="small text-muted d-none d-sm-table-cell text-nowrap">
+                            {{ $backup['created_at']->format('M d, Y h:i A') }}
+                        </td>
+                        <td class="small text-muted d-none d-sm-table-cell">
+                            {{ number_format($backup['size'] / 1024, 1) }} KB
+                        </td>
+                        <td class="text-end pe-4">
+                            <a href="{{ $backup['download_url'] }}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-download me-1"></i>Download
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @endif
         </div>
+        @endif
 
     </div>
 </div>
