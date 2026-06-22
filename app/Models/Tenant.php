@@ -67,7 +67,7 @@ class Tenant extends Model
 
     public function activeSubscription(): HasOne
     {
-        return $this->hasOne(TenantSubscription::class)->where('status', 'active')->latest();
+        return $this->hasOne(TenantSubscription::class)->whereIn('status', ['active', 'pending'])->latest();
     }
 
     public function promotions(): HasMany

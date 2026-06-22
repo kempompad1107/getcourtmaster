@@ -63,7 +63,7 @@ class SubscriptionController extends Controller
         ]);
 
         $hasOutstanding = SubscriptionInvoice::where('tenant_id', $tenant->id)
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'cancelled'])
             ->exists();
         if ($hasOutstanding) {
             return redirect()->route('admin.subscription')
@@ -137,7 +137,7 @@ class SubscriptionController extends Controller
 
         // Don't stack invoices — if one is already open, send them to pay it.
         $hasOutstanding = SubscriptionInvoice::where('tenant_id', $tenant->id)
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'cancelled'])
             ->exists();
         if ($hasOutstanding) {
             return redirect()->route('admin.subscription')
