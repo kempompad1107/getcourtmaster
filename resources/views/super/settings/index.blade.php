@@ -296,7 +296,7 @@
                 <span class="head-icon"><i class="bi bi-database-down"></i></span>
                 <div>
                     <h6 class="mb-0 fw-semibold">Database Backups</h6>
-                    <small class="text-muted">Automated daily backups at 2:00 AM (Asia/Manila). Only the last 3 backups are kept.</small>
+                    <small class="text-muted">Daily at 2:00 AM · last 3 kept</small>
                 </div>
             </div>
 
@@ -305,12 +305,12 @@
                     description="The first backup will run tonight at 2:00 AM."/>
             @else
             <table class="table table-hover mb-0 align-middle">
-                <thead class="table-light" style="text-transform:none;font-size:.8125rem;letter-spacing:0;">
+                <thead class="table-light">
                     <tr>
-                        <th class="ps-4 fw-semibold">Backup File</th>
-                        <th class="d-none d-sm-table-cell fw-semibold">Created</th>
-                        <th class="d-none d-sm-table-cell fw-semibold">Size</th>
-                        <th class="text-end pe-4 fw-semibold">Download</th>
+                        <th class="ps-4 fw-semibold" style="text-transform:none;letter-spacing:0;font-size:.8125rem;">Backup File</th>
+                        <th class="d-none d-sm-table-cell fw-semibold" style="text-transform:none;letter-spacing:0;font-size:.8125rem;">Created</th>
+                        <th class="d-none d-sm-table-cell fw-semibold" style="text-transform:none;letter-spacing:0;font-size:.8125rem;">Size</th>
+                        <th class="text-end pe-4 fw-semibold" style="text-transform:none;letter-spacing:0;font-size:.8125rem;">Download</th>
                     </tr>
                 </thead>
                 <tbody>
