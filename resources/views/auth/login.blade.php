@@ -230,18 +230,31 @@
                 </button>
             </form>
 
-            {{-- PWA install banner --}}
-            <div id="pwa-install-wrap" style="display:none;" class="mt-4">
-                <button id="pwa-install-btn" type="button"
-                        class="w-100 d-flex align-items-center justify-content-center gap-2"
-                        style="background:rgba(16,185,129,.08);color:#059669;border:1.5px solid rgba(16,185,129,.3);
-                               border-radius:.7rem;padding:.65rem 1rem;font-weight:700;font-size:.85rem;cursor:pointer;
-                               transition:background .15s,border-color .15s;">
-                    <i class="bi bi-download"></i>
-                    Install CourtMaster App
-                </button>
-                <p class="text-center text-muted mt-2 mb-0" style="font-size:.75rem;">
-                    Add to your home screen for the full app experience
+            {{-- PWA install banner — always visible --}}
+            <div class="mt-4 pt-4" style="border-top:1px solid #e9ecef;">
+                <p class="text-center mb-3" style="font-size:.78rem;font-weight:600;color:#64748b;letter-spacing:.04em;text-transform:uppercase;">
+                    Install App
+                </p>
+
+                {{-- Android: button active when prompt available, otherwise shows instructions --}}
+                <div id="pwa-android">
+                    <button id="pwa-install-btn" type="button" disabled
+                            class="w-100 d-flex align-items-center justify-content-center gap-2 mb-2"
+                            style="background:rgba(16,185,129,.08);color:#059669;border:1.5px solid rgba(16,185,129,.25);
+                                   border-radius:.7rem;padding:.65rem 1rem;font-weight:700;font-size:.875rem;cursor:pointer;
+                                   opacity:.5;transition:opacity .2s,background .2s;">
+                        <i class="bi bi-android2"></i>
+                        <span>Add to Home Screen</span>
+                    </button>
+                    <p id="pwa-android-hint" class="text-center text-muted mb-0" style="font-size:.75rem;">
+                        Open in Chrome · tap <strong>⋮</strong> → <strong>Add to Home Screen</strong>
+                    </p>
+                </div>
+
+                {{-- iOS instructions --}}
+                <p class="text-center text-muted mt-3 mb-0" style="font-size:.75rem;">
+                    <i class="bi bi-apple me-1"></i>
+                    On iPhone: tap <i class="bi bi-box-arrow-up"></i> Share → <strong>Add to Home Screen</strong>
                 </p>
             </div>
 
@@ -256,13 +269,15 @@
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         _pwaPrompt = e;
-        const wrap = document.getElementById('pwa-install-wrap');
-        if (wrap) wrap.style.display = 'block';
+        const btn = document.getElementById('pwa-install-btn');
+        const hint = document.getElementById('pwa-android-hint');
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+        if (hint) hint.style.display = 'none';
     });
     window.addEventListener('appinstalled', () => {
         _pwaPrompt = null;
-        const wrap = document.getElementById('pwa-install-wrap');
-        if (wrap) wrap.style.display = 'none';
+        const wrap = document.getElementById('pwa-android');
+        if (wrap) wrap.innerHTML = '<p class="text-center text-success fw-semibold" style="font-size:.85rem;"><i class="bi bi-check-circle-fill me-1"></i>App installed!</p>';
     });
     document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('pwa-install-btn');
