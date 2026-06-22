@@ -31,9 +31,9 @@
     {{-- Filter bar in card header --}}
     <div class="card-header py-3">
         <form method="GET" action="{{ route('super.billing.invoices') }}"
-              class="d-flex align-items-center gap-2 flex-nowrap flex-wrap-sm">
+              class="d-flex align-items-center gap-2 flex-wrap">
 
-            <select name="status" class="form-select flex-shrink-0" style="width:150px;font-size:.875rem;"
+            <select name="status" class="form-select flex-shrink-0" style="width:140px;font-size:.875rem;"
                     onchange="this.form.submit()">
                 <option value="">All Statuses</option>
                 @foreach(['pending','paid','failed','refunded','cancelled','draft'] as $s)
@@ -41,7 +41,7 @@
                 @endforeach
             </select>
 
-            <select name="tenant_id" class="form-select flex-shrink-0" style="width:180px;font-size:.875rem;"
+            <select name="tenant_id" class="form-select flex-shrink-1" style="min-width:120px;max-width:200px;font-size:.875rem;"
                     onchange="this.form.submit()">
                 <option value="">All Tenants</option>
                 @foreach($tenants as $t)
@@ -55,7 +55,7 @@
                 <a href="{{ route('super.billing.invoices') }}" class="btn btn-outline-secondary flex-shrink-0" style="font-size:.875rem;">Clear</a>
             @endif
 
-            <span class="small text-muted ms-auto flex-shrink-0">
+            <span class="small text-muted ms-auto flex-shrink-0 d-none d-sm-inline">
                 {{ number_format($invoices->total()) }} invoice{{ $invoices->total() !== 1 ? 's' : '' }}
             </span>
         </form>
